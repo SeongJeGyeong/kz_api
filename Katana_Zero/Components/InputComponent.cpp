@@ -11,11 +11,11 @@ void InputComponent::InitComponent(Actor* owner)
 
 void InputComponent::UpdateComponent(float deltaTime)
 {
-    if (_player->GetIsGround() && !_player->GetIsJumped() && InputManager::GetInstance()->GetButtonDown(KeyType::W))
+    if (!_player->GetIsJumped() && InputManager::GetInstance()->GetButtonDown(KeyType::W))
     {
         _player->Jump();
     }
-    if (!_player->GetIsGround() && !_player->GetIsJumped() && InputManager::GetInstance()->GetButtonPressed(KeyType::W))
+    if (_player->GetIsJumped() && !_player->GetIsMaxJump() && InputManager::GetInstance()->GetButtonPressed(KeyType::W))
     {
         _player->IncreaseJump(deltaTime);
     }

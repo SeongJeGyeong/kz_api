@@ -26,8 +26,8 @@ public:
 
 	Collider* GetCollider() { return _collider; }
 
-	void CreateOBBCollider(float width, float height, float rotation, Vector2 centerOffset, ECollisionLayer layer);
-	void CreateAABBCollider(float width, float height, Vector2 centerOffset, ECollisionLayer layer);
+	void CreateOBBCollider(float width, float height, float rotation, ECollisionLayer layer);
+	void CreateAABBCollider(float width, float height, ECollisionLayer layer);
 	void CreateLineCollider(Vector2 start, Vector2 end, ECollisionLayer layer);
 };
 

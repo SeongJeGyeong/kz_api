@@ -24,6 +24,8 @@ public:
 	Vector2 GetAABBMax();
 	Vector2 GetCenter() { return GetPos(); }
 
+	RECT GetRect();
+
 	void SetHitInfo(Vector2 pos, Vector2 normal) override;
 	virtual float GetWidth() override { return fWidth; }
 	virtual float GetHeight() override { return fHeight; }

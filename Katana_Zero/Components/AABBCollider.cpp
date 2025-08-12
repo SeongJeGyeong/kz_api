@@ -18,10 +18,12 @@ void AABBCollider::RenderComponent(HDC hdc)
 	if (!Game::GetInstance()->GetDebugMode()) return;
 	Super::RenderComponent(hdc);
 
-	int32 left = GetCenterOffset().x - fWidth * 0.5f;
-	int32 right = GetCenterOffset().x + fWidth * 0.5f;
-	int32 top = GetCenterOffset().y - fHeight * 0.5f;
-	int32 bottom = GetCenterOffset().y + fHeight * 0.5f;
+	Vector2 pos = GetPos();
+
+	int32 left = pos.x - fWidth * 0.5f;
+	int32 right = pos.x + fWidth * 0.5f;
+	int32 top = pos.y - fHeight * 0.5f;
+	int32 bottom = pos.y + fHeight * 0.5f;
 
 	HPEN redPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 	HPEN oldPen = (HPEN)SelectObject(hdc, redPen);
@@ -33,12 +35,26 @@ void AABBCollider::RenderComponent(HDC hdc)
 
 Vector2 AABBCollider::GetAABBMin()
 {
-	return { GetCenterOffset().x - fWidth / 2, GetCenterOffset().y - fHeight / 2 };
+	return { GetPos().x - fWidth / 2, GetPos().y - fHeight / 2 };
 }
 
 Vector2 AABBCollider::GetAABBMax()
 {
-	return { GetCenterOffset().x + fWidth / 2 , GetCenterOffset().y + fHeight / 2 };
+	return { GetPos().x + fWidth / 2 , GetPos().y + fHeight / 2 };
+}
+
+RECT AABBCollider::GetRect()
+{
+	RECT rect;
+
+	Vector2 pos = GetPos();
+
+	rect.left = pos.x - fWidth * 0.5f;
+	rect.right = pos.x + fWidth * 0.5f;
+	rect.top = pos.y - fHeight * 0.5f;
+	rect.bottom = pos.y + fHeight * 0.5f;
+
+	return rect;
 }
 
 void AABBCollider::SetHitInfo(Vector2 pos, Vector2 normal)

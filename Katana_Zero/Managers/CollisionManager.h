@@ -43,12 +43,21 @@ public:
 
 	vector<Collider*> GetPlacedColliders(ECollisionLayer layer) { return _colliderList[layer]; }
 	bool CheckBlockedCollision(Player* player, Vector2 start, Vector2 end, CollisionInfo& info);
-	bool CheckGroundCollision(Player* player, Vector2 start, Vector2 end, CollisionInfo& info);
 
-
-	PlayerGroundCollisionResult CheckPlayerGroundCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
+	vector<PlayerGroundCollisionResult> CheckPlayerGroundCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
 	PlayerGroundCollisionResult CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
-	PlayerGroundCollisionResult CheckLineGroundCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
-	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t);
+	PlayerGroundCollisionResult CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
+
+	vector<PlayerGroundCollisionResult> CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
+	PlayerGroundCollisionResult CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider);
+	PlayerGroundCollisionResult CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
+	PlayerGroundCollisionResult CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
+	PlayerGroundCollisionResult CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
+
+	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t, float& crossOut);
+	bool LineIntersectsWallSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t);
+	Vector2 GetClosestPointOnLineSegment(Vector2 point, Vector2 lineStart, Vector2 lineEnd);
+
+	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY, bool& outInSegment);
 };
 

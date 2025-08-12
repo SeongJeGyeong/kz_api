@@ -20,23 +20,21 @@ void Actor::Render(HDC hdc)
 	if (_collider) _collider->RenderComponent(hdc);
 }
 
-void Actor::CreateOBBCollider(float width, float height, float rotation, Vector2 centerOffset, ECollisionLayer layer)
+void Actor::CreateOBBCollider(float width, float height, float rotation, ECollisionLayer layer)
 {
 	_collider = new OBBCollider();
 	_collider->InitOBB(width, height, rotation);
 	_collider->SetOwner(this);
-	_collider->SetCenterOffset(centerOffset);
 	_collider->SetCollisionLayer(layer);
 	_collider->SetColliderType(EColliderType::OBB);
 	CollisionManager::GetInstance()->AddCollider(_collider);
 }
 
-void Actor::CreateAABBCollider(float width, float height, Vector2 centerOffset, ECollisionLayer layer)
+void Actor::CreateAABBCollider(float width, float height, ECollisionLayer layer)
 {
 	_collider = new AABBCollider();
 	_collider->InitAABB(width, height);
 	_collider->SetOwner(this);
-	_collider->SetCenterOffset(centerOffset);
 	_collider->SetCollisionLayer(layer);
 	_collider->SetColliderType(EColliderType::AABB);
 	CollisionManager::GetInstance()->AddCollider(_collider);

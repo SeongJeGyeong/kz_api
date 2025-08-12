@@ -31,7 +31,7 @@ void Game::Init(HWND hwnd, HWND hsubwnd)
 	::DeleteObject(prev);
 
 	// 외부 폰트를 시스템에 임시로 등록
-	fs::path directory = fs::current_path() / L"../GameResources";
+	fs::path directory = fs::current_path() / L"../GameResources/";
 	AddFontResourceEx((directory / L"Fonts/DungGeunMo.ttf").c_str(), FR_PRIVATE, 0);
 
 	_font = CreateFont(

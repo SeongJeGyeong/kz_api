@@ -18,10 +18,5 @@ public:
 	virtual void InitComponent(Actor* owner);
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
-
-	virtual void print() override
-	{
-		OutputDebugString(L"Input\n");
-	}
 };
 

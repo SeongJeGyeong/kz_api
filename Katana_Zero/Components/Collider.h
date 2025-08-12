@@ -18,8 +18,6 @@ private:
 	Vector2 vHitPos;
 	Vector2 vHitMTV;
 
-	Vector2 vCenter;
-
 protected:
 	ECollisionLayer eCollisionLayer;
 	EColliderType eColliderType;
@@ -43,9 +41,6 @@ public:
 	virtual float GetHeight() { return 0; }
 	virtual Vector2 GetStartPoint() { return Vector2(); }
 	virtual Vector2 GetEndPoint() { return Vector2(); }
-
-	Vector2 GetCenterOffset();
-	void SetCenterOffset(Vector2 center) { vCenter = center; }
 
 	bool GetOverlapped() { return bOverlapped; }
 	void SetOverlapped(bool overlap) { bOverlapped = overlap; }

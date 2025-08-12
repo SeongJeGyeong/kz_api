@@ -33,6 +33,7 @@ enum ECollisionLayer
 	ENEMY,
 	GROUND,
 	WALL,
+	STAIR,
 	CEILING,
 	PLATFORM,
 	PLAYER_HITBOX,
@@ -248,11 +249,13 @@ struct CollisionInfo
 
 struct PlayerGroundCollisionResult
 {
+	ECollisionLayer collisionLayer;
 	bool isColliding;           // 바닥과 충돌했는지
 	Vector2 collisionPoint;     // 충돌 지점
 	Vector2 normal;            // 바닥의 법선 벡터 (위쪽 방향)
 	float penetrationDepth;    // 바닥에 파묻힌 깊이
 	class Actor* groundActor;        // 충돌한 바닥 액터
+	int32 hitCorner;
 };
 
 // 선분과 사각형의 충돌체크

@@ -10,8 +10,7 @@ private:
 	int32 iAlpha = 255;	// 투명하게 보여야하는 색상
 	int32 iSizeX = 0;
 	int32 iSizeY = 0;
-
-	//bool bIsFlipped = false;
+	Vector2 vOffset;	// 액터에서 출력될 위치 조정
 
 	// 스프라이트
 private:
@@ -23,8 +22,8 @@ private:
 	bool bLoop = false;
 
 public:
-	void Load(wstring filePath, int32 alpha = 255);
-	void LoadSprite(wstring filePath, int32 tileSizeX, int32 tileSizeY, int32 frameCount, float duration, bool loop, int32 alpha = 255);
+	void Load(wstring filePath, Vector2 offset = Vector2(0, 0), int32 alpha = 255);
+	void LoadSprite(wstring filePath, int32 tileSizeX, int32 tileSizeY, int32 frameCount, float duration, bool loop, Vector2 offset = Vector2(0, 0), int32 alpha = 255);
 
 	// 해당 리소스가 그려지는 부분
 	void Render(HDC hdc, Vector2 pos);
@@ -34,6 +33,9 @@ public:
 
 	int32 GetTextureSizeX() { return iSizeX; }
 	int32 GetTextureSizeY() { return iSizeY; }
+
+	Vector2 GetOffset() const { return vOffset; }
+	void SetOffset(const Vector2& offset) { vOffset = offset; }
 
 	int32 GetAlpha() { return iAlpha; }
 	void SetAlpha(int32 transparent) { iAlpha = transparent; }

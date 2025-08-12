@@ -19,7 +19,7 @@ private:
 	Vector2 vVelocity = {};
 	Vector2 vAcceleration = {};
 
-	float fMoveForce = 3000;
+	float fMoveForce = 5000;
 	float fMass = 1;
 
 	float fJumpPressedTime = 0.f;
@@ -28,7 +28,9 @@ private:
 	bool bIsGround = false;
 	bool bIsWall = false;
 	bool bIsJumped = false;
-	bool bJumpPressed = false;
+	bool bIsMaxJump = false;
+	bool bIsStair = false;
+	bool bIsPlatform = false;
 
 	//////////////////
 	float fJumpInitialVelocity = 300.f;
@@ -41,6 +43,8 @@ private:
 
 	ComponentContainer _components;
 	StateMachine* _stateMachine;
+
+	Actor* _currentStair = nullptr;
 
 public:
 	virtual void Init(Vector2 pos) override;
@@ -55,10 +59,16 @@ public:
 
 	bool GetIsGround() { return bIsGround; }
 	void SetIsGround(bool isGround) { bIsGround = isGround; }
+	bool GetIsStair() { return bIsStair; }
+	void SetIsStair(bool isStair) { bIsStair = isStair; }
 	bool GetIsJumped() { return bIsJumped; }
 	void SetIsJumped(bool isJumped) { bIsJumped = isJumped; }
+	bool GetIsMaxJump() { return bIsMaxJump; }
+	void SetIsMaxJump(bool maxJump) { bIsMaxJump = maxJump; }
 	bool GetIsWall() { return bIsWall; }
 	void SetIsWall(bool isWall) { bIsWall = isWall; }
+	bool GetIsPlatform() { return bIsPlatform; }
+	void SetIsPlatform(bool isPlatform) { bIsPlatform = isPlatform; }
 
 	bool IsFlipped() { return vFrontDir.x < 0; }
 
@@ -82,4 +92,14 @@ public:
 	virtual int32 GetCurrentState() override;
 
 	void ChangeState(EPlayerState stateType);
+
+	void ProcessCollisionResults(const vector<PlayerGroundCollisionResult>& results, Vector2 oldPos, Vector2& newPos);
+	void ProcessGroundCollisions(const vector<PlayerGroundCollisionResult>& groundCollisions, const vector<PlayerGroundCollisionResult>& platformCollisions, Vector2& newPos);
+	void ProcessWallCollisions(const vector<PlayerGroundCollisionResult>& wallCollisions, Vector2& newPos);
+	void ProcessStairCollisions(const vector<PlayerGroundCollisionResult>& stairCollisions, Vector2 oldPos, Vector2& newPos);
+
+	Actor* GetCurrentStair() { return _currentStair; }
+
+	float GetLowestCollisionY(const vector<PlayerGroundCollisionResult>& cols);
+	bool HasPlatformAt(Vector2 footPos);
 };

@@ -95,7 +95,7 @@ void GameScene::LoadColliders(json colliderData)
 			collider->Init({ (endPoint.x + startPoint.x) * 0.5f, (endPoint.y + startPoint.y) * 0.5f });
 			if (type == EColliderMode::COL_BOX)
 			{
-				collider->CreateAABBCollider(endPoint.x - startPoint.x, endPoint.y - startPoint.y, { 0, 0 }, ECollisionLayer::GROUND);
+				collider->CreateAABBCollider(endPoint.x - startPoint.x, endPoint.y - startPoint.y, ECollisionLayer::GROUND);
 			}
 			else
 			{
@@ -111,7 +111,7 @@ void GameScene::LoadColliders(json colliderData)
 					collider->CreateLineCollider(startPoint, endPoint, ECollisionLayer::CEILING);
 					break;
 				case COL_STAIR:
-					collider->CreateLineCollider(startPoint, endPoint, ECollisionLayer::GROUND);
+					collider->CreateLineCollider(startPoint, endPoint, ECollisionLayer::STAIR);
 					break;
 				}
 			}

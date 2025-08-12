@@ -1,0 +1,31 @@
+{
+    "Sprites" : {
+        "Zero" : {
+            "spr_idle" : {
+                   "FrameCount" : 11,
+                   "Duration" : 0.1,
+                   "Loop" : 1,
+                   "Alpha" : 255
+            },
+            "spr_idle_to_run" : {
+                   "FrameCount" : 4,
+                   "Duration" : 0.1,
+                   "Loop" : 0,
+                   "Alpha" : 255
+            },
+            "spr_run" : {
+                   "FrameCount" : 10,
+                   "Duration" : 0.08,
+                   "Loop" : 1,
+                   "Alpha" : 255
+            },            
+            "spr_run_to_idle" : {
+                   "FrameCount" : 5,
+                   "Duration" : 0.1,
+                   "Loop" : 0,
+                   "Alpha" : 255
+            }
+        }
+    }
+
+}

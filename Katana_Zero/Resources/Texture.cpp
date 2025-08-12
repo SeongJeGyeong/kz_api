@@ -2,7 +2,7 @@
 #include "Texture.h"
 #include "../Game/Game.h"
 
-void Texture::Load(wstring filePath, int32 alpha)
+void Texture::Load(wstring filePath, Vector2 offset, int32 alpha)
 {
 	// WinAPI 텍스처 로딩하는 방법
 	HDC hdc = ::GetDC(Game::GetInstance()->GetHwnd());
@@ -32,6 +32,7 @@ void Texture::Load(wstring filePath, int32 alpha)
 	iSizeY = bit.bmHeight;
 	iFrameSizeX = iSizeX;
 	iFrameSizeY = iSizeY;
+	vOffset = offset;
 	iAlpha = alpha;
 
 	// 좌우 반전된 hdc도 하나 저장
@@ -46,11 +47,13 @@ void Texture::Load(wstring filePath, int32 alpha)
 		iSizeX - 1, 0, -iSizeX, iSizeY,
 		SRCCOPY
 	);
+
+	DeleteObject(flippedBitmap);
 }
 
-void Texture::LoadSprite(wstring filePath, int32 tileSizeX, int32 tileSizeY, int32 frameCount, float duration, bool loop, int32 alpha)
+void Texture::LoadSprite(wstring filePath, int32 tileSizeX, int32 tileSizeY, int32 frameCount, float duration, bool loop, Vector2 offset, int32 alpha)
 {
-	Load(filePath, alpha);
+	Load(filePath, offset, alpha);
 
 	iFrameSizeX = tileSizeX;
 	iFrameSizeY = tileSizeY;
@@ -68,8 +71,8 @@ void Texture::Render(HDC hdc, Vector2 pos)
 	op.AlphaFormat = AC_SRC_ALPHA;
 
 	AlphaBlend(hdc,
-		(int32)pos.x - (iSizeX * 0.5f),
-		(int32)pos.y - (iSizeY * 0.5f),
+		(int32)pos.x + vOffset.x - (iSizeX * 0.5f) + vOffset.x,
+		(int32)pos.y + vOffset.y - (iSizeY * 0.5f) + vOffset.y,
 		iSizeX,
 		iSizeY,
 		_textureHdc,
@@ -89,8 +92,8 @@ void Texture::RenderStretched(HDC hdc, Vector2 pos, int32 stretchWidth, int32 st
 	op.AlphaFormat = AC_SRC_ALPHA;
 
 	AlphaBlend(hdc,
-		(int32)pos.x - (stretchWidth * 0.5f),
-		(int32)pos.y - (stretchHeight * 0.5f),
+		(int32)pos.x - (stretchWidth * 0.5f) + vOffset.x,
+		(int32)pos.y - (stretchHeight * 0.5f) + vOffset.y,
 		stretchWidth,
 		stretchHeight,
 		_textureHdc,
@@ -115,8 +118,8 @@ void Texture::RenderStretchedSprite(HDC hdc, Vector2 pos, int32 magnification, b
 	if (isFlipped)
 	{
 		AlphaBlend(hdc,
-			(int32)pos.x - (stretchedWidth * 0.5f),
-			(int32)pos.y - (stretchedHeight * 0.5f),
+			(int32)pos.x - (stretchedWidth * 0.5f) + vOffset.x,
+			(int32)pos.y - (stretchedHeight * 0.5f) + vOffset.y,
 			stretchedWidth,
 			stretchedHeight,
 			_flippedTextureHdc,
@@ -129,8 +132,8 @@ void Texture::RenderStretchedSprite(HDC hdc, Vector2 pos, int32 magnification, b
 	else
 	{
 		AlphaBlend(hdc,
-			(int32)pos.x - (stretchedWidth * 0.5f),
-			(int32)pos.y - (stretchedHeight * 0.5f),
+			(int32)pos.x - (stretchedWidth * 0.5f) + vOffset.x,
+			(int32)pos.y - (stretchedHeight * 0.5f) + vOffset.y,
 			stretchedWidth,
 			stretchedHeight,
 			_textureHdc,
@@ -151,8 +154,8 @@ void Texture::RenderSprite(HDC hdc, Vector2 pos, int32 tileSizeX, int32 tileSize
 	op.AlphaFormat = AC_SRC_ALPHA;
 
 	AlphaBlend(hdc,
-		(int32)pos.x - (tileSizeX * 0.5f),
-		(int32)pos.y - (tileSizeY * 0.5f),
+		(int32)pos.x - (tileSizeX * 0.5f) + vOffset.x,
+		(int32)pos.y - (tileSizeY * 0.5f) + vOffset.y,
 		tileSizeX,
 		tileSizeY,
 		_textureHdc,
@@ -211,8 +214,8 @@ void Texture::RenderRotatedSprite(HDC hdc, Vector2 pos, float radian, float scal
 	}
 
 	AlphaBlend(hdc,
-		bounds.left - (tempWidth * (scale - 1.f) / 2.f),
-		bounds.top - (tempHeight * (scale - 1.f) / 2.f),
+		bounds.left - (tempWidth * (scale - 1.f) / 2.f) + vOffset.x,
+		bounds.top - (tempHeight * (scale - 1.f) / 2.f) + vOffset.y,
 		tempWidth * scale,
 		tempHeight * scale,
 		rotatedDC,
