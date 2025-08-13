@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "Katana_Zero.h"
 #include "Game/Game.h"
+#include "Managers/TimeManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -14,6 +15,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 WNDCLASS WndClass; // 윈도우의 기반이 되는 클래스를 만들고자 하는 윈도우의 속성을 정의
 
 HWND gHwnd, gSubHwnd;  // 내 게임용 핸들
+bool isMovingWindow = false;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                RegisterMainWindowClass(HINSTANCE hInstance);
@@ -60,7 +62,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 게임 생성
     Game* game = Game::GetInstance();
     game->Init(gHwnd, gSubHwnd);
-
     LARGE_INTEGER frequency, now, prev;
     ::QueryPerformanceFrequency(&frequency);
     ::QueryPerformanceCounter(&prev);
@@ -72,6 +73,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 메세지가 WM_QUIT이면 게임 종료
     while (msg.message != WM_QUIT)
     {
+        if (isMovingWindow) continue;
+
         if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
@@ -224,6 +227,16 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 {
     switch (message)
     {
+    case WM_ENTERSIZEMOVE:
+        isMovingWindow = true;
+        break;
+    case WM_EXITSIZEMOVE:
+        isMovingWindow = false;
+        // 창 이동중에 경과한 시간은 무시하도록 세팅
+        uint64 now;
+        QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&now));
+        TimeManager::GetInstance()->SetPrevCount(now);
+        break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;

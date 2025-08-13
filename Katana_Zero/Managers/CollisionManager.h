@@ -1,6 +1,38 @@
 #pragma once
 #include "../Utils/Singleton.h"
 
+struct CollisionMapID
+{
+	uint32 left;
+	uint32 right;
+
+	CollisionMapID(uint32 a = 0, uint32 b = 0)
+	{
+		if (a < b)
+		{
+			left = a;
+			right = b;
+		}
+		else
+		{
+			left = b;
+			right = a;
+		}
+	}
+
+	// 64비트 단일 값으로 변환
+	uint64 ToUInt64() const noexcept
+	{
+		return (static_cast<uint64>(left) << 32) | static_cast<uint64>(right);
+	}
+
+	// 동등 비교
+	bool operator==(const CollisionMapID& other) const noexcept
+	{
+		return left == other.left && right == other.right;
+	}
+};
+
 class Collider;
 class OBBCollider;
 class AABBCollider;
@@ -14,6 +46,8 @@ private:
 	CollisionManager(){}
 
 	vector<Collider*> _colliderList[(int32)ECollisionLayer::END];
+
+	unordered_map<uint64, bool> _collisionMap;
 
 	uint8 COLLISION_BIT_MASK_IGNORE[(int32)ECollisionLayer::END] = {};
 	uint8 COLLISION_BIT_MASK_BLOCK[(int32)ECollisionLayer::END] = {};
@@ -33,6 +67,8 @@ private:
 
 	void ExecuteCollisionFunc(Collider* receive, Collider* send);
 
+	bool CheckCollision2(Collider* receive, Collider* send, CollisionInfo& info);
+
 public:
 	void Init();
 	void Update();
@@ -44,15 +80,14 @@ public:
 	vector<Collider*> GetPlacedColliders(ECollisionLayer layer) { return _colliderList[layer]; }
 	bool CheckBlockedCollision(Player* player, Vector2 start, Vector2 end, CollisionInfo& info);
 
-	vector<PlayerGroundCollisionResult> CheckPlayerGroundCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
-	PlayerGroundCollisionResult CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
-	PlayerGroundCollisionResult CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
+	CollisionInfo CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
+	CollisionInfo CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
 
-	vector<PlayerGroundCollisionResult> CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
-	PlayerGroundCollisionResult CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider);
-	PlayerGroundCollisionResult CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
-	PlayerGroundCollisionResult CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
-	PlayerGroundCollisionResult CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
+	vector<CollisionInfo> CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
+	CollisionInfo CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider);
+	CollisionInfo CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
+	CollisionInfo CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
+	CollisionInfo CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
 
 	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t, float& crossOut);
 	bool LineIntersectsWallSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t);

@@ -59,19 +59,19 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 		fs::path playerPath = texturePath / L"Sprites/Zero/";
 
 		Texture* idle = new Texture();
-		idle->LoadSprite(playerPath / L"spr_idle.bmp", 36, 35, 11, 0.1f, true, {0, -10});
+		idle->LoadSprite(playerPath / L"spr_idle.bmp", 36, 35, 11, 0.08f, true, {0, -10});
 		_textures["zero_idle"] = idle;
 
 		Texture* itr = new Texture();
-		itr->LoadSprite(playerPath / L"spr_idle_to_run.bmp", 44, 32, 4, 0.1f, false, { 0, -10 });
+		itr->LoadSprite(playerPath / L"spr_idle_to_run.bmp", 44, 32, 4, 0.06f, false, { 0, -10 });
 		_textures["zero_idle_to_run"] = itr;
 
 		Texture* run = new Texture();
-		run->LoadSprite(playerPath / L"spr_run.bmp", 44, 32, 10, 0.08f, true, { 0, -5 });
+		run->LoadSprite(playerPath / L"spr_run.bmp", 44, 32, 10, 0.07f, true, { 0, -5 });
 		_textures["zero_run"] = run;
 
 		Texture* rti = new Texture();
-		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.1f, false, { 0, -11 });
+		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.06f, false, { 0, -11 });
 		_textures["zero_run_to_idle"] = rti;
 	}
 

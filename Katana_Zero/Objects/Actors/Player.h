@@ -19,6 +19,9 @@ private:
 	Vector2 vVelocity = {};
 	Vector2 vAcceleration = {};
 
+	Vector2 vCurPos;
+	Vector2 vNewPos;
+
 	float fMoveForce = 5000;
 	float fMass = 1;
 
@@ -29,8 +32,11 @@ private:
 	bool bIsWall = false;
 	bool bIsJumped = false;
 	bool bIsMaxJump = false;
-	bool bIsStair = false;
 	bool bIsPlatform = false;
+	bool bIsAir = false;
+
+	bool bOnStair = false;
+	float fMoveDegree = 0.f;
 
 	//////////////////
 	float fJumpInitialVelocity = 300.f;
@@ -49,18 +55,20 @@ private:
 public:
 	virtual void Init(Vector2 pos) override;
 	virtual void Update(float deltaTime) override;
+	virtual void PostUpdate(float deltaTime) override;
 	virtual void Render(HDC hdc) override;
 
 	virtual void OnCollisionHit(Collider* other) override;
 
 	void ApplyPhysics(float deltaTime);
+	void UpdatePosition(float deltaTime);
 
 	Vector2 GetAcceleration() { return vAcceleration; }
 
 	bool GetIsGround() { return bIsGround; }
 	void SetIsGround(bool isGround) { bIsGround = isGround; }
-	bool GetIsStair() { return bIsStair; }
-	void SetIsStair(bool isStair) { bIsStair = isStair; }
+	bool GetOnStair() { return bOnStair; }
+	void SetOnStair(bool onStair) { bOnStair = onStair; }
 	bool GetIsJumped() { return bIsJumped; }
 	void SetIsJumped(bool isJumped) { bIsJumped = isJumped; }
 	bool GetIsMaxJump() { return bIsMaxJump; }
@@ -69,6 +77,8 @@ public:
 	void SetIsWall(bool isWall) { bIsWall = isWall; }
 	bool GetIsPlatform() { return bIsPlatform; }
 	void SetIsPlatform(bool isPlatform) { bIsPlatform = isPlatform; }
+
+	Vector2 GetNewPos() const { return vNewPos; }
 
 	bool IsFlipped() { return vFrontDir.x < 0; }
 
@@ -93,13 +103,19 @@ public:
 
 	void ChangeState(EPlayerState stateType);
 
-	void ProcessCollisionResults(const vector<PlayerGroundCollisionResult>& results, Vector2 oldPos, Vector2& newPos);
-	void ProcessGroundCollisions(const vector<PlayerGroundCollisionResult>& groundCollisions, const vector<PlayerGroundCollisionResult>& platformCollisions, Vector2& newPos);
-	void ProcessWallCollisions(const vector<PlayerGroundCollisionResult>& wallCollisions, Vector2& newPos);
-	void ProcessStairCollisions(const vector<PlayerGroundCollisionResult>& stairCollisions, Vector2 oldPos, Vector2& newPos);
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	void ProcessCollisionResults(const vector<CollisionInfo>& results, Vector2 oldPos, Vector2& newPos);
+	void ProcessGroundCollisions(const vector<CollisionInfo>& groundCollisions, Vector2& newPos);
+	void ProcessPlatformCollisions(const vector<CollisionInfo>& platformCollisions, Vector2& newPos);
+	void ProcessWallCollisions(const vector<CollisionInfo>& wallCollisions, Vector2& newPos);
+	void ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions, Vector2 oldPos, Vector2& newPos);
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Actor* GetCurrentStair() { return _currentStair; }
 
-	float GetLowestCollisionY(const vector<PlayerGroundCollisionResult>& cols);
-	bool HasPlatformAt(Vector2 footPos);
+	float GetLowestCollisionY(const vector<CollisionInfo>& cols);
+
+	virtual void OnCollisionBeginOverlap(const CollisionInfo& info) override;
+	virtual void OnCollisionStayOverlap(const CollisionInfo& info) override;
+	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
 };

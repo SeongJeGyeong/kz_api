@@ -15,18 +15,12 @@ void EditorScene::Init()
 	iGridMaxX = GWinSizeX / TILE_SIZE;
 	iGridMaxY = GWinSizeY / TILE_SIZE;
 
-	_subWindow = new EditorSub();
-	_subWindow->Init();
-
-	_hwnd = Game::GetInstance()->GetHwnd();
-	_hwndSub = Game::GetInstance()->GetHwndSub();
-	ShowWindow(_hwndSub, 10);
-	UpdateWindow(_hwndSub);
-
 	iEditorMapSizeX = 3840;
 	iEditorMapSizeY = 2160;
 
 	_tileMapList = ResourceManager::GetInstance()->GetTileMapList();
+
+	_subWindow = Game::GetInstance()->GetSubWindow();
 
 	_camera = new EditorCamera();
 	_camera->Init();
@@ -37,23 +31,18 @@ void EditorScene::Init()
 
 void EditorScene::Destroy()
 {
-	if (_subWindow)
-	{
-		delete _subWindow;
-		_subWindow = nullptr;
-	}
-
 	Super::Destroy();
+	ShowWindow(Game::GetInstance()->GetHwndSub(), SW_HIDE);
 }
 
 void EditorScene::Update(float deltaTime)
 {
-	HWND hwnd = ::GetForegroundWindow();
-	if (hwnd == _hwndSub && _subWindow)
-	{
-		_subWindow->Update();
-		return;
-	}
+	//HWND hwnd = ::GetForegroundWindow();
+	//if (hwnd == _hwndSub && _subWindow)
+	//{
+	//	_subWindow->Update();
+	//	return;
+	//}
 
 	Super::Update(deltaTime);
 
@@ -75,7 +64,6 @@ void EditorScene::Update(float deltaTime)
 	if (InputManager::GetInstance()->GetButtonUp(KeyType::ESC))
 	{
 		Game::GetInstance()->ChangeLobbyScene();
-		ShowWindow(Game::GetInstance()->GetHwndSub(), SW_HIDE);
 	}
 
 	switch (eMode)
@@ -148,7 +136,7 @@ void EditorScene::Render(HDC hdc)
 	}
 	::TextOut(hdc, 20, 50, str.c_str(), static_cast<int32>(str.size()));
 
-	if (_subWindow)_subWindow->Render();		
+	//if (_subWindow)_subWindow->Render();		
 }
 
 void EditorScene::DrawGird(HDC hdc)
@@ -268,12 +256,14 @@ void EditorScene::DrawCollider(HDC hdc)
 
 void EditorScene::SaveMap()
 {
+	HWND hwnd = Game::GetInstance()->GetHwnd();
+
 	OPENFILENAME ofn;
 	wchar_t szFileName[MAX_PATH] = L"";
 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = _hwnd;
+	ofn.hwndOwner = hwnd;
 	ofn.lpstrFilter = L"JSON (*.json)\0*.json\0모든 파일 (*.*)\0*.*\0";
 	ofn.lpstrFile = szFileName;
 	ofn.nMaxFile = MAX_PATH;
@@ -359,23 +349,25 @@ void EditorScene::SaveMap()
 
 			file << std::setw(4) << jsonfile;
 			file.close();
-			MessageBox(_hwnd, L"타일맵이 저장되었습니다.", L"저장 완료", MB_OK | MB_ICONINFORMATION);
+			MessageBox(hwnd, L"타일맵이 저장되었습니다.", L"저장 완료", MB_OK | MB_ICONINFORMATION);
 		}
 		else 
 		{
-			MessageBox(_hwnd, L"파일을 저장할 수 없습니다.", L"오류", MB_OK | MB_ICONERROR);
+			MessageBox(hwnd, L"파일을 저장할 수 없습니다.", L"오류", MB_OK | MB_ICONERROR);
 		}
 	}
 }
 
 void EditorScene::LoadMap()
 {
+	HWND hwnd = Game::GetInstance()->GetHwnd();
+
 	OPENFILENAME ofn;
 	wchar_t szFileName[MAX_PATH] = L"";
 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = _hwnd;
+	ofn.hwndOwner = hwnd;
 	ofn.lpstrFilter = L"JSON (*.json)\0*.json\0모든 파일 (*.*)\0*.*\0";
 	ofn.lpstrFile = szFileName;
 	ofn.nMaxFile = MAX_PATH;
@@ -461,10 +453,10 @@ void EditorScene::LoadMap()
 			}
 
 			file.close();
-			MessageBox(_hwnd, L"타일맵이 로드되었습니다.", L"로드 완료", MB_OK | MB_ICONINFORMATION);
+			MessageBox(hwnd, L"타일맵이 로드되었습니다.", L"로드 완료", MB_OK | MB_ICONINFORMATION);
 		}
 		else {
-			MessageBox(_hwnd, L"파일을 로드할 수 없습니다.", L"오류", MB_OK | MB_ICONERROR);
+			MessageBox(hwnd, L"파일을 로드할 수 없습니다.", L"오류", MB_OK | MB_ICONERROR);
 		}
 	}
 }

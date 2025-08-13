@@ -50,10 +50,9 @@ void Game::Init(HWND hwnd, HWND hsubwnd)
 
 	// 게임과 관련된 초기화가 필요한 항목들은 여기서
 	InputManager::GetInstance()->Init(_hwnd, _hwndSub);	// 객체를 생성
-	TimeManager::GetInstance()->Init();
 	ResourceManager::GetInstance()->Init(_hwnd, directory);
 	CollisionManager::GetInstance()->Init();
-
+	TimeManager::GetInstance()->Init();
 	_currScene = new LobbyScene();
 	_currScene->Init();
 }
@@ -90,15 +89,21 @@ void Game::Update()
 		_nextScene = nullptr;
 	}
 
-	InputManager::GetInstance()->Update();
 	TimeManager::GetInstance()->Update();
+	InputManager::GetInstance()->Update();
 
-	if (_currScene)
+	HWND hwnd = ::GetForegroundWindow();
+	if (_hwnd == hwnd && _currScene)
 	{
+		// update 입력 처리 -> 충돌 체크 -> postupdate 위치 이동
 		_currScene->Update(TimeManager::GetInstance()->GetDeltaTime());
+		//CollisionManager::GetInstance()->Update();
 		_currScene->PostUpdate(TimeManager::GetInstance()->GetDeltaTime());
-
-		CollisionManager::GetInstance()->Update();
+		//CollisionManager::GetInstance()->PostUpdate();
+	}
+	else if (_hwndSub == hwnd && _subWindow)
+	{
+		_subWindow->Update();
 	}
 
 	if (InputManager::GetInstance()->GetButtonDown(KeyType::F1))
@@ -114,6 +119,11 @@ void Game::Render()
 		_currScene->Render(_hdcBack);
 	}
 
+	if (_subWindow)
+	{
+		_subWindow->Render();
+	}
+
 	uint32 fps = TimeManager::GetInstance()->GetFps();
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 	SetTextColor(_hdcBack, RGB(0, 0, 0));
@@ -126,7 +136,7 @@ void Game::Render()
 
 	{
 		wstring str = std::format(L"FPS({0}), DT({1})", fps, deltaTime);
-		::TextOut(_hdcBack, 5, 10, str.c_str(), static_cast<int32>(str.size()));
+		::TextOut(_hdcBack, 100, 10, str.c_str(), static_cast<int32>(str.size()));
 	}
 
 
@@ -172,6 +182,11 @@ void Game::ChangeEditorScene()
 
 	_nextScene = new EditorScene();
 	_background = WHITENESS;
+
+	_subWindow = new EditorSub();
+	_subWindow->Init();
+	ShowWindow(_hwndSub, 10);
+	UpdateWindow(_hwndSub);
 }
 
 void Game::ExitGame()

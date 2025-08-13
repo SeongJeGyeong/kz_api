@@ -17,9 +17,6 @@ class EditorScene : public Scene
 	using Super = Scene;
 
 private:
-	HWND	_hwnd;		// 윈도우 핸들
-	HWND	_hwndSub;	// 서브 에디터창 핸들
-
 	class EditorSub* _subWindow = nullptr;
 
 	int32 iGridMaxX;

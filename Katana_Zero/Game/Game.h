@@ -2,6 +2,7 @@
 #include "../Utils/Singleton.h"
 
 class Scene;
+class EditorSub;
 
 class Game : public Singleton<Game>
 {
@@ -26,9 +27,9 @@ private:
 
 	Scene* _currScene = nullptr;	// 현재 활성화된 씬만 업데이트/그려준다.
 	Scene* _nextScene = nullptr;	// 현재 씬이 모두 끝나고 다음 틱에 변경
+	EditorSub* _subWindow = nullptr;
 
 	HFONT _font;
-
 	bool bDebugMode = false;
 
 public:
@@ -49,5 +50,6 @@ public:
 	HFONT  GetFont() { return _font; }
 
 	bool GetDebugMode() { return bDebugMode; }
+	EditorSub* GetSubWindow() { return _subWindow; }
 };
 

@@ -4,6 +4,7 @@
 class Collider : public Component
 {
 public:
+	Collider();
 	virtual ~Collider(){}
 
 	static size_t StaticClass()
@@ -13,6 +14,8 @@ public:
 	}
 
 private:
+	const uint64 iColliderId;
+
 	bool bCollideActive;
 	Vector2 vHittedNormal;
 	Vector2 vHitPos;
@@ -23,6 +26,13 @@ protected:
 	EColliderType eColliderType;
 	bool bOverlapped = false;
 	bool bBlocked = false;
+
+private:
+	uint64 GenerateID()
+	{
+		static uint64 id = 0;
+		return id++;
+	}
 
 public:
 	virtual void InitComponent() {};
@@ -56,5 +66,7 @@ public:
 
 	virtual void SetHitInfo(Vector2 pos, Vector2 normal) {}
 	Vector2 newPos;
+
+	uint64 GetColliderId() { return iColliderId; }
 };
 

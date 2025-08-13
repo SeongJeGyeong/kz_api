@@ -39,10 +39,6 @@ void GameScene::LoadTiles(json tileData)
 		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
 
 		_tileRenderer[0]->AddTileInfo({ screenPos.x, screenPos.y }, { data[3], data[4] });
-
-		//Tile_FG* tile = new Tile_FG();
-		//tile->Init({ screenPos.x, screenPos.y }, { data[3], data[4] }, data[0]);
-		//_tileList.push_back(tile);
 	}
 
 	for (auto data : tileData["Foreground"])
@@ -156,6 +152,16 @@ void GameScene::Update(float deltaTime)
 void GameScene::PostUpdate(float deltaTime)
 {
 	Super::PostUpdate(deltaTime);
+
+	if (_player)
+	{
+		_player->PostUpdate(deltaTime);
+	}
+
+	for (Actor* collider : _colliderList)
+	{
+		collider->PostUpdate(deltaTime);
+	}
 }
 
 void GameScene::Render(HDC hdc)

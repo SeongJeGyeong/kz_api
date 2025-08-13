@@ -17,25 +17,34 @@ void CollisionManager::Init()
 	SetBitFlag(ECollisionLayer::ENEMY, ECollisionLayer::ENEMY_HITBOX, ECollisionResponse::C_IGNORE, true);
 
 	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
-	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
-	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
-	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
+
+	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::WALL, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
+
+	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::CEILING, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
+
+	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PLATFORM, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
 
-	// 타일은 따로 검사
-	//SetBitFlag(CollisionLayer::PLAYER, CollisionLayer::TILE_FG, CollisionResponse::C_IGNORE, true);
-
+	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
 }
 
 void CollisionManager::Update()
@@ -50,18 +59,58 @@ void CollisionManager::Update()
 
 				for (auto sendCollider : _colliderList[(ECollisionLayer)sendLayer])
 				{
-					CollisionInfo info;
-					if (CheckCollision(receiveCollider, sendCollider, info))
+					bool first = true;
+
+					CollisionMapID mapId = CollisionMapID(receiveCollider->GetColliderId(), sendCollider->GetColliderId());
+
+					auto iter = _collisionMap.find(mapId.ToUInt64());
+
+					if (_collisionMap.end() != iter)
 					{
-						if (COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint8)(1 << sendLayer))
+						// 이미 충돌 검사 완료했으면 넘긴다.
+						if (iter->second)
 						{
-							sendCollider->GetOwner()->OnCollisionHit(receiveCollider);
-							receiveCollider->GetOwner()->OnCollisionHit(sendCollider);
+							continue;
 						}
 						else
 						{
-							sendCollider->GetOwner()->OnCollisionBeginOverlap(receiveCollider);
-							receiveCollider->GetOwner()->OnCollisionBeginOverlap(sendCollider);
+							first = false;
+						}
+					}
+
+					CollisionInfo info;
+					if (CheckCollision(receiveCollider, sendCollider, info))
+					{
+						if (first)
+						{
+							//sendCollider->GetOwner()->OnCollisionBeginOverlap(receiveCollider);
+							receiveCollider->GetOwner()->OnCollisionBeginOverlap(info);
+							_collisionMap.emplace(mapId.ToUInt64(), true);
+						}
+						else
+						{
+							//sendCollider->GetOwner()->OnCollisionStayOverlap(receiveCollider);
+							receiveCollider->GetOwner()->OnCollisionStayOverlap(info);
+						}
+
+						//if (COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint8)(1 << sendLayer))
+						//{
+						//	sendCollider->GetOwner()->OnCollisionHit(receiveCollider);
+						//	receiveCollider->GetOwner()->OnCollisionHit(sendCollider);
+						//}
+						//else
+						//{
+						//	sendCollider->GetOwner()->OnCollisionBeginOverlap(receiveCollider);
+						//	receiveCollider->GetOwner()->OnCollisionBeginOverlap(sendCollider);
+						//}
+					}
+					else
+					{
+						if (!first)
+						{
+							//sendCollider->GetOwner()->OnCollisionEndOverlap(receiveCollider);
+							receiveCollider->GetOwner()->OnCollisionEndOverlap(info);
+							_collisionMap.erase(iter);
 						}
 					}
 				}
@@ -82,6 +131,10 @@ void CollisionManager::AddCollider(Collider* collider)
 
 void CollisionManager::PostUpdate()
 {
+	for (auto& col : _collisionMap)
+	{
+		col.second = false;
+	}
 }
 
 void CollisionManager::SetIgnoreFlag(ECollisionLayer type, ECollisionLayer ignore)
@@ -129,20 +182,67 @@ void CollisionManager::SetBitFlag(ECollisionLayer layer1, ECollisionLayer layer2
 
 bool CollisionManager::CheckCollision(Collider* receive, Collider* send, CollisionInfo& info)
 {
-	EColliderType receiveType = receive->GetColliderType();
-	EColliderType sendType = send->GetColliderType();
+	if (receive->GetCollisionLayer() == ECollisionLayer::PLAYER)
+	{
+		float playerWidth = receive->GetWidth();
+		float playerHeight = receive->GetHeight();
+		float halfWidth = playerWidth * 0.5f;
+		float halfHeight = playerHeight * 0.5f;
 
-	if (receiveType == EColliderType::OBB && receiveType == sendType)
-	{
-		return CheckBetweenOBB(static_cast<OBBCollider*>(receive), static_cast<OBBCollider*>(send), info);
+		Player* player = static_cast<Player*>(receive->GetOwner());
+
+		// 플레이어 AABB 계산
+		RECT playerOldRect = {
+			receive->GetPos().x - halfWidth,
+			receive->GetPos().y - halfHeight,
+			receive->GetPos().x + halfWidth,
+			receive->GetPos().y + halfHeight
+		};
+
+		RECT playerNewRect = {
+			player->GetNewPos().x - halfWidth,
+			player->GetNewPos().y - halfHeight,
+			player->GetNewPos().x + halfWidth,
+			player->GetNewPos().y + halfHeight
+		};
+
+		switch (send->GetCollisionLayer())
+		{
+		case ECollisionLayer::GROUND :
+			info = CheckAABBGroundCollision(playerOldRect, playerNewRect, send);
+			break;
+		case ECollisionLayer::WALL :
+			info = CheckLineWallCollision(player->GetPos(), player->GetNewPos(), playerWidth, playerHeight, send);
+			break;
+		case ECollisionLayer::STAIR :
+			info = CheckLineStiarCollision2(player->GetPos(), player->GetNewPos(), playerWidth, playerHeight, send, player->GetOnStair());
+			break;
+		case ECollisionLayer::PLATFORM :
+			info = CheckLinePlatformCollision(player->GetPos(), player->GetNewPos(), playerWidth, playerHeight, send);
+			break;
+		default:
+			break;
+		}
+
+		if (info.isColliding) return true;
 	}
-	else if (receiveType == EColliderType::AABB && receiveType == sendType)
+	else
 	{
-		return CheckBetweenAABB(static_cast<AABBCollider*>(receive), static_cast<AABBCollider*>(send), info);
-	}
-	else if (receiveType == EColliderType::AABB && sendType == EColliderType::LINE)
-	{
-		return CheckAABBtoLine(static_cast<AABBCollider*>(receive), static_cast<LineCollider*>(send), info);
+		EColliderType receiveType = receive->GetColliderType();
+		EColliderType sendType = send->GetColliderType();
+
+		if (receiveType == EColliderType::OBB && receiveType == sendType)
+		{
+			return CheckBetweenOBB(static_cast<OBBCollider*>(receive), static_cast<OBBCollider*>(send), info);
+		}
+		else if (receiveType == EColliderType::AABB && receiveType == sendType)
+		{
+			return CheckBetweenAABB(static_cast<AABBCollider*>(receive), static_cast<AABBCollider*>(send), info);
+		}
+		else if (receiveType == EColliderType::AABB && sendType == EColliderType::LINE)
+		{
+			return CheckAABBtoLine(static_cast<AABBCollider*>(receive), static_cast<LineCollider*>(send), info);
+		}
 	}
 
 	return false;
@@ -393,15 +493,15 @@ bool CollisionManager::CheckAABBtoLine(AABBCollider* receive, LineCollider* send
 	}
 
 	// 충돌 결과 저장
-	info.vHitPos = start + dir * tMin;
+	info.collisionPoint = start + dir * tMin;
 
 	if (tMax <= lineLength) {
 		Vector2 exitPoint = start + dir * tMax;
-		info.vHitPos = (info.vHitPos + exitPoint) * 0.5f;
+		info.collisionPoint = (info.collisionPoint + exitPoint) * 0.5f;
 	}
 
 	// 예외처리 하나더.
-	info.vHitPos += info.vHitNormal * 0.01f; // 약간의 오프셋을 주어 정확한 충돌 위치를 보정
+	info.collisionPoint += info.vHitNormal * 0.01f; // 약간의 오프셋을 주어 정확한 충돌 위치를 보정
 
 	// 충돌 됨.
 	if (t < tMin)
@@ -460,6 +560,11 @@ void CollisionManager::ExecuteCollisionFunc(Collider* receive, Collider* send)
 	//send->GetCollider()->
 }
 
+bool CollisionManager::CheckCollision2(Collider* receive, Collider* send, CollisionInfo& info)
+{
+	return false;
+}
+
 // 플레이어의 궤적 line과 다른 충돌체가 충돌하는지 검사
 bool CollisionManager::CheckBlockedCollision(Player* player, Vector2 start, Vector2 end, CollisionInfo& info)
 {
@@ -505,7 +610,7 @@ bool CollisionManager::CheckBlockedCollision(Player* player, Vector2 start, Vect
 					if (t < tMin)
 					{
 						info.vHitNormal = normal;
-						info.vHitPos = hitPos;
+						info.collisionPoint = hitPos;
 						tMin = t;
 						closestActor = collider->GetOwner();
 					}
@@ -537,7 +642,7 @@ bool CollisionManager::CheckBlockedCollision(Player* player, Vector2 start, Vect
 					{
 						tMin = t;
 						info.vHitNormal = { -normal.x, -normal.y};
-						info.vHitPos = hitPos;
+						info.collisionPoint = hitPos;
 						closestActor = collider->GetOwner();
 					}
 				}
@@ -547,7 +652,7 @@ bool CollisionManager::CheckBlockedCollision(Player* player, Vector2 start, Vect
 					{
 						tMin = t;
 						info.vHitNormal = normal;
-						info.vHitPos = hitPos;
+						info.collisionPoint = hitPos;
 						closestActor = collider->GetOwner();
 					}
 				}
@@ -563,64 +668,9 @@ bool CollisionManager::CheckBlockedCollision(Player* player, Vector2 start, Vect
 	return false;
 }
 
-vector<PlayerGroundCollisionResult> CollisionManager::CheckPlayerGroundCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos)
+CollisionInfo CollisionManager::CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider)
 {
-	vector<PlayerGroundCollisionResult> results;
-
-	float playerWidth = player->GetCollider()->GetWidth();
-	float playerHeight = player->GetCollider()->GetHeight();
-	float halfWidth = playerWidth * 0.5f;
-	float halfHeight = playerHeight * 0.5f;
-
-	// 플레이어 AABB 계산
-	RECT playerOldRect = {
-		playerOldPos.x - halfWidth,
-		playerOldPos.y - halfHeight,
-		playerOldPos.x + halfWidth,
-		playerOldPos.y + halfHeight
-	};
-
-	RECT playerNewRect = {
-		playerNewPos.x - halfWidth,
-		playerNewPos.y - halfHeight,
-		playerNewPos.x + halfWidth,
-		playerNewPos.y + halfHeight
-	};
-
-	float minPenetration = FLT_MAX;
-
-	// GROUND와 PLATFORM 레이어 검사
-	for (int32 type = ECollisionLayer::GROUND; type <= ECollisionLayer::PLATFORM; ++type)
-	{
-		for (auto collider : _colliderList[type])
-		{
-			PlayerGroundCollisionResult result;
-
-			if (collider->GetColliderType() == EColliderType::AABB)
-			{
-				// AABB vs AABB 바닥 충돌 검사
-				result = CheckAABBGroundCollision(playerOldRect, playerNewRect, collider);
-			}
-			else if (collider->GetColliderType() == EColliderType::LINE)
-			{
-				// AABB vs Line 바닥 충돌 검사
-				result = CheckLinePlatformCollision(playerOldPos, playerNewPos, playerWidth, playerHeight, collider);
-			}
-
-			if (result.isColliding)
-			{
-				//minPenetration = result.penetrationDepth;
-				results.push_back(result);
-			}
-		}
-	}
-
-	return results;
-}
-
-PlayerGroundCollisionResult CollisionManager::CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider)
-{
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = groundCollider->GetCollisionLayer();
 	float groundWidth = groundCollider->GetWidth();
 	float groundHeight = groundCollider->GetHeight();
@@ -654,34 +704,89 @@ PlayerGroundCollisionResult CollisionManager::CheckAABBGroundCollision(const REC
 	}
 
 	// 플레이어가 위에서 아래로 이동했는지 확인
-	if (playerOldRect.bottom <= groundRect.top && playerNewRect.bottom > groundRect.top)
+	//if (playerOldRect.bottom <= groundRect.top && playerNewRect.bottom > groundRect.top)
+	//{
+	//	result.isColliding = true;
+	//	result.penetrationDepth = playerNewRect.bottom - groundRect.top;
+	//	result.collisionPoint = Vector2(
+	//		(max(playerNewRect.left, groundRect.left) + min(playerNewRect.right, groundRect.right)) * 0.5f,
+	//		groundRect.top
+	//	);
+	//	result.vHitNormal = Vector2(0, -1); // 위쪽 방향
+	//	result.groundActor = groundCollider->GetOwner();
+	//}
+
+		// 어느 방향에서 충돌했는지 확인
+	bool fromTop = (playerOldRect.bottom <= groundRect.top && playerNewRect.bottom > groundRect.top);		// 위에서 아래로
+	bool fromBottom = (playerOldRect.top >= groundRect.bottom && playerNewRect.top < groundRect.bottom);	// 아래에서 위로
+	bool fromLeft = (playerOldRect.right <= groundRect.left && playerNewRect.right > groundRect.left);	// 왼쪽에서 오른쪽으로
+	bool fromRight = (playerOldRect.left >= groundRect.right && playerNewRect.left < groundRect.right);	// 오른쪽에서 왼쪽으로
+
+	// 여러 방향에서 동시에 충돌한 경우, 침투 깊이가 가장 작은 방향을 선택
+	float topPenetration = fromTop ? (playerNewRect.bottom - groundRect.top) : FLT_MAX;
+	float bottomPenetration = fromBottom ? (groundRect.bottom - playerNewRect.top) : FLT_MAX;
+	float leftPenetration = fromLeft ? (playerNewRect.right - groundRect.left) : FLT_MAX;
+	float rightPenetration = fromRight ? (groundRect.right - playerNewRect.left) : FLT_MAX;
+
+	float minPenetration = min(topPenetration, bottomPenetration);
+	minPenetration = min(minPenetration, leftPenetration);
+	minPenetration = min(minPenetration, rightPenetration);
+
+	if (minPenetration == FLT_MAX)
+		return result; // 충돌하지 않음
+
+	result.isColliding = true;
+	result.penetrationDepth = minPenetration;
+	result.groundActor = groundCollider->GetOwner();
+
+	// 가장 작은 침투 깊이에 따라 충돌 방향 결정
+	if (minPenetration == topPenetration) // 위에서 아래로 (바닥)
 	{
-		result.isColliding = true;
-		result.penetrationDepth = playerNewRect.bottom - groundRect.top;
 		result.collisionPoint = Vector2(
 			(max(playerNewRect.left, groundRect.left) + min(playerNewRect.right, groundRect.right)) * 0.5f,
 			groundRect.top
 		);
-		result.normal = Vector2(0, -1); // 위쪽 방향
-		result.groundActor = groundCollider->GetOwner();
+		result.vHitNormal = Vector2(0, -1); // 위쪽 방향
+		result.hitCorner = 0; // 바닥 충돌
+	}
+	else if (minPenetration == bottomPenetration) // 아래에서 위로 (천장)
+	{
+		result.collisionPoint = Vector2(
+			(max(playerNewRect.left, groundRect.left) + min(playerNewRect.right, groundRect.right)) * 0.5f,
+			groundRect.bottom
+		);
+		result.vHitNormal = Vector2(0, 1); // 아래쪽 방향
+		result.hitCorner = 3; // 천장 충돌
+	}
+	else if (minPenetration == leftPenetration) // 왼쪽에서 오른쪽으로 (오른쪽 벽)
+	{
+		result.collisionPoint = Vector2(
+			groundRect.left,
+			(max(playerNewRect.top, groundRect.top) + min(playerNewRect.bottom, groundRect.bottom)) * 0.5f
+		);
+		result.vHitNormal = Vector2(-1, 0); // 왼쪽 방향
+		result.hitCorner = 1; // 왼쪽 벽 충돌
+	}
+	else if (minPenetration == rightPenetration) // 오른쪽에서 왼쪽으로 (왼쪽 벽)
+	{
+		result.collisionPoint = Vector2(
+			groundRect.right,
+			(max(playerNewRect.top, groundRect.top) + min(playerNewRect.bottom, groundRect.bottom)) * 0.5f
+		);
+		result.vHitNormal = Vector2(1, 0); // 오른쪽 방향
+		result.hitCorner = 2; // 오른쪽 벽 충돌
 	}
 
 	return result;
 }
 
-PlayerGroundCollisionResult CollisionManager::CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider)
+CollisionInfo CollisionManager::CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider)
 {
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = lineCollider->GetCollisionLayer();
 	Vector2 lineStart = lineCollider->GetStartPoint();
 	Vector2 lineEnd = lineCollider->GetEndPoint();
 	Vector2 lineDir = lineEnd - lineStart;
-
-	// 수직선인지 확인 (수직선은 바닥이 될 수 없음)
-	if (abs(lineDir.x) < 1e-6f) // 거의 수직
-	{
-		return result;
-	}
 
 	// 라인의 법선 벡터 계산
 	Vector2 lineNormal = Vector2(-lineDir.y, lineDir.x).GetNormalize();
@@ -689,7 +794,6 @@ PlayerGroundCollisionResult CollisionManager::CheckLinePlatformCollision(Vector2
 	// 법선이 위쪽을 향하도록 조정 (Y가 감소하는 방향이 위쪽)
 	if (lineNormal.y > 0) lineNormal *= -1;
 
-	// 플레이어의 바닥 변을 확장한 선분들
 	float halfWidth = playerWidth * 0.5f;
 	float halfHeight = playerHeight * 0.5f;
 
@@ -738,7 +842,7 @@ PlayerGroundCollisionResult CollisionManager::CheckLinePlatformCollision(Vector2
 		{
 			result.isColliding = true;
 			result.collisionPoint = closestIntersection;
-			result.normal = lineNormal;
+			result.vHitNormal = lineNormal;
 			result.groundActor = lineCollider->GetOwner();
 
 			// 침투 깊이 계산
@@ -751,9 +855,9 @@ PlayerGroundCollisionResult CollisionManager::CheckLinePlatformCollision(Vector2
 	return result;
 }
 
-vector<PlayerGroundCollisionResult> CollisionManager::CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos)
+vector<CollisionInfo> CollisionManager::CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos)
 {
-	vector<PlayerGroundCollisionResult> results;
+	vector<CollisionInfo> results;
 
 	float playerWidth = player->GetCollider()->GetWidth();
 	float playerHeight = player->GetCollider()->GetHeight();
@@ -776,20 +880,20 @@ vector<PlayerGroundCollisionResult> CollisionManager::CheckPlayerCollision(Playe
 	};
 
 	// GROUND, WALL, STAIR, PLATFORM 모든 레이어 검사
-	for (int32 type = ECollisionLayer::GROUND; type <= ECollisionLayer::PLATFORM; ++type)
+	for (int32 layer = ECollisionLayer::GROUND; layer <= ECollisionLayer::STAIR; ++layer)
 	{
-		for (auto collider : _colliderList[type])
+		for (auto collider : _colliderList[layer])
 		{
-			PlayerGroundCollisionResult result;
+			CollisionInfo result;
 
 			if (collider->GetColliderType() == EColliderType::AABB)
 			{
 				// AABB 충돌 검사
-				if (type == ECollisionLayer::GROUND)
+				if (layer == ECollisionLayer::GROUND)
 				{
 					result = CheckAABBGroundCollision(playerOldRect, playerNewRect, collider);
 				}
-				else if (type == ECollisionLayer::WALL)
+				else if (layer == ECollisionLayer::WALL)
 				{
 					result = CheckAABBWallCollision(playerOldRect, playerNewRect, collider);
 				}
@@ -797,17 +901,17 @@ vector<PlayerGroundCollisionResult> CollisionManager::CheckPlayerCollision(Playe
 			else if (collider->GetColliderType() == EColliderType::LINE)
 			{
 				// Line 충돌 검사
-				if (type == ECollisionLayer::PLATFORM)
+				if (layer == ECollisionLayer::PLATFORM)
 				{
 					result = CheckLinePlatformCollision(playerOldPos, playerNewPos, playerWidth, playerHeight, collider);
 				}
-				else if (type == ECollisionLayer::WALL)
+				else if (layer == ECollisionLayer::WALL)
 				{
 					result = CheckLineWallCollision(playerOldPos, playerNewPos, playerWidth, playerHeight, collider);
 				}
-				else if (!player->GetIsStair() && type == ECollisionLayer::STAIR)
+				else if (!player->GetOnStair() && layer == ECollisionLayer::STAIR)
 				{
-					result = CheckLineStiarCollision2(playerOldPos, playerNewPos, playerWidth, playerHeight, collider, player->GetIsStair());
+					result = CheckLineStiarCollision2(playerOldPos, playerNewPos, playerWidth, playerHeight, collider, player->GetOnStair());
 				}
 			}
 
@@ -821,9 +925,9 @@ vector<PlayerGroundCollisionResult> CollisionManager::CheckPlayerCollision(Playe
 	return results;
 }
 
-PlayerGroundCollisionResult CollisionManager::CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider)
+CollisionInfo CollisionManager::CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider)
 {
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = wallCollider->GetCollisionLayer();
 
 	float wallWidth = wallCollider->GetWidth();
@@ -867,13 +971,13 @@ PlayerGroundCollisionResult CollisionManager::CheckAABBWallCollision(const RECT&
 		if (playerNewRect.right > wallRect.left && playerNewRect.left < wallRect.left)
 		{
 			// 왼쪽에서 오른쪽으로 이동하며 벽 충돌
-			result.normal = Vector2(-1, 0);
+			result.vHitNormal = Vector2(-1, 0);
 			result.collisionPoint = Vector2(wallRect.left, (playerNewRect.top + playerNewRect.bottom) * 0.5f);
 		}
 		else
 		{
 			// 오른쪽에서 왼쪽으로 이동하며 벽 충돌
-			result.normal = Vector2(1, 0);
+			result.vHitNormal = Vector2(1, 0);
 			result.collisionPoint = Vector2(wallRect.right, (playerNewRect.top + playerNewRect.bottom) * 0.5f);
 		}
 	}
@@ -881,9 +985,9 @@ PlayerGroundCollisionResult CollisionManager::CheckAABBWallCollision(const RECT&
 	return result;
 }
 
-PlayerGroundCollisionResult CollisionManager::CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider)
+CollisionInfo CollisionManager::CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider)
 {
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = wallCollider->GetCollisionLayer();
 
 	Vector2 moveDir = playerNewPos - playerOldPos;
@@ -922,16 +1026,16 @@ PlayerGroundCollisionResult CollisionManager::CheckLineWallCollision(Vector2 pla
 	{
 		result.isColliding = true;
 		result.collisionPoint = intersection;
-		result.normal = (moveDir.x > 0) ? Vector2(-1, 0) : Vector2(1, 0); // 이동 반대 방향
+		result.vHitNormal = (moveDir.x > 0) ? Vector2(-1, 0) : Vector2(1, 0); // 이동 반대 방향
 		result.groundActor = wallCollider->GetOwner();
 	}
 
 	return result;
 }
 
-PlayerGroundCollisionResult CollisionManager::CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair)
+CollisionInfo CollisionManager::CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair)
 {
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = stairCollider->GetCollisionLayer();
 
 	Vector2 lineStart = stairCollider->GetStartPoint();
@@ -956,8 +1060,8 @@ PlayerGroundCollisionResult CollisionManager::CheckLineStairCollision(Vector2 pl
 		{
 			result.isColliding = true;
 			result.collisionPoint = Vector2(playerNewPos.x, yOnLine);
-			result.normal = Vector2(-lineDir.y, lineDir.x).GetNormalize();
-			if (result.normal.y > 0) result.normal *= -1;
+			result.vHitNormal = Vector2(-lineDir.y, lineDir.x).GetNormalize();
+			if (result.vHitNormal.y > 0) result.vHitNormal *= -1;
 			result.groundActor = stairCollider->GetOwner();
 			result.hitCorner = 2;
 			return result;
@@ -1022,67 +1126,217 @@ PlayerGroundCollisionResult CollisionManager::CheckLineStairCollision(Vector2 pl
 
 	result.isColliding = true;
 	result.collisionPoint = closestIntersection;
-	result.normal = lineNormal;
+	result.vHitNormal = lineNormal;
 	result.groundActor = stairCollider->GetOwner();
 	result.hitCorner = hitCorner;
 
 	return result;
 }
 
-PlayerGroundCollisionResult CollisionManager::CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair)
+CollisionInfo CollisionManager::CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair)
 {
-	PlayerGroundCollisionResult result = {};
+	CollisionInfo result = {};
 	result.collisionLayer = stairCollider->GetCollisionLayer();
 
 	Vector2 stairStart = stairCollider->GetStartPoint();
 	Vector2 stairEnd = stairCollider->GetEndPoint();
+	Vector2 stairDir = stairEnd - stairStart;
 
 	float halfW = playerWidth * 0.5f;
 	float halfH = playerHeight * 0.5f;
 
-	// 플레이어 하단 모서리
-	Vector2 bottomLeft(playerNewPos.x - halfW, playerNewPos.y + halfH);
-	Vector2 bottomRight(playerNewPos.x + halfW, playerNewPos.y + halfH);
+	// 계단 방향 판단 (45도 가정)
+	bool isRightUpStair = (stairDir.x > 0 && stairDir.y < 0) || (stairDir.x < 0 && stairDir.y > 0);
 
-	float stairYLeft, stairYRight;
-	bool inSegLeft, inSegRight;
-	GetYOnLineAtX(stairStart, stairEnd, bottomLeft.x, stairYLeft, inSegLeft);
-	GetYOnLineAtX(stairStart, stairEnd, bottomRight.x, stairYRight, inSegRight);
+	// 이미 계단에 있는 경우의 처리
+	if (wasStair)
+	{
+		Vector2 targetCorner;
+		if (isRightUpStair)
+		{
+			targetCorner = Vector2(playerNewPos.x + halfW, playerNewPos.y + halfH);
+		}
+		else
+		{
+			targetCorner = Vector2(playerNewPos.x - halfW, playerNewPos.y + halfH);
+		}
 
-	// 두 모서리 모두 계단 범위 밖이면 충돌 없음
-	if (!inSegLeft && !inSegRight)
+		float yOnLine;
+		bool inSeg;
+		GetYOnLineAtX(stairStart, stairEnd, targetCorner.x, yOnLine, inSeg);
+
+		//if (inSeg && fabs(targetCorner.y - yOnLine) <= 5.0f) // 5픽셀 허용 오차
+		//{
+		//	result.isColliding = true;
+		//	result.collisionPoint = Vector2(targetCorner.x, yOnLine);
+		//	result.vHitNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
+		//	if (result.vHitNormal.y > 0) result.vHitNormal *= -1;
+		//	result.groundActor = stairCollider->GetOwner();
+		//	result.hitCorner = isRightUpStair ? 2 : 1; // 2=오른쪽, 1=왼쪽
+		//	return result;
+		//}
+
+		if (inSeg)
+		{
+			// 계단 끝부분 체크 - 계단 길이의 90%를 넘으면 충돌하지 않음
+			Vector2 stairDirection = stairDir.GetNormalize();
+			Vector2 stairStartToCorner = targetCorner - stairStart;
+			float distanceAlongStair = stairStartToCorner.Dot(stairDirection);
+			float stairLength = stairDir.Length();
+
+			if (distanceAlongStair > stairLength * 0.9f)
+			{
+				return result; // 계단 끝부분에서는 충돌하지 않음
+			}
+
+			if (fabs(targetCorner.y - yOnLine) <= 5.0f) // 5픽셀 허용 오차
+			{
+				result.isColliding = true;
+				result.collisionPoint = Vector2(targetCorner.x, yOnLine);
+				result.vHitNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
+				if (result.vHitNormal.y > 0) result.vHitNormal *= -1;
+				result.groundActor = stairCollider->GetOwner();
+				result.hitCorner = isRightUpStair ? 2 : 1; // 2=오른쪽, 1=왼쪽
+				return result;
+			}
+		}
+
+		// 계단 범위를 약간 벗어나도 근처에 있으면 계속 유지
+		float stairMinX = min(stairStart.x, stairEnd.x);
+		float stairMaxX = max(stairStart.x, stairEnd.x);
+		float tolerance = 10.0f; // 10픽셀 여유
+
+		if (targetCorner.x >= stairMinX - tolerance && targetCorner.x <= stairMaxX + tolerance)
+		{
+			// 계단 연장선상의 Y값 계산
+			float extendedY;
+			GetYOnLineAtX(stairStart, stairEnd, targetCorner.x, extendedY, inSeg);
+
+			if (fabs(targetCorner.y - extendedY) <= 15.0f)
+			{
+				result.isColliding = true;
+				result.collisionPoint = Vector2(targetCorner.x, extendedY);
+				result.vHitNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
+				if (result.vHitNormal.y > 0) result.vHitNormal *= -1;
+				result.groundActor = stairCollider->GetOwner();
+				result.hitCorner = isRightUpStair ? 2 : 1;
+				return result;
+			}
+		}
+		// 계단 범위를 벗어났으면 충돌 없음
+		return result;
+	}
+
+	// 새로운 계단 충돌 검사
+	Vector2 moveDir = playerNewPos - playerOldPos;
+
+	// 플레이어가 아래로 이동하거나 수평 이동할 때만 계단 충돌 검사
+	if (moveDir.y < -1.f) // 위로 점프 중이면 계단 무시
 		return result;
 
-	// 계단 위인지 확인 (모서리가 계단 y보다 살짝 아래 있으면 충돌로 간주)
-	float yTol = 5.0f; // 허용 오차
-	bool leftOnStair = inSegLeft && fabs(bottomLeft.y - stairYLeft) <= yTol;
-	bool rightOnStair = inSegRight && fabs(bottomRight.y - stairYRight) <= yTol;
+	// 양쪽 모서리 모두 검사하되, 계단 방향에 따라 우선순위 결정
+	Vector2 bottomLeft = Vector2(playerNewPos.x - halfW, playerNewPos.y + halfH);
+	Vector2 bottomRight = Vector2(playerNewPos.x + halfW, playerNewPos.y + halfH);
 
-	if (!leftOnStair && !rightOnStair)
-		return result;
+	Vector2 oldBottomLeft = Vector2(playerOldPos.x - halfW, playerOldPos.y + halfH);
+	Vector2 oldBottomRight = Vector2(playerOldPos.x + halfW, playerOldPos.y + halfH);
 
-	// 더 가까운 모서리 선택
+	// 계단과의 교차점 검사
+	Vector2 intersection;
+	float t;
+	float cross;
+	bool foundCollision = false;
 	int hitCorner = 0;
-	Vector2 collisionPoint;
-	if (leftOnStair && (!rightOnStair || fabs(bottomLeft.y - stairYLeft) < fabs(bottomRight.y - stairYRight)))
+	float bestT = FLT_MAX;
+	Vector2 bestIntersection;
+
+	// 우상향 계단: 오른쪽 모서리 우선
+	oldBottomRight.y -= 2.f;
+	bottomRight.y -= 2.f;
+	for (int32 i = 0; i < 3; ++i)
 	{
-		collisionPoint = Vector2(bottomLeft.x, stairYLeft);
-		hitCorner = 1;
+		oldBottomRight.y += 1.f;
+		bottomRight.y += 1.f;
+		if (LineIntersectsLineSegment(oldBottomRight, bottomRight, stairStart, stairEnd, intersection, t, cross))
+		{
+			if (t >= 0.0f && t <= 1.0f && t < bestT)
+			{
+				// 계단 끝부분 체크
+				Vector2 stairDirection = stairDir.GetNormalize();
+				Vector2 stairStartToIntersection = intersection - stairStart;
+				float distanceAlongStair = stairStartToIntersection.Dot(stairDirection);
+				float stairLength = stairDir.Length();
+
+				// 계단 끝부분(90% 지점)이 아니면 충돌 처리
+				if (distanceAlongStair <= stairLength * 0.9f)
+				{
+					bestT = t;
+					bestIntersection = intersection;
+					foundCollision = true;
+					hitCorner = 2;
+				}
+
+				//bestT = t;
+				//bestIntersection = intersection;
+				//foundCollision = true;
+				//hitCorner = 2;
+			}
+		}
 	}
-	else
+	
+	// 오른쪽에서 충돌이 없으면 왼쪽도 검사
+	oldBottomLeft.y -= 2.f;
+	bottomLeft.y -= 2.f;
+	for (int32 i = 0; i < 3; ++i)
 	{
-		collisionPoint = Vector2(bottomRight.x, stairYRight);
-		hitCorner = 2;
+		oldBottomLeft.y += 1.f;
+		bottomLeft.y += 1.f;
+		if (LineIntersectsLineSegment(oldBottomLeft, bottomLeft, stairStart, stairEnd, intersection, t, cross))
+		{
+			if (t >= 0.0f && t <= 1.0f && t < bestT)
+			{
+				// 계단 끝부분 체크
+				Vector2 stairDirection = stairDir.GetNormalize();
+				Vector2 stairStartToIntersection = intersection - stairStart;
+				float distanceAlongStair = stairStartToIntersection.Dot(stairDirection);
+				float stairLength = stairDir.Length();
+
+				// 계단 끝부분(90% 지점)이 아니면 충돌 처리
+				if (distanceAlongStair <= stairLength * 0.9f)
+				{
+					bestT = t;
+					bestIntersection = intersection;
+					foundCollision = true;
+					hitCorner = 1;
+				}
+
+				//bestT = t;
+				//bestIntersection = intersection;
+				//foundCollision = true;
+				//hitCorner = 1;
+			}
+		}
 	}
 
-	// 결과 채우기
-	Vector2 lineDir = stairEnd - stairStart;
-	Vector2 normal = Vector2(-lineDir.y, lineDir.x).GetNormalize();
-	if (normal.y > 0) normal *= -1;
+	if (!foundCollision)
+		return result;
 
+	// 플레이어가 계단 위에서 접근하는지 확인 (아래에서 위로 올라가는 것 방지)
+	Vector2 stairNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
+	if (stairNormal.y > 0) stairNormal *= -1;
+
+	// 이동 방향이 계단 법선과 반대 방향인지 확인 (위에서 아래로)
+	if (moveDir.y < -5.f)
+		return result;
+
+	//// 이동 방향이 계단 법선과 반대 방향인지 확인 (위에서 아래로)
+	//if (moveDir.Dot(stairNormal) > 0.1f)
+	//	return result;
+
+	// 결과 설정
 	result.isColliding = true;
-	result.collisionPoint = collisionPoint;
-	result.normal = normal;
+	result.collisionPoint = bestIntersection;
+	result.vHitNormal = stairNormal;
 	result.groundActor = stairCollider->GetOwner();
 	result.hitCorner = hitCorner;
 

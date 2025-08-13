@@ -25,5 +25,7 @@ public:
 
 	uint64 GetFps() { return iFps; }
 	float GetDeltaTime() { return fDeltaTime; }
+
+	void SetPrevCount(uint64 now) { iPrevCount = now; }
 };
 
