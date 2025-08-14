@@ -23,6 +23,7 @@ private:
 	float fMass = 1;
 
 	float fJumpPressedTime = 0.f;
+	float fAttackDelayTime = 0.f;
 
 	bool bIsGround = false;
 	bool bIsWall = false;
@@ -73,9 +74,11 @@ public:
 	void SetIsPlatform(bool isPlatform) { bIsPlatform = isPlatform; }
 
 	bool GetIsCrouch() { return bIsCrouch; }
-	void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
+	//void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
 
 	Vector2 GetNewPos() const { return vNewPos; }
+
+	float GetAttackDelayTime() { return fAttackDelayTime; }
 
 	bool IsFlipped() { return vFrontDir.x < 0; }
 
@@ -84,6 +87,7 @@ public:
 	void ReleaseJump();
 	void Move(bool dir);
 	void Crouch(bool active);
+	void Roll(bool dir);
 	void Landing();
 	void Attack();
 

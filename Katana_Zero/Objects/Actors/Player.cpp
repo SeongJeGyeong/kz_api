@@ -36,6 +36,8 @@ void Player::Init(Vector2 pos)
         animator->AddAnimation(EPlayerState::PLAYER_POSTCROUCH, ResourceManager::GetInstance()->GetTexture("zero_PostCrouch"));
         animator->AddAnimation(EPlayerState::PLAYER_JUMP, ResourceManager::GetInstance()->GetTexture("zero_jump"));
         animator->AddAnimation(EPlayerState::PLAYER_FALL, ResourceManager::GetInstance()->GetTexture("zero_fall"));
+        animator->AddAnimation(EPlayerState::PLAYER_ATTACK, ResourceManager::GetInstance()->GetTexture("zero_attack"));
+        animator->AddAnimation(EPlayerState::PLAYER_ROLL, ResourceManager::GetInstance()->GetTexture("zero_roll"));
     }
 
     EffectorComponent* effector = _components.GetComponent<EffectorComponent>();
@@ -60,13 +62,15 @@ void Player::Init(Vector2 pos)
     _stateMachine->AddState(new PlayerState_PostCrouch());
     _stateMachine->AddState(new PlayerState_Jump());
     _stateMachine->AddState(new PlayerState_Fall());
+    _stateMachine->AddState(new PlayerState_Attack());
+    _stateMachine->AddState(new PlayerState_Roll());
     _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE);
 }
 
 void Player::Update(float deltaTime)
 {
 	vAcceleration = Vector2(0, 0);
-
+    fAttackDelayTime += deltaTime;
     if (!bIsGround && !bIsPlatform && !bOnStair) bIsJumped = true;
 
     _stateMachine->Update(deltaTime);
@@ -84,19 +88,19 @@ void Player::Render(HDC hdc)
     _components.RenderComponents(hdc);
 	Super::Render(hdc);
 
-    wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
-    ::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
+    //wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
+    //::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
     wstring str2 = std::format(L"Pos({0}, {1})", GetPos().x, GetPos().y);
     ::TextOut(hdc, 100, 50, str2.c_str(), static_cast<int32>(str2.size()));
 
     wstring str3 = std::format(L"Hit Normal({0}, {1})", vHitNormal.x, vHitNormal.y);
-    ::TextOut(hdc, 100, 100, str3.c_str(), static_cast<int32>(str3.size()));
-
-    //wstring str4 = std::format(L"WallCollisionState({0})", (int32)_wallCollision);
-    //::TextOut(hdc, 100, 100, str4.c_str(), static_cast<int32>(str4.size()));
+    ::TextOut(hdc, 100, 70, str3.c_str(), static_cast<int32>(str3.size()));
 
     wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
-    ::TextOut(hdc, 100, 140, str5.c_str(), static_cast<int32>(str5.size()));
+    ::TextOut(hdc, 100, 90, str5.c_str(), static_cast<int32>(str5.size()));
+
+    wstring str6 = std::format(L"AttackDelayTime ({0})", fAttackDelayTime);
+    ::TextOut(hdc, 100, 110, str6.c_str(), static_cast<int32>(str6.size()));
 
     float halfHeight = GetCollider()->GetHeight() * 0.5f;
 }
@@ -116,13 +120,15 @@ void Player::ApplyPhysics(float deltaTime)
     {
         if(vVelocity.y >= 0.f) bIsJumped = false;
         vVelocity.y = 0.f;
-        //vVelocity -= normalGravity * GravityLength;
         GravityLength = 0.f;
     }
     else if (bOnStair)
     {
         bIsJumped = false;
         vVelocity -= normalGravity * GravityLength;
+    }
+    else if(GetCurrentState() == EPlayerState::PLAYER_ATTACK)
+    {
     }
     else
     {
@@ -154,9 +160,10 @@ void Player::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
-    if (bIsGround || bIsPlatform)
+    if (GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
-        friction = 0.8f;
+        friction = 0.98f;
+        gravityVector *= friction;
     }
 
     sideVec *= friction;
@@ -246,6 +253,7 @@ void Player::Move(bool dir)
 
 void Player::Crouch(bool active)
 {
+    bIsCrouch = active;
     if (active)
     {
         _stateMachine->ChangeState(EPlayerState::PLAYER_PRECROUCH);
@@ -254,6 +262,30 @@ void Player::Crouch(bool active)
     {
         _stateMachine->ChangeState(EPlayerState::PLAYER_POSTCROUCH);
     }
+}
+
+void Player::Roll(bool dir)
+{
+    if (dir)
+    {
+        if (vHitNormal.x > -1.f)
+        {
+            vAcceleration.x += (fMoveForce * 2.f) / fMass;
+            _components.GetComponent<Animator>()->SetFlipped(false);
+            vFrontDir = { 1, 0 };
+        }
+    }
+    else
+    {
+        if (vHitNormal.x < 1.f)
+        {
+            vAcceleration.x -= (fMoveForce * 2.f) / fMass;
+            _components.GetComponent<Animator>()->SetFlipped(true);
+            vFrontDir = { -1, 0 };
+        }
+    }
+    bIsCrouch = false;
+    _stateMachine->ChangeState(EPlayerState::PLAYER_ROLL);
 }
 
 void Player::Landing()
@@ -271,12 +303,23 @@ void Player::Attack()
 
     // 플레이어의 후면을 공격할 경우, 반전된 스프라이트를 사용하므로
     // 정면 각도와 대칭이 되는 각도를 반환하도록 -180도 빼줌
-    if (dir.x < 0) rad -= PI;
+    if (dir.x < 0)
+    {
+        rad -= PI;
+        vFrontDir = Vector2(-1, 0);
+    }
+    else
+    {
+        vFrontDir = Vector2(1, 0);
+    }
 
     _components.GetComponent<EffectorComponent>()->PlayEffect((dir.x < 0), rad, 1.5f, true);
-
-    vAcceleration.x += dir.x * 10000000.f;
-    vAcceleration.y += dir.y * 1000000.f;
+    vVelocity = { 0, 0 };
+    vAcceleration.x += dir.x * 100000000.f;
+    vAcceleration.y += dir.y * 100000000.f;
+    _components.GetComponent<Animator>()->SetFlipped((dir.x < 0));
+    _stateMachine->ChangeState(EPlayerState::PLAYER_ATTACK);
+    fAttackDelayTime = 0.f;
 }
 
 int32 Player::GetCurrentState()
@@ -492,7 +535,6 @@ void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
     case ECollisionLayer::CEILING:
         break;
     case ECollisionLayer::STAIR:
-        OutputDebugString(L"beginOvelap Stair\n");
         if (bIsPlatform) break;
         ProcessStairCollision(info, GetPos(), vNewPos);
         break;
@@ -548,7 +590,6 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
     case ECollisionLayer::CEILING:
         break;
     case ECollisionLayer::STAIR:
-        OutputDebugString(L"endOvelap Stair\n");
         bOnStair = false;
         break;
     default:

@@ -102,3 +102,23 @@ public:
 	virtual void UpdateState(Actor* owner, float deltaTime) override;
 	virtual void ExitState(Actor* owner) override;
 };
+
+class PlayerState_Attack : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ATTACK; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};
+
+class PlayerState_Roll : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ROLL; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};

@@ -46,18 +46,40 @@ void InputComponent::UpdateComponent(float deltaTime)
             _player->Crouch(false);
         }
     }
-    if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
+
+    if (_player->GetCurrentState() != EPlayerState::PLAYER_ATTACK)
     {
-        _player->Move(false);
-    }
-    if (InputManager::GetInstance()->GetButtonPressed(KeyType::D))
-    {
-        _player->Move(true);
+        if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
+        {
+            if (_player->GetIsCrouch())
+            {
+                _player->Roll(false);
+            }
+            else
+            {
+                _player->Move(false);
+            }
+        }
+        if (InputManager::GetInstance()->GetButtonPressed(KeyType::D))
+        {
+            if (_player->GetIsCrouch())
+            {
+                _player->Roll(true);
+            }
+            else
+            {
+                _player->Move(true);
+            }
+        }
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        _player->Attack();
+        if (_player->GetAttackDelayTime() > 0.3f)
+        {
+            OutputDebugString(L"Attack\n");
+            _player->Attack();
+        }
     }
 }
 

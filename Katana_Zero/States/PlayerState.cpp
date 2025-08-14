@@ -9,7 +9,7 @@ void PlayerState::UpdateState(Actor* owner, float deltaTime)
 	Player* player = static_cast<Player*>(owner);
 	player->UpdateAttachedComponents(deltaTime);
 	if (!player->GetIsGround() && !player->GetIsPlatform() && !player->GetOnStair() && 
-		static_cast<Player*>(owner)->GetVelocity().y > 0)
+		player->GetCurrentState() != EPlayerState::PLAYER_ATTACK)
 	{
 		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_FALL);
 	}
@@ -210,6 +210,66 @@ void PlayerState_Fall::UpdateState(Actor* owner, float deltaTime)
 }
 
 void PlayerState_Fall::ExitState(Actor* owner)
+{
+}
+//////////////////////////////////////////////
+
+///////* Attack *////////////////////////
+void PlayerState_Attack::EnterState(Actor* owner)
+{
+	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	animator->SetAnimation(EPlayerState::PLAYER_ATTACK);
+}
+
+void PlayerState_Attack::UpdateState(Actor* owner, float deltaTime)
+{
+	Super::UpdateState(owner, deltaTime);
+	Player* player = static_cast<Player*>(owner);
+	Animator* animator = player->GetComponent<Animator>();
+	if (animator->IsAnimationFinished())
+	{
+		if (!player->GetIsJumped())
+		{
+			player->ChangeState(EPlayerState::PLAYER_IDLE);
+		}
+		else
+		{
+			player->ChangeState(EPlayerState::PLAYER_FALL);
+		}
+	}
+}
+
+void PlayerState_Attack::ExitState(Actor* owner)
+{
+}
+//////////////////////////////////////////////
+
+///////* Roll *////////////////////////
+void PlayerState_Roll::EnterState(Actor* owner)
+{
+	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	animator->SetAnimation(EPlayerState::PLAYER_ROLL);
+}
+
+void PlayerState_Roll::UpdateState(Actor* owner, float deltaTime)
+{
+	Super::UpdateState(owner, deltaTime);
+	Player* player = static_cast<Player*>(owner);
+	Animator* animator = player->GetComponent<Animator>();
+	if (animator->IsAnimationFinished())
+	{
+		if (player->GetIsCrouch())
+		{
+			player->ChangeState(EPlayerState::PLAYER_CROUCH);
+		}
+		else
+		{
+			player->ChangeState(EPlayerState::PLAYER_IDLE);
+		}
+	}
+}
+
+void PlayerState_Roll::ExitState(Actor* owner)
 {
 }
 //////////////////////////////////////////////

@@ -93,6 +93,14 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 		Texture* fall = new Texture();
 		fall->LoadSprite(playerPath / L"spr_fall.bmp", 42, 48, 4, 0.06f, true, { -10, -5 });
 		_textures["zero_fall"] = fall;
+
+		Texture* attack = new Texture();
+		attack->LoadSprite(playerPath / L"spr_attack.bmp", 62, 42, 7, 0.03f, false);
+		_textures["zero_attack"] = attack;
+
+		Texture* roll = new Texture();
+		roll->LoadSprite(playerPath / L"spr_roll.bmp", 48, 33, 7, 0.04f, false, { 0, -10 });
+		_textures["zero_roll"] = roll;
 	}
 
 	fs::path effectPath = texturePath / L"Sprites/Effects/";
