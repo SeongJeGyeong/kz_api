@@ -67,8 +67,6 @@ private:
 
 	void ExecuteCollisionFunc(Collider* receive, Collider* send);
 
-	bool CheckCollision2(Collider* receive, Collider* send, CollisionInfo& info);
-
 public:
 	void Init();
 	void Update();
@@ -78,21 +76,20 @@ public:
 	void AddCollider(Collider* collider);
 
 	vector<Collider*> GetPlacedColliders(ECollisionLayer layer) { return _colliderList[layer]; }
-	bool CheckBlockedCollision(Player* player, Vector2 start, Vector2 end, CollisionInfo& info);
 
 	CollisionInfo CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
 	CollisionInfo CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
 
 	vector<CollisionInfo> CheckPlayerCollision(Player* player, Vector2 playerOldPos, Vector2 playerNewPos);
-	CollisionInfo CheckAABBWallCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* wallCollider);
 	CollisionInfo CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
+	CollisionInfo CheckLineWallCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
 	CollisionInfo CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
-	CollisionInfo CheckLineStiarCollision2(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
 
 	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t, float& crossOut);
 	bool LineIntersectsWallSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t);
 	Vector2 GetClosestPointOnLineSegment(Vector2 point, Vector2 lineStart, Vector2 lineEnd);
 
-	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY, bool& outInSegment);
+	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY);
+	bool GetXOnLineAtY(const Vector2& a, const Vector2& b, float y, float& outX);
 };
 

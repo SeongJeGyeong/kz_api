@@ -11,14 +11,13 @@
 #include "../../Components/InputComponent.h"
 #include "../../States/PlayerState.h"
 #include "../../States/StateMachine.h"
+#include "../../Managers/TimeManager.h"
 
 void Player::Init(Vector2 pos)
 {
 	Super::Init(pos);
 
     CreateAABBCollider(30, 50, ECollisionLayer::PLAYER);
-    halfHeight = GetCollider()->GetHeight() * 0.5f;
-
     _components.AddComponent<Animator>();
     _components.AddComponent<EffectorComponent>();
     _components.AddComponent<InputComponent>();
@@ -32,6 +31,11 @@ void Player::Init(Vector2 pos)
         animator->AddAnimation(EPlayerState::PLAYER_IDLE_TO_RUN, ResourceManager::GetInstance()->GetTexture("zero_idle_to_run"));
         animator->AddAnimation(EPlayerState::PLAYER_RUN, ResourceManager::GetInstance()->GetTexture("zero_run"));
         animator->AddAnimation(EPlayerState::PLAYER_RUN_TO_IDLE, ResourceManager::GetInstance()->GetTexture("zero_run_to_idle"));
+        animator->AddAnimation(EPlayerState::PLAYER_PRECROUCH, ResourceManager::GetInstance()->GetTexture("zero_PreCrouch"));
+        animator->AddAnimation(EPlayerState::PLAYER_CROUCH, ResourceManager::GetInstance()->GetTexture("zero_Crouch"));
+        animator->AddAnimation(EPlayerState::PLAYER_POSTCROUCH, ResourceManager::GetInstance()->GetTexture("zero_PostCrouch"));
+        animator->AddAnimation(EPlayerState::PLAYER_JUMP, ResourceManager::GetInstance()->GetTexture("zero_jump"));
+        animator->AddAnimation(EPlayerState::PLAYER_FALL, ResourceManager::GetInstance()->GetTexture("zero_fall"));
     }
 
     EffectorComponent* effector = _components.GetComponent<EffectorComponent>();
@@ -51,13 +55,19 @@ void Player::Init(Vector2 pos)
     _stateMachine->AddState(new PlayerState_Idle_to_Run());
     _stateMachine->AddState(new PlayerState_Run());
     _stateMachine->AddState(new PlayerState_Run_to_Idle());
+    _stateMachine->AddState(new PlayerState_PreCrouch());
+    _stateMachine->AddState(new PlayerState_Crouch());
+    _stateMachine->AddState(new PlayerState_PostCrouch());
+    _stateMachine->AddState(new PlayerState_Jump());
+    _stateMachine->AddState(new PlayerState_Fall());
     _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE);
 }
 
 void Player::Update(float deltaTime)
 {
-    vCurPos = GetPos();
 	vAcceleration = Vector2(0, 0);
+
+    if (!bIsGround && !bIsPlatform && !bOnStair) bIsJumped = true;
 
     _stateMachine->Update(deltaTime);
 
@@ -74,13 +84,16 @@ void Player::Render(HDC hdc)
     _components.RenderComponents(hdc);
 	Super::Render(hdc);
 
-    wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform);
-    ::TextOut(hdc, 300, 30, str.c_str(), static_cast<int32>(str.size()));
+    wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
+    ::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
     wstring str2 = std::format(L"Pos({0}, {1})", GetPos().x, GetPos().y);
     ::TextOut(hdc, 100, 50, str2.c_str(), static_cast<int32>(str2.size()));
 
-    wstring str4 = std::format(L"hitnNormal( {0}, {1} )", vHitNormal.x, vHitNormal.y);
-    ::TextOut(hdc, 100, 100, str4.c_str(), static_cast<int32>(str4.size()));
+    wstring str3 = std::format(L"Hit Normal({0}, {1})", vHitNormal.x, vHitNormal.y);
+    ::TextOut(hdc, 100, 100, str3.c_str(), static_cast<int32>(str3.size()));
+
+    //wstring str4 = std::format(L"WallCollisionState({0})", (int32)_wallCollision);
+    //::TextOut(hdc, 100, 100, str4.c_str(), static_cast<int32>(str4.size()));
 
     wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
     ::TextOut(hdc, 100, 140, str5.c_str(), static_cast<int32>(str5.size()));
@@ -103,24 +116,13 @@ void Player::ApplyPhysics(float deltaTime)
     {
         if(vVelocity.y >= 0.f) bIsJumped = false;
         vVelocity.y = 0.f;
-        vVelocity -= normalGravity * GravityLength;
+        //vVelocity -= normalGravity * GravityLength;
+        GravityLength = 0.f;
     }
     else if (bOnStair)
     {
         bIsJumped = false;
         vVelocity -= normalGravity * GravityLength;
-        
-        //Vector2 plane = { 1.f, 0.f };
-        //float rad = DegreeToRadian(fMoveDegree) * -1.f;
-        //float s = sin(rad);
-        //float c = cos(rad);
-
-        //plane = { plane.x * c - plane.y * s, plane.x * s + plane.y * c };
-
-        //Vector2 planeNormal = plane.GetNormalize();
-        //Vector2 vertical = planeNormal * vVelocity.Dot(planeNormal);
-
-        //vVelocity = vVelocity - vertical;
     }
     else
     {
@@ -140,7 +142,7 @@ void Player::ApplyPhysics(float deltaTime)
     vVelocity += vAcceleration * deltaTime;
 
     float upFactor = 400.f;
-    float sideFactor = 300.f;
+    float sideFactor = 400.f;
 
     Vector2 gravityVector = normalGravity * GravityLength;
     Vector2 sideVec = vVelocity - gravityVector;
@@ -151,10 +153,10 @@ void Player::ApplyPhysics(float deltaTime)
     if (sideLength > sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
-    float friction = 0.98f;
+    float friction = 0.8f;
     if (bIsGround || bIsPlatform)
     {
-        friction = 0.80f;
+        friction = 0.8f;
     }
 
     sideVec *= friction;
@@ -167,35 +169,11 @@ void Player::ApplyPhysics(float deltaTime)
     vVelocity = gravityVector + sideVec;
 
     // 속도(velocity) 위치를 변화시킨다.
-    vNewPos = vCurPos + (vVelocity * deltaTime);
+    vNewPos = GetPos() + (vVelocity * deltaTime);
 }
 
 void Player::UpdatePosition(float deltaTime)
 {
-    // 충돌 검사 전에 이전 상태 저장
-    bool prevIsGround = bIsGround;
-    bool prevIsPlatform = bIsPlatform;
-    bool prevOnStair = bOnStair;
-
-    if (bOnStair)
-    {
-        Collider* stair = _currentStair->GetCollider();
-        CollisionInfo result = CollisionManager::GetInstance()->CheckLineStairCollision(GetPos(), vNewPos, GetCollider()->GetWidth(), GetCollider()->GetHeight(), stair, bOnStair);
-        if (!result.isColliding)
-        {
-            bOnStair = false;
-        }
-        else
-        {
-            vector<CollisionInfo> colResult;
-            colResult.push_back(result);
-            ProcessStairCollisions(colResult, GetPos(), vNewPos);
-        }
-    }
-
-    vector<CollisionInfo> results = CollisionManager::GetInstance()->CheckPlayerCollision(this, GetPos(), vNewPos);
-    ProcessCollisionResults(results, GetPos(), vNewPos);
-
     SetPos(vNewPos);
 }
 
@@ -208,6 +186,7 @@ void Player::Jump()
     bIsJumped = true;
     bIsMaxJump = false;
     fJumpPressedTime = 0.f;
+    _stateMachine->ChangeState(EPlayerState::PLAYER_JUMP);
 }
 
 void Player::IncreaseJump(float deltaTime)
@@ -217,7 +196,6 @@ void Player::IncreaseJump(float deltaTime)
     {
         if (fJumpPressedTime >= fMaxJumpHoldTime)
         {
-            fPrevPressedTime = fJumpPressedTime;
             fJumpPressedTime = 0.f;
             bIsMaxJump = true;
         }
@@ -232,7 +210,6 @@ void Player::IncreaseJump(float deltaTime)
 void Player::ReleaseJump()
 {
     bIsMaxJump = true;
-    fPrevPressedTime = fJumpPressedTime;
     fJumpPressedTime = 0;
 }
 
@@ -258,10 +235,29 @@ void Player::Move(bool dir)
             vFrontDir = { -1, 0 };
         }
     }
-    if (_stateMachine->GetCurrentStateType() == EPlayerState::PLAYER_IDLE || prevDir != vFrontDir)
+    if (bIsGround || bIsPlatform || bOnStair)
     {
-        _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE_TO_RUN);
+        if (_stateMachine->GetCurrentStateType() == EPlayerState::PLAYER_IDLE || prevDir != vFrontDir)
+        {
+            _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE_TO_RUN);
+        }
     }
+}
+
+void Player::Crouch(bool active)
+{
+    if (active)
+    {
+        _stateMachine->ChangeState(EPlayerState::PLAYER_PRECROUCH);
+    }
+    else
+    {
+        _stateMachine->ChangeState(EPlayerState::PLAYER_POSTCROUCH);
+    }
+}
+
+void Player::Landing()
+{
 }
 
 void Player::Attack()
@@ -278,6 +274,9 @@ void Player::Attack()
     if (dir.x < 0) rad -= PI;
 
     _components.GetComponent<EffectorComponent>()->PlayEffect((dir.x < 0), rad, 1.5f, true);
+
+    vAcceleration.x += dir.x * 10000000.f;
+    vAcceleration.y += dir.y * 1000000.f;
 }
 
 int32 Player::GetCurrentState()
@@ -290,264 +289,122 @@ void Player::ChangeState(EPlayerState stateType)
     _stateMachine->ChangeState(stateType);
 }
 
-void Player::ProcessCollisionResults(const vector<CollisionInfo>& results, Vector2 oldPos, Vector2& newPos)
+void Player::ProcessGroundCollision(const CollisionInfo& collisionInfo, Vector2& newPos)
 {
-    bIsGround = false;
-    bIsPlatform = false;
-    bIsWall = false;
-    if (results.empty())
+    switch (collisionInfo.hitCorner)
     {
-        bOnStair = false;
-        return;
+    case 0: // 바닥 충돌
+        ProcessGroundFloor(collisionInfo, newPos);
+        break;
+    case 3: // 천장 충돌
+        ProcessGroundCeiling(collisionInfo, newPos);
+        break;
+    case 1: // 왼쪽 벽 충돌
+    case 2: // 오른쪽 벽 충돌
+        ProcessGroundWall(collisionInfo, newPos);
+        break;
     }
+}
 
-    // 충돌 결과를 종류별로 분류
-    vector<CollisionInfo> groundCollisions;
-    vector<CollisionInfo> wallCollisions;
-    vector<CollisionInfo> stairCollisions;
-    vector<CollisionInfo> platformCollisions;
+void Player::ProcessGroundFloor(const CollisionInfo& collisionInfo, Vector2& newPos)
+{
+    newPos.y = collisionInfo.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
+    vVelocity.y = 0; // 아래로 떨어지는 속도 제거
+    bIsGround = true;
+    //bOnStair = false;
+    vHitNormal = collisionInfo.vHitNormal;
+}
 
-    for (const auto& result : results)
+void Player::ProcessGroundCeiling(const CollisionInfo& collisionInfo, Vector2& newPos)
+{
+    newPos.y = collisionInfo.collisionPoint.y + GetCollider()->GetHeight() * 0.5f;
+    if (vVelocity.y < 0) vVelocity.y = 0; // 위로 올라가는 속도만 제거
+    //vHitNormal = collisionInfo.vHitNormal;
+}
+
+void Player::ProcessGroundWall(const CollisionInfo& collisionInfo, Vector2& newPos)
+{
+    float halfWidth = GetCollider()->GetWidth() * 0.5f;
+    if (collisionInfo.vHitNormal.x > 0) // 왼쪽 벽
     {
-        switch (result.collisionLayer)
-        {
-        case ECollisionLayer::GROUND:
-            groundCollisions.push_back(result);
-            break;
-        case ECollisionLayer::WALL:
-            wallCollisions.push_back(result);
-            break;
-        case ECollisionLayer::STAIR:
-            stairCollisions.push_back(result);
-            break;
-        case ECollisionLayer::PLATFORM:
-            platformCollisions.push_back(result);
-            break;
-        }
+        newPos.x = collisionInfo.collisionPoint.x + halfWidth;
+        //_wallCollision = WallCollisionState::LEFTWALL;
     }
-
-    // 1. 바닥/플랫폼 충돌 처리 (수직 이동 제한)
-    if (!groundCollisions.empty())
+    else if(collisionInfo.vHitNormal.x < 0)// 오른쪽 벽
     {
-        ProcessGroundCollisions(groundCollisions, newPos);
-    }
-
-    if (!platformCollisions.empty())
-    {
-        ProcessPlatformCollisions(platformCollisions, newPos);
-    }
-
-    // 2. 벽 충돌 처리 (수평 이동 제한)
-    if (!wallCollisions.empty())
-    {
-        ProcessWallCollisions(wallCollisions, newPos);
-    }
-
-    if (platformCollisions.empty() && !stairCollisions.empty())
-    {
-        ProcessStairCollisions(stairCollisions, oldPos, newPos);
+        newPos.x = collisionInfo.collisionPoint.x - halfWidth;
+        //_wallCollision = WallCollisionState::RIGHTWALL;
     }
     else
     {
-        bOnStair = false;
+        //_wallCollision = WallCollisionState::NONEWALL;
     }
+
+    if ((collisionInfo.vHitNormal.x > 0 && vVelocity.x < 0) ||
+        (collisionInfo.vHitNormal.x < 0 && vVelocity.x > 0))
+    {
+        vVelocity.x = 0; // 벽 방향으로 이동하는 속도만 제거
+    }
+
+    //bIsWall = true;
+    vHitNormal = collisionInfo.vHitNormal;
 }
 
-void Player::ProcessGroundCollisions(const vector<CollisionInfo>& groundCollisions, Vector2& newPos)
-{
-    // 충돌을 방향별로 분류
-    vector<CollisionInfo> floorCollisions;   // 바닥 (위에서 아래로)
-    vector<CollisionInfo> ceilingCollisions; // 천장 (아래에서 위로)
-    vector<CollisionInfo> wallCollisions;    // 벽 (좌우)
-
-    for (const auto& collision : groundCollisions)
-    {
-        switch (collision.hitCorner)
-        {
-        case 0: // 바닥 충돌
-            floorCollisions.push_back(collision);
-            break;
-        case 3: // 천장 충돌
-            ceilingCollisions.push_back(collision);
-            break;
-        case 1: // 왼쪽 벽 충돌
-        case 2: // 오른쪽 벽 충돌
-            wallCollisions.push_back(collision);
-            break;
-        }
-    }
-
-    // 1. 천장 충돌 처리 (가장 우선)
-    if (!ceilingCollisions.empty())
-    {
-        // 가장 낮은 천장을 찾음
-        CollisionInfo bestCeiling = ceilingCollisions[0];
-        for (const auto& collision : ceilingCollisions)
-        {
-            if (collision.collisionPoint.y > bestCeiling.collisionPoint.y)
-            {
-                bestCeiling = collision;
-            }
-        }
-
-        newPos.y = bestCeiling.collisionPoint.y + GetCollider()->GetHeight() * 0.5f;
-        if (vVelocity.y < 0) vVelocity.y = 0; // 위로 올라가는 속도만 제거
-        vHitNormal = bestCeiling.vHitNormal;
-        return; // 천장 충돌이 있으면 다른 충돌은 무시
-    }
-
-    // 2. 바닥 충돌 처리
-    if (!floorCollisions.empty())
-    {
-        // 가장 높은 바닥을 찾음
-        CollisionInfo bestFloor = floorCollisions[0];
-        for (const auto& collision : floorCollisions)
-        {
-            if (collision.collisionPoint.y < bestFloor.collisionPoint.y)
-            {
-                bestFloor = collision;
-            }
-        }
-
-        newPos.y = bestFloor.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
-        if (vVelocity.y > 0) vVelocity.y = 0; // 아래로 떨어지는 속도만 제거
-        bIsGround = true;
-        bOnStair = false;
-        vHitNormal = bestFloor.vHitNormal;
-
-        // 플랫폼인지 확인
-        if (bestFloor.collisionLayer == ECollisionLayer::PLATFORM)
-        {
-            bIsPlatform = true;
-        }
-    }
-
-    // 3. 벽 충돌 처리
-    if (!wallCollisions.empty())
-    {
-        // 가장 가까운 벽을 찾음
-        CollisionInfo bestWall = wallCollisions[0];
-        float minPenetration = bestWall.penetrationDepth;
-
-        for (const auto& collision : wallCollisions)
-        {
-            if (collision.penetrationDepth < minPenetration)
-            {
-                minPenetration = collision.penetrationDepth;
-                bestWall = collision;
-            }
-        }
-
-        float halfWidth = GetCollider()->GetWidth() * 0.5f;
-        if (bestWall.vHitNormal.x > 0) // 오른쪽 벽
-        {
-            newPos.x = bestWall.collisionPoint.x + halfWidth;
-        }
-        else // 왼쪽 벽
-        {
-            newPos.x = bestWall.collisionPoint.x - halfWidth;
-        }
-
-        if ((bestWall.vHitNormal.x > 0 && vVelocity.x < 0) ||
-            (bestWall.vHitNormal.x < 0 && vVelocity.x > 0))
-        {
-            vVelocity.x = 0; // 벽 방향으로 이동하는 속도만 제거
-        }
-
-        bIsWall = true;
-        vHitNormal = bestWall.vHitNormal;
-    }
-}
-
-void Player::ProcessPlatformCollisions(const vector<CollisionInfo>& platformCollisions, Vector2& newPos)
+void Player::ProcessPlatformCollision(const CollisionInfo& collisionInfo, Vector2& newPos)
 {
     // 플랫폼은 아래에서 위로 올라갈 때만 충돌 처리 (위에서 아래로는 통과)
-    if (vVelocity.y <= 0) // 위로 올라가거나 정지 상태면 플랫폼 무시
+    if (vVelocity.y < 0) // 위로 올라가거나 정지 상태면 플랫폼 무시
         return;
 
-    // 가장 높은 플랫폼을 찾음
-    CollisionInfo bestPlatform;
-    bool hasPlatformCollision = false;
-    float bestPlatformY = FLT_MAX;
-
-    for (const auto& collision : platformCollisions)
-    {
-        // 플랫폼은 위쪽 면만 충돌 처리 (법선이 위쪽을 향하는 경우만)
-        if (collision.vHitNormal.y < -0.5f && collision.collisionPoint.y < bestPlatformY)
-        {
-            bestPlatformY = collision.collisionPoint.y;
-            bestPlatform = collision;
-            hasPlatformCollision = true;
-        }
-    }
-
-    if (hasPlatformCollision)
+    // 플랫폼은 위쪽 면만 충돌 처리 (법선이 위쪽을 향하는 경우만)
+    if (collisionInfo.vHitNormal.y < -0.5f)
     {
         // 플랫폼 위에 착지
-        newPos.y = bestPlatform.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
+        newPos.y = collisionInfo.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
         vVelocity.y = 0; // 아래로 떨어지는 속도 제거
         bIsPlatform = true;
-        bIsGround = true; // 플랫폼도 바닥으로 취급
-        bOnStair = false;
-        vHitNormal = bestPlatform.vHitNormal;
+        //bIsGround = true; // 플랫폼도 바닥으로 취급
+        //bOnStair = false;
+        vHitNormal = collisionInfo.vHitNormal;
 
-        // 점프 관련 상태 초기화 (중요!)
+        // 점프 관련 상태 초기화
         bIsJumped = false;
         bIsMaxJump = false;
         fJumpPressedTime = 0.f;
     }
 }
 
-void Player::ProcessWallCollisions(const vector<CollisionInfo>& wallCollisions, Vector2& newPos)
+void Player::ProcessWallCollision(const CollisionInfo& collisionInfo, Vector2& newPos)
 {
-    for (const auto& collision : wallCollisions)
+    float halfWidth = GetCollider()->GetWidth() * 0.5f;
+    // 벽 방향에 따른 위치 조정
+    if (collisionInfo.vHitNormal.x < 0) // 오른쪽 벽
     {
-        if (fabs(collision.vHitNormal.x) > 0.5f)
-        {
-            float halfWidth = GetCollider()->GetWidth() * 0.5f;
-            // 벽 방향에 따른 위치 조정
-            if (collision.vHitNormal.x < 0) // 오른쪽 벽
-            {
-                newPos.x = collision.collisionPoint.x - halfWidth;
-                //newPos.x -= 0.001f;
-            }
-            else // 왼쪽 벽
-            {
-                newPos.x = collision.collisionPoint.x + halfWidth;
-                //newPos.x += 0.001f;
-            }
-
-            // 벽과의 충돌 시 수평 속도만 제거
-            vVelocity.x = 0;
-            bIsWall = true;
-            vHitNormal = collision.vHitNormal;
-        }
+        newPos.x = collisionInfo.collisionPoint.x - halfWidth;
+        //_wallCollision = WallCollisionState::RIGHTWALL;
     }
+    else if(collisionInfo.vHitNormal.x > 0)// 왼쪽 벽
+    {
+        newPos.x = collisionInfo.collisionPoint.x + halfWidth;
+        //_wallCollision = WallCollisionState::LEFTWALL;
+    }
+    else
+    {
+    }
+
+    // 벽과의 충돌 시 수평 속도만 제거
+    vVelocity.x = 0;
+    bIsWall = true;
+    vHitNormal = collisionInfo.vHitNormal;
 }
 
-void Player::ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions, Vector2 oldPos, Vector2& newPos)
+void Player::ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 oldPos, Vector2& newPos)
 {
-    // 가장 가까운 계단 충돌 선택
-    CollisionInfo best = stairCollisions[0];
-    float minDist = (newPos - best.collisionPoint).Length();
-
-    for (const auto& col : stairCollisions)
-    {
-        float dist = (newPos - col.collisionPoint).Length();
-        if (dist < minDist)
-        {
-            minDist = dist;
-            best = col;
-        }
-    }
-
-    _currentStair = best.groundActor;
-
     float halfW = GetCollider()->GetWidth() * 0.5f;
     float halfH = GetCollider()->GetHeight() * 0.5f;
 
     // 계단 방향 판단
-    Collider* stairCollider = best.groundActor->GetCollider();
+    Collider* stairCollider = collisionInfo.groundActor->GetCollider();
     Vector2 stairStart = stairCollider->GetStartPoint();
     Vector2 stairEnd = stairCollider->GetEndPoint();
     Vector2 stairDir = stairEnd - stairStart;
@@ -570,10 +427,7 @@ void Player::ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions
 
     // 계단 선분 상에서 해당 X 좌표의 Y값 계산
     float stairYAtCorner;
-    bool inSegment;
-    CollisionManager::GetInstance()->GetYOnLineAtX(stairStart, stairEnd, targetCorner.x, stairYAtCorner, inSegment);
-
-    if (!inSegment)
+    if (!CollisionManager::GetInstance()->GetYOnLineAtX(stairStart, stairEnd, targetCorner.x, stairYAtCorner))
     {
         // 모서리가 계단 범위를 벗어나면 계단에서 벗어난 것으로 처리
         bOnStair = false;
@@ -583,17 +437,6 @@ void Player::ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions
     // 플레이어를 계단에 맞춤 (선택된 모서리가 계단에 정확히 닿도록)
     float deltaY = stairYAtCorner - targetCorner.y;
     newPos.y += deltaY;
-
-    // 계단 상태 설정
-    bOnStair = true;
-    bIsGround = true;
-    bIsJumped = false;
-    bIsMaxJump = false;
-
-    // 계단 법선 저장
-    Vector2 stairNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
-    if (stairNormal.y > 0) stairNormal *= -1; // 위쪽을 향하도록
-    vHitNormal = stairNormal;
 
     if (vAcceleration.x != 0.f) // 실제로 이동 중일 때만
     {
@@ -607,7 +450,7 @@ void Player::ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions
         float speedMultiplier = 1.0f / sqrt(1.0f + stairSlope * stairSlope); // 빗변 보정
 
         // 실제로는 더 빠르게 만들어서 바닥과 비슷한 속도감 제공
-        speedMultiplier *= 1.2f; // 20% 속도 증가로 자연스러운 이동감
+        speedMultiplier *= 1.8f; // 속도 증가
 
         // 이동 방향에 따른 속도 설정
         if ((vVelocity.x > 0 && stairDirection.x > 0) || (vVelocity.x < 0 && stairDirection.x < 0))
@@ -620,51 +463,17 @@ void Player::ProcessStairCollisions(const vector<CollisionInfo>& stairCollisions
             // 계단 반대 방향으로 이동
             vVelocity = stairDirection * (-currentHorizontalSpeed) * speedMultiplier;
         }
-
-        // 계단으로 파고드는 속도 성분 제거
-        float normalDot = vVelocity.Dot(stairNormal);
-        if (normalDot < 0)
-            vVelocity -= stairNormal * normalDot;
-
-        //// 현재 수평 속도를 계단 방향으로 투영
-        //float horizontalSpeed = vVelocity.x;
-        //float stairSpeed = horizontalSpeed * stairDirection.x;
-
-        //// 계단 방향의 속도 벡터 생성
-        //vVelocity = stairDirection * stairSpeed;
-
-        //// 계단으로 파고드는 속도 성분 제거
-        //float normalDot = vVelocity.Dot(stairNormal);
-        //if (normalDot < 0)
-        //    vVelocity -= stairNormal * normalDot;
-    }
-    else
-    {
-        // 입력이 없을 때는 빠르게 정지
-        vVelocity *= 0.3f; // 강한 마찰력으로 빠르게 감속
-
-        if (vVelocity.Length() < 20.0f)
-        {
-            vVelocity = Vector2(0, 0); // 완전 정지
-        }
     }
 
-    //// 속도 보정: 계단으로 파고드는 성분 제거
-    //float vDot = vVelocity.Dot(stairNormal);
-    //if (vDot < 0)
-    //    vVelocity -= stairNormal * vDot;
+    // 계단 상태 설정
+    bOnStair = true;
+    bIsJumped = false;
+    bIsMaxJump = false;
 
-    // 내려갈 때 계단에 붙도록 중력 방향 조정
-    //Vector2 gravityAlongStair = vGravity - stairNormal * vGravity.Dot(stairNormal);
-    //vAcceleration += gravityAlongStair * 0.3f; // 계단을 따라 내려가는 추가 가속도
-}
+    Vector2 stairNormal = Vector2(-stairDir.y, stairDir.x).GetNormalize();
+    if (stairNormal.y > 0) stairNormal *= -1; // 위쪽을 향하도록
+    vHitNormal = stairNormal;
 
-float Player::GetLowestCollisionY(const vector<CollisionInfo>& cols)
-{
-    float minY = FLT_MAX;
-    for (auto& c : cols)
-        minY = min(minY, c.collisionPoint.y);
-    return minY;
 }
 
 void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
@@ -672,40 +481,20 @@ void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
   switch (info.collisionLayer)
     {
     case ECollisionLayer::GROUND:
-        bIsGround = true;
-        vNewPos.y = info.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
-        vVelocity.y = 0;
-        vHitNormal = info.vHitNormal;
+        ProcessGroundCollision(info, vNewPos);
         break;
     case ECollisionLayer::PLATFORM:
-        if (vVelocity.y >= 0)
-        {
-            bIsPlatform = true;
-            vNewPos.y = info.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
-            vVelocity.y = 0;
-            vHitNormal = info.vHitNormal;
-        }
+        ProcessPlatformCollision(info, vNewPos);
         break;
     case ECollisionLayer::WALL:
-        bIsWall = true;
+        ProcessWallCollision(info, vNewPos);
         break;
     case ECollisionLayer::CEILING:
         break;
     case ECollisionLayer::STAIR:
-        {   
-            Collider* other = info.groundActor->GetCollider();
-            float y1 = other->GetStartPoint().y;
-            float y2 = other->GetEndPoint().y;
-            float height = (y1 > y2) ? y1 : y2;
-            if (!bIsGround && !bIsPlatform)
-            {
-                bOnStair = true;
-            }
-            else if ((bIsGround || bIsPlatform) && height > GetPos().y + GetCollider()->GetHeight() * 0.5f)
-            {
-                bOnStair = true;
-            }
-        }
+        OutputDebugString(L"beginOvelap Stair\n");
+        if (bIsPlatform) break;
+        ProcessStairCollision(info, GetPos(), vNewPos);
         break;
     default:
         break;
@@ -717,40 +506,23 @@ void Player::OnCollisionStayOverlap(const CollisionInfo& info)
     switch (info.collisionLayer)
     {
     case ECollisionLayer::GROUND:
-        bIsGround = true;
-        vNewPos.y = info.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
-        vVelocity.y = 0;
-        vHitNormal = info.vHitNormal;
         break;
     case ECollisionLayer::PLATFORM:
-        if (vVelocity.y >= 0)
-        {
-            bIsPlatform = true;
-            vNewPos.y = info.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
-            vVelocity.y = 0;
-            vHitNormal = info.vHitNormal;
-        }
         break;
     case ECollisionLayer::WALL:
-        bIsWall = true;
+        if (info.vHitNormal.x != 0)
+        {
+            vHitNormal.x = info.vHitNormal.x;
+        }
+        else
+        {
+            vHitNormal.x = 0;
+        }
         break;
     case ECollisionLayer::CEILING:
         break;
     case ECollisionLayer::STAIR:
-    {
-        Collider* other = info.groundActor->GetCollider();
-        float y1 = other->GetStartPoint().y;
-        float y2 = other->GetEndPoint().y;
-        float height = (y1 > y2) ? y1 : y2;
-        if (!bIsGround && !bIsPlatform)
-        {
-            bOnStair = true;
-        }
-        else if ((bIsGround || bIsPlatform) && height > GetPos().y + GetCollider()->GetHeight() * 0.5f)
-        {
-            bOnStair = true;
-        }
-    }
+        ProcessStairCollision(info, GetPos(), vNewPos);
     break;
     default:
         break;
@@ -762,6 +534,7 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
    switch (info.collisionLayer)
     {
     case ECollisionLayer::GROUND:
+        vHitNormal = { 0, 0 };
         bIsGround = false;
         break;
     case ECollisionLayer::PLATFORM:
@@ -769,10 +542,13 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
         break;
     case ECollisionLayer::WALL:
         bIsWall = false;
+        vHitNormal = { 0, 0 };
+        //_wallCollision = WallCollisionState::NONEWALL;
         break;
     case ECollisionLayer::CEILING:
         break;
     case ECollisionLayer::STAIR:
+        OutputDebugString(L"endOvelap Stair\n");
         bOnStair = false;
         break;
     default:

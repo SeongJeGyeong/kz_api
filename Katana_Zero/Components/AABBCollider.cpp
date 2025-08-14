@@ -25,7 +25,8 @@ void AABBCollider::RenderComponent(HDC hdc)
 	int32 top = pos.y - fHeight * 0.5f;
 	int32 bottom = pos.y + fHeight * 0.5f;
 
-	HPEN redPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+	HPEN redPen = CreatePen(PS_SOLID, 2, (bOverlapped) ? RGB(0, 255, 0) : RGB(255, 0, 0));
+
 	HPEN oldPen = (HPEN)SelectObject(hdc, redPen);
 	SelectObject(hdc, GetStockObject(NULL_BRUSH));
 	Rectangle(hdc, left, top, right, bottom);

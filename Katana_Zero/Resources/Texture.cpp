@@ -118,7 +118,7 @@ void Texture::RenderStretchedSprite(HDC hdc, Vector2 pos, int32 magnification, b
 	if (isFlipped)
 	{
 		AlphaBlend(hdc,
-			(int32)pos.x - (stretchedWidth * 0.5f) + vOffset.x,
+			(int32)pos.x - (stretchedWidth * 0.5f) + -vOffset.x,
 			(int32)pos.y - (stretchedHeight * 0.5f) + vOffset.y,
 			stretchedWidth,
 			stretchedHeight,

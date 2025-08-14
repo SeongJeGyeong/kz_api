@@ -52,3 +52,53 @@ public:
 	virtual void UpdateState(Actor* owner, float deltaTime) override;
 	virtual void ExitState(Actor* owner) override;
 };
+
+class PlayerState_PreCrouch : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_PRECROUCH; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};
+
+class PlayerState_Crouch : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_CROUCH; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};
+
+class PlayerState_PostCrouch : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_POSTCROUCH; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};
+
+class PlayerState_Jump: public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_JUMP; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};
+
+class PlayerState_Fall : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	virtual int32 GetStateType() override { return EPlayerState::PLAYER_FALL; }
+	virtual void EnterState(Actor* owner) override;
+	virtual void UpdateState(Actor* owner, float deltaTime) override;
+	virtual void ExitState(Actor* owner) override;
+};

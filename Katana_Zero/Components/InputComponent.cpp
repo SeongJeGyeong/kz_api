@@ -24,9 +24,27 @@ void InputComponent::UpdateComponent(float deltaTime)
         _player->ReleaseJump();
     }
 
-    if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))
+    if (InputManager::GetInstance()->GetButtonDown(KeyType::S))
     {
-
+        if (_player->GetIsGround() || _player->GetOnStair())
+        {
+            if (_player->GetCurrentState() == EPlayerState::PLAYER_IDLE)
+            {
+                _player->Crouch(true);
+            }
+        }
+        else
+        {
+            _player->Landing();
+        }
+    }
+    else if (InputManager::GetInstance()->GetButtonUp(KeyType::S))
+    {
+        if (_player->GetCurrentState() == EPlayerState::PLAYER_CROUCH || 
+            _player->GetCurrentState() == EPlayerState::PLAYER_PRECROUCH)
+        {
+            _player->Crouch(false);
+        }
     }
     if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
     {

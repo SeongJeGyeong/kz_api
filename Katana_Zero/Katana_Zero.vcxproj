@@ -127,6 +127,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="States\PlayerState.h" />
+    <ClInclude Include="States\State.h" />
+    <ClInclude Include="States\StateMachine.h" />
     <ClInclude Include="Utils\ComponentContainer.h" />
     <ClInclude Include="Components\AABBCollider.h" />
     <ClInclude Include="Components\Collider.h" />
@@ -135,7 +138,6 @@
     <ClInclude Include="Components\EffectorComponent.h" />
     <ClInclude Include="Components\InputComponent.h" />
     <ClInclude Include="Objects\EditorCamera.h" />
-    <ClInclude Include="States\PlayerState.h" />
     <ClInclude Include="Scenes\GameScene.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Components\OBBCollider.h" />
@@ -153,8 +155,6 @@
     <ClInclude Include="Datas\TextureData.h" />
     <ClInclude Include="Objects\Actors\Tile_FG.h" />
     <ClInclude Include="Components\TileRenderer.h" />
-    <ClInclude Include="States\State.h" />
-    <ClInclude Include="States\StateMachine.h" />
     <ClInclude Include="UI\UIImage.h" />
     <ClInclude Include="UI\UIWorkTool.h" />
     <ClInclude Include="UI\UIBase.h" />
@@ -172,6 +172,9 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="States\PlayerState.cpp" />
+    <ClCompile Include="States\State.cpp" />
+    <ClCompile Include="States\StateMachine.cpp" />
     <ClCompile Include="Utils\ComponentContainer.cpp" />
     <ClCompile Include="Components\AABBCollider.cpp" />
     <ClCompile Include="Components\Collider.cpp" />
@@ -180,7 +183,6 @@
     <ClCompile Include="Components\EffectorComponent.cpp" />
     <ClCompile Include="Components\InputComponent.cpp" />
     <ClCompile Include="Objects\EditorCamera.cpp" />
-    <ClCompile Include="States\PlayerState.cpp" />
     <ClCompile Include="Scenes\GameScene.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Components\OBBCollider.cpp" />
@@ -207,8 +209,6 @@
     <ClCompile Include="Datas\TextureData.cpp" />
     <ClCompile Include="Objects\Actors\Tile_FG.cpp" />
     <ClCompile Include="Components\TileRenderer.cpp" />
-    <ClCompile Include="States\State.cpp" />
-    <ClCompile Include="States\StateMachine.cpp" />
     <ClCompile Include="UI\UIImage.cpp" />
     <ClCompile Include="UI\UIWorkTool.cpp" />
     <ClCompile Include="UI\UIBase.cpp" />

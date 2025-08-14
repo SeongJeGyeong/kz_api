@@ -97,9 +97,9 @@ void Game::Update()
 	{
 		// update 입력 처리 -> 충돌 체크 -> postupdate 위치 이동
 		_currScene->Update(TimeManager::GetInstance()->GetDeltaTime());
-		//CollisionManager::GetInstance()->Update();
+		CollisionManager::GetInstance()->Update();
 		_currScene->PostUpdate(TimeManager::GetInstance()->GetDeltaTime());
-		//CollisionManager::GetInstance()->PostUpdate();
+		CollisionManager::GetInstance()->PostUpdate();
 	}
 	else if (_hwndSub == hwnd && _subWindow)
 	{
@@ -139,6 +139,7 @@ void Game::Render()
 		::TextOut(_hdcBack, 100, 10, str.c_str(), static_cast<int32>(str.size()));
 	}
 
+	CollisionManager::GetInstance()->Render(_hdcBack);
 
 	// 여분 도화지에 렌더링 끝.
 	// 한번 그림을 다 그렸으니, 이제는 프론트 버퍼에 복사.

@@ -73,6 +73,26 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 		Texture* rti = new Texture();
 		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.06f, false, { 0, -11 });
 		_textures["zero_run_to_idle"] = rti;
+
+		Texture* prec = new Texture();
+		prec->LoadSprite(playerPath / L"spr_precrouch.bmp", 36, 40, 2, 0.06f, false, { 0, -13 });
+		_textures["zero_PreCrouch"] = prec;
+
+		Texture* c = new Texture();
+		c->LoadSprite(playerPath / L"spr_crouch.bmp", 36, 40, 1, 0.06f, true, { 0, -13 });
+		_textures["zero_Crouch"] = c;
+
+		Texture* posc = new Texture();
+		posc->LoadSprite(playerPath / L"spr_postcrouch.bmp", 36, 40, 2, 0.06f, false, { 0, -13 });
+		_textures["zero_PostCrouch"] = posc;
+
+		Texture* jump = new Texture();
+		jump->LoadSprite(playerPath / L"spr_jump.bmp", 32, 42, 4, 0.06f, true, { -10, 0 });
+		_textures["zero_jump"] = jump;
+
+		Texture* fall = new Texture();
+		fall->LoadSprite(playerPath / L"spr_fall.bmp", 42, 48, 4, 0.06f, true, { -10, -5 });
+		_textures["zero_fall"] = fall;
 	}
 
 	fs::path effectPath = texturePath / L"Sprites/Effects/";
