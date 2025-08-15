@@ -63,7 +63,7 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 		_textures["zero_idle"] = idle;
 
 		Texture* itr = new Texture();
-		itr->LoadSprite(playerPath / L"spr_idle_to_run.bmp", 44, 32, 4, 0.06f, false, { 0, -10 });
+		itr->LoadSprite(playerPath / L"spr_idle_to_run.bmp", 44, 32, 4, 0.05f, false, { 0, -10 });
 		_textures["zero_idle_to_run"] = itr;
 
 		Texture* run = new Texture();
@@ -71,7 +71,7 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 		_textures["zero_run"] = run;
 
 		Texture* rti = new Texture();
-		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.06f, false, { 0, -11 });
+		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.05f, false, { 0, -11 });
 		_textures["zero_run_to_idle"] = rti;
 
 		Texture* prec = new Texture();

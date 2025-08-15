@@ -5,28 +5,27 @@
 #include "EditorSub.h"
 #include "../Resources/Texture.h"
 #include "../Managers/ResourceManager.h"
-#include "../Objects/EditorCamera.h"
+#include "../Objects/Camera.h"
 
 void EditorScene::Init()
 {
 	Super::Init();
 	_sceneType = ESceneType::EDITOR;
 
-	iGridMaxX = GWinSizeX / TILE_SIZE;
-	iGridMaxY = GWinSizeY / TILE_SIZE;
-
-	iEditorMapSizeX = 3840;
-	iEditorMapSizeY = 2160;
+	iSceneSizeX = 3840;
+	iSceneSizeY = 2160;
+	iWorldGridMaxX = iSceneSizeX / TILE_SIZE;
+	iWorldGridMaxY = iSceneSizeY / TILE_SIZE;
 
 	_tileMapList = ResourceManager::GetInstance()->GetTileMapList();
 
 	_subWindow = Game::GetInstance()->GetSubWindow();
 
-	_camera = new EditorCamera();
-	_camera->Init();
-	_camera->SetWorldSize(iEditorMapSizeX, iEditorMapSizeY);
-	Vector2 size = _camera->GetCameraSize();
-	_camera->SetPos({ size.x / 2, size.y / 2 });
+	_sceneCamera = new Camera();
+	_sceneCamera->Init();
+	_sceneCamera->SetWorldSize(iSceneSizeX, iSceneSizeY);
+	Vector2 size = _sceneCamera->GetCameraSize();
+	_sceneCamera->SetPos({ size.x / 2, size.y / 2 });
 }
 
 void EditorScene::Destroy()
@@ -37,18 +36,26 @@ void EditorScene::Destroy()
 
 void EditorScene::Update(float deltaTime)
 {
-	//HWND hwnd = ::GetForegroundWindow();
-	//if (hwnd == _hwndSub && _subWindow)
-	//{
-	//	_subWindow->Update();
-	//	return;
-	//}
-
-	Super::Update(deltaTime);
-
-	if (_camera)
+	if (_sceneCamera)
 	{
-		_camera->Update(deltaTime);
+		Vector2 cameraPos = _sceneCamera->GetPos();
+		if (InputManager::GetInstance()->GetButtonPressed(KeyType::W))
+		{
+			cameraPos.y -= 200.f * deltaTime;
+		}
+		if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))
+		{
+			cameraPos.y += 200.f * deltaTime;
+		}
+		if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
+		{
+			cameraPos.x -= 200.f * deltaTime;
+		}
+		if (InputManager::GetInstance()->GetButtonPressed(KeyType::D))
+		{
+			cameraPos.x += 200.f * deltaTime;
+		}
+		_sceneCamera->SetPos(cameraPos);
 	}
 
 	if (InputManager::GetInstance()->GetButtonDown(KeyType::KEY_1))
@@ -86,6 +93,8 @@ void EditorScene::Update(float deltaTime)
 	{
 		LoadMap();
 	}
+
+	Super::Update(deltaTime);
 }
 
 void EditorScene::Render(HDC hdc)
@@ -99,7 +108,7 @@ void EditorScene::Render(HDC hdc)
 	SetTextAlign(hdc, TA_LEFT);
 
 	POINT mousePos = InputManager::GetInstance()->GetMousePos();
-	POINT WorldMouse = _camera->ConvertWorldPos(mousePos);
+	POINT WorldMouse = _sceneCamera->ConvertWorldPos(mousePos);
 	wstring mstr = std::format(L"World Mouse Pos ({0}, {1})", WorldMouse.x, WorldMouse.y);
 	::TextOut(hdc, 300, 30, mstr.c_str(), static_cast<int32>(mstr.size()));
 
@@ -129,20 +138,21 @@ void EditorScene::Render(HDC hdc)
 		case COL_STAIR:
 			colStr = L"COLLIDER : Stair";
 			break;
+		case COL_PORTAL:
+			colStr = L"COLLIDER : Portal";
+			break;
 		default:
 			break;
 		}
 		::TextOut(hdc, 20, 70, colStr.c_str(), static_cast<int32>(colStr.size()));
 	}
 	::TextOut(hdc, 20, 50, str.c_str(), static_cast<int32>(str.size()));
-
-	//if (_subWindow)_subWindow->Render();		
 }
 
 void EditorScene::DrawGird(HDC hdc)
 {
-	Vector2 cameraPos = _camera->GetPos();
-	Vector2 cameraSize = _camera->GetCameraSize();
+	Vector2 cameraPos = _sceneCamera->GetPos();
+	Vector2 cameraSize = _sceneCamera->GetCameraSize();
 	float cameraPosXMin = cameraPos.x - (cameraSize.x / 2);
 	float cameraPosXMax = cameraPos.x + (cameraSize.x / 2);
 	float cameraPosYMin = cameraPos.y - (cameraSize.y / 2);
@@ -157,13 +167,13 @@ void EditorScene::DrawGird(HDC hdc)
 	{
 		float screenX = i * TILE_SIZE - cameraPosXMin;
 		::MoveToEx(hdc, screenX, 0, nullptr);
-		::LineTo(hdc, screenX, iEditorMapSizeY);
+		::LineTo(hdc, screenX, iSceneSizeY);
 	}
 	for (int32 i = yMn; i <= yMx; ++i)
 	{
 		float screenY = i * TILE_SIZE - cameraPosYMin;
 		::MoveToEx(hdc, 0, screenY, nullptr);
-		::LineTo(hdc, iEditorMapSizeX, screenY);
+		::LineTo(hdc, iSceneSizeX, screenY);
 	}
 }
 
@@ -176,11 +186,11 @@ void EditorScene::DrawTile(HDC hdc)
 			if (it.second.vTilePos == Vector2(-1, -1)) continue;
 
 			// 그리드의 인덱스를 그리드 좌표로 변환
-			Vector2 gridPos = ConvertIndexToGrid(it.first);
+			Vector2 gridPos = ConvertIndexToWorldGrid(it.first);
 			// 그리드 좌표를 실제 화면 좌표로 변환
 			Vector2 worldPos = { gridPos.x * TILE_SIZE + TILE_SIZE / 2, gridPos.y * TILE_SIZE + TILE_SIZE / 2 };
 			// 실제 화면 좌표를 카메라에 출력될 좌표로 변환
-			Vector2 screenPos = _camera->ConvertScreenPos(worldPos);
+			Vector2 screenPos = _sceneCamera->ConvertScreenPos(worldPos);
 			_tileMapList[it.second.iTilesetIndex]->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE);
 		}
 	}
@@ -189,6 +199,7 @@ void EditorScene::DrawTile(HDC hdc)
 void EditorScene::DrawCollider(HDC hdc)
 {
 	HPEN redPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+	HPEN greenPen = CreatePen(PS_SOLID, 3, RGB(0, 255, 0));
 	HPEN bluePen = CreatePen(PS_SOLID, 3, RGB(0, 0, 255));
 	HPEN magPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 255));
 	HPEN cyPen = CreatePen(PS_SOLID, 3, RGB(0, 255, 255));
@@ -214,20 +225,23 @@ void EditorScene::DrawCollider(HDC hdc)
 		case COL_STAIR:
 			(HPEN)SelectObject(hdc, bluePen);
 			break;
+		case COL_PORTAL:
+			(HPEN)SelectObject(hdc, greenPen);
+			break;
 		default:
 			break;
 		}
 
-		if (info.mode == EColliderMode::COL_BOX)
+		if (info.mode == EColliderMode::COL_BOX || info.mode == EColliderMode::COL_PORTAL)
 		{
-			POINT startPoint = _camera->ConvertScreenPos(info.vStart);
-			POINT endPoint = _camera->ConvertScreenPos(info.vEnd);
+			POINT startPoint = _sceneCamera->ConvertScreenPos(info.vStart);
+			POINT endPoint = _sceneCamera->ConvertScreenPos(info.vEnd);
 			Rectangle(hdc, startPoint.x, startPoint.y, endPoint.x, endPoint.y);
 		}
 		else
 		{
-			POINT startPoint = _camera->ConvertScreenPos(info.vStart);
-			POINT endPoint = _camera->ConvertScreenPos(info.vEnd);
+			POINT startPoint = _sceneCamera->ConvertScreenPos(info.vStart);
+			POINT endPoint = _sceneCamera->ConvertScreenPos(info.vEnd);
 			::MoveToEx(hdc, startPoint.x, startPoint.y, nullptr);
 			::LineTo(hdc, endPoint.x, endPoint.y);
 		}
@@ -236,10 +250,10 @@ void EditorScene::DrawCollider(HDC hdc)
 
 	if (_startPoint.x != INT_MAX && _startPoint.y != INT_MAX)
 	{
-		POINT startPoint = _camera->ConvertScreenPos(_startPoint);
-		if (eColMode == EColliderMode::COL_BOX)
+		POINT startPoint = _sceneCamera->ConvertScreenPos(_startPoint);
+		if (eColMode == EColliderMode::COL_BOX || eColMode == EColliderMode::COL_PORTAL)
 		{
-			RednerBox(hdc, startPoint);
+			RednerBox(hdc, startPoint, eColMode);
 		}
 		else
 		{
@@ -250,6 +264,7 @@ void EditorScene::DrawCollider(HDC hdc)
 	SelectObject(hdc, hOldPen);
 	DeleteObject(redPen);
 	DeleteObject(bluePen);
+	DeleteObject(greenPen);
 	DeleteObject(magPen);
 	DeleteObject(cyPen);
 }
@@ -279,6 +294,8 @@ void EditorScene::SaveMap()
 		if (file.is_open()) 
 		{
 			json tileData;
+			Vector2 minPos = Vector2(iSceneSizeX, iSceneSizeY);
+			Vector2 maxPos = Vector2(0, 0);
 			// 타일 데이터 저장
 			for (int32 i = 0; i < ERenderLayer::LAYER_END; i++)
 			{
@@ -287,7 +304,13 @@ void EditorScene::SaveMap()
 				json TilesByLayer;
 				for (auto it : _tileInfoMap[i])
 				{
-					Vector2 pos = ConvertIndexToGrid(it.first);
+					Vector2 pos = ConvertIndexToWorldGrid(it.first);
+					Vector2 screenPos = { pos.x * TILE_SIZE + TILE_SIZE / 2, pos.y * TILE_SIZE + TILE_SIZE / 2 };
+					if (minPos.x > screenPos.x) minPos.x = screenPos.x;
+					if (minPos.y > screenPos.y) minPos.y = screenPos.y;
+					if (maxPos.x < screenPos.x) maxPos.x = screenPos.x;
+					if (maxPos.y < screenPos.y) maxPos.y = screenPos.y;
+
 					TilesByLayer[to_string(it.first)].push_back(it.second.iTilesetIndex);
 					TilesByLayer[to_string(it.first)].push_back(pos.x);
 					TilesByLayer[to_string(it.first)].push_back(pos.y);
@@ -346,6 +369,9 @@ void EditorScene::SaveMap()
 				colliderData[colliderType].push_back(ColliderByType);
 			}
 			jsonfile["ColliderInfo"] = colliderData;
+			jsonfile["MapSize"] = { maxPos.x + (TILE_SIZE * 0.5f), maxPos.y + (TILE_SIZE * 0.5f)};
+			jsonfile["MinPosition"] = { minPos.x, minPos.y };
+			jsonfile["MaxPosition"] = { maxPos.x, maxPos.y };
 
 			file << std::setw(4) << jsonfile;
 			file.close();
@@ -408,7 +434,7 @@ void EditorScene::LoadMap()
 
 				for (auto data : tileData[tileType])
 				{
-					int32 index = ConvertGridToIndex({ data[1], data[2] });
+					int32 index = ConvertWorldGridToIndex({ data[1], data[2] });
 					_tileInfoMap[type][index] = { data[0], {data[3], data[4]} };
 				}
 			}
@@ -468,10 +494,11 @@ void EditorScene::TileModeUpdate()
 		if (eMode == EditorMode::TILEMODE)
 		{
 			POINT mousePos = InputManager::GetInstance()->GetMousePos();
+			POINT wolrdPos = _sceneCamera->ConvertWorldPos(mousePos);
 			// 클릭한 그리드 위치 계산
-			int32 x = mousePos.x / TILE_SIZE;
-			int32 y = mousePos.y / TILE_SIZE;
-			int32 index = ConvertGridToIndex({ (float)x, (float)y });
+			int32 x = wolrdPos.x / TILE_SIZE;
+			int32 y = wolrdPos.y / TILE_SIZE;
+			int32 index = ConvertWorldGridToIndex({ (float)x, (float)y });
 
 			_tileInfoMap[_subWindow->GetSelectedLayer()][index] = { _subWindow->GetSelectedTileSet(), _subWindow->GetSelectedTexturePos() };
 		}
@@ -479,10 +506,11 @@ void EditorScene::TileModeUpdate()
 	else if (InputManager::GetInstance()->GetButtonPressed(KeyType::RightMouse))
 	{
 		POINT mousePos = InputManager::GetInstance()->GetMousePos();
+		POINT wolrdPos = _sceneCamera->ConvertWorldPos(mousePos);
 		// 클릭한 그리드 위치 계산
-		int32 x = mousePos.x / TILE_SIZE;
-		int32 y = mousePos.y / TILE_SIZE;
-		int32 index = ConvertGridToIndex({ (float)x, (float)y });
+		int32 x = wolrdPos.x / TILE_SIZE;
+		int32 y = wolrdPos.y / TILE_SIZE;
+		int32 index = ConvertWorldGridToIndex({ (float)x, (float)y });
 		_tileInfoMap[_subWindow->GetSelectedLayer()][index] = { -1, {-1, -1} };
 	}
 }
@@ -495,13 +523,13 @@ void EditorScene::ColliderModeUpdate()
 	}
 	else if (InputManager::GetInstance()->GetButtonDown(KeyType::E))
 	{
-		if (eColMode != EColliderMode::COL_STAIR) eColMode = (EColliderMode)(eColMode + 1);
+		if (eColMode != EColliderMode::COL_END - 1) eColMode = (EColliderMode)(eColMode + 1);
 	}
 
 	if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
 	{
 		POINT mousePos = InputManager::GetInstance()->GetMousePos();
-		POINT wolrdPos = _camera->ConvertWorldPos(mousePos);
+		POINT wolrdPos = _sceneCamera->ConvertWorldPos(mousePos);
 		// 클릭한 그리드 위치 계산
 		int32 x = wolrdPos.x / TILE_SIZE;
 		int32 y = wolrdPos.y / TILE_SIZE;
@@ -511,7 +539,7 @@ void EditorScene::ColliderModeUpdate()
 	else if (InputManager::GetInstance()->GetButtonUp(KeyType::LeftMouse))
 	{
 		POINT mousePos = InputManager::GetInstance()->GetMousePos();
-		POINT wolrdPos = _camera->ConvertWorldPos(mousePos);
+		POINT wolrdPos = _sceneCamera->ConvertWorldPos(mousePos);
 		// 클릭한 그리드 위치 계산
 		int32 x = wolrdPos.x / TILE_SIZE;
 		int32 y = wolrdPos.y / TILE_SIZE;
@@ -520,6 +548,7 @@ void EditorScene::ColliderModeUpdate()
 		switch (eColMode)
 		{
 		case COL_BOX:
+		case COL_PORTAL:
 			endPoint = { x * TILE_SIZE + TILE_SIZE, y * TILE_SIZE + TILE_SIZE };
 			break;
 		case COL_PLATFORM:
@@ -554,21 +583,24 @@ void EditorScene::ColliderModeUpdate()
 	}
 	else if (InputManager::GetInstance()->GetButtonUp(KeyType::RightMouse))
 	{
-		_colliderList.pop_back();
+		if(!_colliderList.empty()) _colliderList.pop_back();
 	}
 }
 
-void EditorScene::RednerBox(HDC hdc, POINT startPoint)
+void EditorScene::RednerBox(HDC hdc, POINT startPoint, EColliderMode mode)
 {
-	HPEN redPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+	unsigned long color = (mode == EColliderMode::COL_BOX) ? RGB(255, 0, 0) : RGB(0, 255, 0);
+	HPEN redPen = CreatePen(PS_SOLID, 3, color);
 	HPEN hOldPen = (HPEN)SelectObject(hdc, redPen);
 
 	POINT mousePos = InputManager::GetInstance()->GetMousePos();
 	int32 x = mousePos.x / TILE_SIZE;
 	int32 y = mousePos.y / TILE_SIZE;
-
 	POINT endPoint = { x * TILE_SIZE + TILE_SIZE, y * TILE_SIZE + TILE_SIZE };
-	Rectangle(hdc, startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+	int32 marginX = (endPoint.x - startPoint.x) % TILE_SIZE;
+	int32 marginY = (endPoint.y - startPoint.y) % TILE_SIZE;
+
+	Rectangle(hdc, startPoint.x, startPoint.y, endPoint.x - marginX, endPoint.y - marginY);
 }
 
 void EditorScene::RednerLine(HDC hdc, POINT startPoint, EColliderMode mode)

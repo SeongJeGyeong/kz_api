@@ -123,8 +123,6 @@ void CollisionManager::Update()
 
 void CollisionManager::Render(HDC hdc)
 {
-	wstring str = std::format(L"collisionMap Size ({0})", _collisionMap.size());
-	::TextOut(hdc, 200, 200, str.c_str(), static_cast<int32>(str.size()));
 }
 
 void CollisionManager::AddCollider(Collider* collider)

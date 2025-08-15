@@ -1,5 +1,6 @@
 #pragma once
 #include "../Object.h"
+#include "../../Utils/ComponentContainer.h"
 
 class Texture;
 class Collider;
@@ -12,6 +13,7 @@ public:
 
 protected:
 	Collider* _collider = nullptr;
+	ComponentContainer _components;
 
 public:
 	virtual void Init(Vector2 pos);
@@ -30,5 +32,16 @@ public:
 	void CreateOBBCollider(float width, float height, float rotation, ECollisionLayer layer);
 	void CreateAABBCollider(float width, float height, ECollisionLayer layer);
 	void CreateLineCollider(Vector2 start, Vector2 end, ECollisionLayer layer);
+
+	template <typename T>
+	T* GetComponent()
+	{
+		return _components.GetComponent<T>();
+	}
+
+	void UpdateAttachedComponents(float deltaTime)
+	{
+		_components.UpdateComponents(deltaTime);
+	}
 };
 

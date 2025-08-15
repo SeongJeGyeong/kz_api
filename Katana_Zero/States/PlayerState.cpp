@@ -3,273 +3,330 @@
 #include "../Objects/Actors/Player.h"
 #include "../Components/Animator.h"
 #include "../Managers/InputManager.h"
+#include "../Components/InputComponent.h"
 
-void PlayerState::UpdateState(Actor* owner, float deltaTime)
+void PlayerState::UpdateState(float deltaTime)
 {
-	Player* player = static_cast<Player*>(owner);
-	player->UpdateAttachedComponents(deltaTime);
-	if (!player->GetIsGround() && !player->GetIsPlatform() && !player->GetOnStair() && 
-		player->GetCurrentState() != EPlayerState::PLAYER_ATTACK)
+	if (_player == nullptr) return;
+	_player->UpdateAttachedComponents(deltaTime);
+
+	if (!_player->GetIsGround() && !_player->GetIsPlatform() && !_player->GetOnStair() &&
+		_player->GetCurrentState() != EPlayerState::PLAYER_ATTACK &&
+		_player->GetVelocity().y > 0.f)
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_FALL);
+		_player->ChangeState(EPlayerState::PLAYER_FALL);
+		_player->SetIsCrouch(false);
 	}
 }
 
+//void PlayerState::InputUpdateForState(EPlayerState state)
+//{
+//	switch (state)
+//	{
+//	case PLAYER_IDLE:
+//		break;
+//	case PLAYER_IDLE_TO_RUN:
+//		break;
+//	case PLAYER_RUN:
+//		break;
+//	case PLAYER_RUN_TO_IDLE:
+//		break;
+//	case PLAYER_JUMP:
+//		break;
+//	case PLAYER_FALL:
+//		break;
+//	case PLAYER_PRECROUCH:
+//		break;
+//	case PLAYER_CROUCH:
+//		break;
+//	case PLAYER_POSTCROUCH:
+//		break;
+//	case PLAYER_ATTACK:
+//		break;
+//	case PLAYER_ROLL:
+//		break;
+//	case PLAYER_HURT_BEGIN:
+//		break;
+//	case PLAYER_HURT_LOOP:
+//		break;
+//	case PLAYER_HURT_GROUND:
+//		break;
+//	case PLAYER_HURT_RECOVER:
+//		break;
+//	case PLAYER_END:
+//		break;
+//	default:
+//		break;
+//	}
+//}
+
 ///////* Idle *///////////////////////////////
-void PlayerState_Idle::EnterState(Actor* owner)
+void PlayerState_Idle::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_IDLE);
 }
 
-void PlayerState_Idle::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Idle::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Idle(deltaTime);
 }
 
-void PlayerState_Idle::ExitState(Actor* owner)
+void PlayerState_Idle::ExitState()
 {
 
 }
 //////////////////////////////////////////////
 
 ///////* Idle to Run *////////////////////////
-void PlayerState_Idle_to_Run::EnterState(Actor* owner)
+void PlayerState_Idle_to_Run::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_IDLE_TO_RUN);
 }
 
-void PlayerState_Idle_to_Run::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Idle_to_Run::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_IdleToRun(deltaTime);
+
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_RUN);
+		_player->ChangeState(EPlayerState::PLAYER_RUN);
 	}
 }
 
-void PlayerState_Idle_to_Run::ExitState(Actor* owner)
+void PlayerState_Idle_to_Run::ExitState()
 {
 
 }
 //////////////////////////////////////////////
 
 ///////* Run *////////////////////////////////
-void PlayerState_Run::EnterState(Actor* owner)
+void PlayerState_Run::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_RUN);
 }
 
-void PlayerState_Run::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Run::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Vector2 acceleration = static_cast<Player*>(owner)->GetAcceleration();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Run(deltaTime);
+
+	Vector2 acceleration = _player->GetAcceleration();
 	if (acceleration.x == 0)
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
+		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
 }
 
-void PlayerState_Run::ExitState(Actor* owner)
+void PlayerState_Run::ExitState()
 {
 
 }
 //////////////////////////////////////////////
 
 ///////* Run to Idle *////////////////////////
-void PlayerState_Run_to_Idle::EnterState(Actor* owner)
+void PlayerState_Run_to_Idle::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_RUN_TO_IDLE);
 }
 
-void PlayerState_Run_to_Idle::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Run_to_Idle::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Player* player = static_cast<Player*>(owner);
-	if (player->GetIsGround() || player->GetIsPlatform() || player->GetOnStair())
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_RunToIdle(deltaTime);
+
+	if (_player->GetIsGround() || _player->GetIsPlatform() || _player->GetOnStair())
 	{
 		if (InputManager::GetInstance()->GetButtonPressed(KeyType::A) || InputManager::GetInstance()->GetButtonPressed(KeyType::D))
 		{
-			player->ChangeState(EPlayerState::PLAYER_IDLE_TO_RUN);
+			_player->ChangeState(EPlayerState::PLAYER_IDLE_TO_RUN);
 		}
 	}
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_IDLE);
+		_player->ChangeState(EPlayerState::PLAYER_IDLE);
 	}
 }
 
-void PlayerState_Run_to_Idle::ExitState(Actor* owner)
+void PlayerState_Run_to_Idle::ExitState()
 {
 
 }
 //////////////////////////////////////////////
 
 ///////* PreCrouch *////////////////////////
-void PlayerState_PreCrouch::EnterState(Actor* owner)
+void PlayerState_PreCrouch::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_PRECROUCH);
 }
 
-void PlayerState_PreCrouch::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_PreCrouch::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_PreCrouch(deltaTime);
+
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_CROUCH);
+		_player->ChangeState(EPlayerState::PLAYER_CROUCH);
 	}
 }
 
-void PlayerState_PreCrouch::ExitState(Actor* owner)
+void PlayerState_PreCrouch::ExitState()
 {
 }
 //////////////////////////////////////////////
 
 ///////* Crouch *////////////////////////
-void PlayerState_Crouch::EnterState(Actor* owner)
+void PlayerState_Crouch::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_CROUCH);
 }
 
-void PlayerState_Crouch::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Crouch::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Crouch(deltaTime);
 }
 
-void PlayerState_Crouch::ExitState(Actor* owner)
+void PlayerState_Crouch::ExitState()
 {
+	_player->SetIsCrouch(false);
 }
 //////////////////////////////////////////////
 
 ///////* PostCrouch *////////////////////////
-void PlayerState_PostCrouch::EnterState(Actor* owner)
+void PlayerState_PostCrouch::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_POSTCROUCH);
 }
 
-void PlayerState_PostCrouch::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_PostCrouch::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_PostCrouch(deltaTime);
+
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_IDLE);
+		_player->ChangeState(EPlayerState::PLAYER_IDLE);
 	}
 }
 
-void PlayerState_PostCrouch::ExitState(Actor* owner)
+void PlayerState_PostCrouch::ExitState()
 {
 }
 //////////////////////////////////////////////
 
 ///////* Jump *////////////////////////
-void PlayerState_Jump::EnterState(Actor* owner)
+void PlayerState_Jump::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_JUMP);
+	_player->SetIsCrouch(false);
 }
 
-void PlayerState_Jump::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Jump::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Player* player = static_cast<Player*>(owner);
-	if (player->GetIsGround() || player->GetIsPlatform() || player->GetOnStair())
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Jump(deltaTime);
+
+	if (_player->GetIsGround() || _player->GetIsPlatform() || _player->GetOnStair())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
+		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
 }
 
-void PlayerState_Jump::ExitState(Actor* owner)
+void PlayerState_Jump::ExitState()
 {
 }
 //////////////////////////////////////////////
 
 ///////* Fall *////////////////////////
-void PlayerState_Fall::EnterState(Actor* owner)
+void PlayerState_Fall::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_FALL);
+	_player->SetIsCrouch(false);
 }
 
-void PlayerState_Fall::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Fall::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	if (!static_cast<Player*>(owner)->GetIsJumped())
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Fall(deltaTime);
+
+	if (!_player->GetIsJumped())
 	{
-		static_cast<Player*>(owner)->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
+		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
 }
 
-void PlayerState_Fall::ExitState(Actor* owner)
+void PlayerState_Fall::ExitState()
 {
 }
 //////////////////////////////////////////////
 
 ///////* Attack *////////////////////////
-void PlayerState_Attack::EnterState(Actor* owner)
+void PlayerState_Attack::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_ATTACK);
 }
 
-void PlayerState_Attack::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Attack::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Player* player = static_cast<Player*>(owner);
-	Animator* animator = player->GetComponent<Animator>();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Attack(deltaTime);
+
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		if (!player->GetIsJumped())
+		if (!_player->GetIsJumped())
 		{
-			player->ChangeState(EPlayerState::PLAYER_IDLE);
+			_player->ChangeState(EPlayerState::PLAYER_IDLE);
 		}
 		else
 		{
-			player->ChangeState(EPlayerState::PLAYER_FALL);
+			_player->ChangeState(EPlayerState::PLAYER_FALL);
 		}
 	}
 }
 
-void PlayerState_Attack::ExitState(Actor* owner)
+void PlayerState_Attack::ExitState()
 {
 }
 //////////////////////////////////////////////
 
 ///////* Roll *////////////////////////
-void PlayerState_Roll::EnterState(Actor* owner)
+void PlayerState_Roll::EnterState()
 {
-	Animator* animator = static_cast<Player*>(owner)->GetComponent<Animator>();
+	Animator* animator = _player->GetComponent<Animator>();
 	animator->SetAnimation(EPlayerState::PLAYER_ROLL);
 }
 
-void PlayerState_Roll::UpdateState(Actor* owner, float deltaTime)
+void PlayerState_Roll::UpdateState(float deltaTime)
 {
-	Super::UpdateState(owner, deltaTime);
-	Player* player = static_cast<Player*>(owner);
-	Animator* animator = player->GetComponent<Animator>();
+	Super::UpdateState(deltaTime);
+	_player->GetComponent<InputComponent>()->Input_In_Roll(deltaTime);
+
+	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		if (player->GetIsCrouch())
-		{
-			player->ChangeState(EPlayerState::PLAYER_CROUCH);
-		}
-		else
-		{
-			player->ChangeState(EPlayerState::PLAYER_IDLE);
-		}
+		_player->ChangeState(EPlayerState::PLAYER_IDLE);
 	}
 }
 
-void PlayerState_Roll::ExitState(Actor* owner)
+void PlayerState_Roll::ExitState()
 {
 }
 //////////////////////////////////////////////

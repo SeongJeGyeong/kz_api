@@ -4,7 +4,9 @@ class Component;
 
 class ComponentContainer
 {
+private:
 	map<size_t, Component*> _componentMap;
+	map<uint32, Component*> _priorityGroups;
 
 public:
 	template<typename T>
@@ -12,6 +14,7 @@ public:
 	{
 		auto component = new T();
 		_componentMap.insert(make_pair(T::StaticClass(), component));
+		_priorityGroups[component->GetPriority()] = component;
 	}
 
 	template<typename T>

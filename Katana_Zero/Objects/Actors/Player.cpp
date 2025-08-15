@@ -12,6 +12,7 @@
 #include "../../States/PlayerState.h"
 #include "../../States/StateMachine.h"
 #include "../../Managers/TimeManager.h"
+#include "../../Components/CameraComponent.h"
 
 void Player::Init(Vector2 pos)
 {
@@ -21,6 +22,10 @@ void Player::Init(Vector2 pos)
     _components.AddComponent<Animator>();
     _components.AddComponent<EffectorComponent>();
     _components.AddComponent<InputComponent>();
+    _components.AddComponent<CameraComponent>();
+
+    CameraComponent* camera = _components.GetComponent<CameraComponent>();
+    camera->InitComponent(this);
 
     Animator* animator = _components.GetComponent<Animator>();
     if (animator != nullptr)
@@ -53,17 +58,17 @@ void Player::Init(Vector2 pos)
         inputComp->InitComponent(this);
     }
     _stateMachine = new StateMachine(this);
-    _stateMachine->AddState(new PlayerState_Idle());
-    _stateMachine->AddState(new PlayerState_Idle_to_Run());
-    _stateMachine->AddState(new PlayerState_Run());
-    _stateMachine->AddState(new PlayerState_Run_to_Idle());
-    _stateMachine->AddState(new PlayerState_PreCrouch());
-    _stateMachine->AddState(new PlayerState_Crouch());
-    _stateMachine->AddState(new PlayerState_PostCrouch());
-    _stateMachine->AddState(new PlayerState_Jump());
-    _stateMachine->AddState(new PlayerState_Fall());
-    _stateMachine->AddState(new PlayerState_Attack());
-    _stateMachine->AddState(new PlayerState_Roll());
+    _stateMachine->AddState(new PlayerState_Idle(this));
+    _stateMachine->AddState(new PlayerState_Idle_to_Run(this));
+    _stateMachine->AddState(new PlayerState_Run(this));
+    _stateMachine->AddState(new PlayerState_Run_to_Idle(this));
+    _stateMachine->AddState(new PlayerState_PreCrouch(this));
+    _stateMachine->AddState(new PlayerState_Crouch(this));
+    _stateMachine->AddState(new PlayerState_PostCrouch(this));
+    _stateMachine->AddState(new PlayerState_Jump(this));
+    _stateMachine->AddState(new PlayerState_Fall(this));
+    _stateMachine->AddState(new PlayerState_Attack(this));
+    _stateMachine->AddState(new PlayerState_Roll(this));
     _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE);
 }
 
@@ -88,19 +93,22 @@ void Player::Render(HDC hdc)
     _components.RenderComponents(hdc);
 	Super::Render(hdc);
 
-    //wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
-    //::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
+    wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
+    ::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
+
+    printState(hdc);
+    wstring strs = std::format(L"bIsCrouch({0})", bIsCrouch);
+    ::TextOut(hdc, 450, 50, strs.c_str(), static_cast<int32>(strs.size()));
+
     wstring str2 = std::format(L"Pos({0}, {1})", GetPos().x, GetPos().y);
-    ::TextOut(hdc, 100, 50, str2.c_str(), static_cast<int32>(str2.size()));
+    ::TextOut(hdc, 100, 70, str2.c_str(), static_cast<int32>(str2.size()));
 
     wstring str3 = std::format(L"Hit Normal({0}, {1})", vHitNormal.x, vHitNormal.y);
-    ::TextOut(hdc, 100, 70, str3.c_str(), static_cast<int32>(str3.size()));
+    ::TextOut(hdc, 100, 100, str3.c_str(), static_cast<int32>(str3.size()));
 
     wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
-    ::TextOut(hdc, 100, 90, str5.c_str(), static_cast<int32>(str5.size()));
+    ::TextOut(hdc, 100, 120, str5.c_str(), static_cast<int32>(str5.size()));
 
-    wstring str6 = std::format(L"AttackDelayTime ({0})", fAttackDelayTime);
-    ::TextOut(hdc, 100, 110, str6.c_str(), static_cast<int32>(str6.size()));
 
     float halfHeight = GetCollider()->GetHeight() * 0.5f;
 }
@@ -149,6 +157,7 @@ void Player::ApplyPhysics(float deltaTime)
 
     float upFactor = 400.f;
     float sideFactor = 400.f;
+    if (GetCurrentState() == EPlayerState::PLAYER_ROLL) sideFactor = 800.f;
 
     Vector2 gravityVector = normalGravity * GravityLength;
     Vector2 sideVec = vVelocity - gravityVector;
@@ -160,7 +169,7 @@ void Player::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
-    if (GetCurrentState() == EPlayerState::PLAYER_ATTACK)
+    if (GetCurrentState() == EPlayerState::PLAYER_ATTACK || GetCurrentState() == EPlayerState::PLAYER_ROLL)
     {
         friction = 0.98f;
         gravityVector *= friction;
@@ -242,7 +251,7 @@ void Player::Move(bool dir)
             vFrontDir = { -1, 0 };
         }
     }
-    if (bIsGround || bIsPlatform || bOnStair)
+    if ((bIsGround || bIsPlatform || bOnStair) && vAcceleration.x != 0.f)
     {
         if (_stateMachine->GetCurrentStateType() == EPlayerState::PLAYER_IDLE || prevDir != vFrontDir)
         {
@@ -270,7 +279,7 @@ void Player::Roll(bool dir)
     {
         if (vHitNormal.x > -1.f)
         {
-            vAcceleration.x += (fMoveForce * 2.f) / fMass;
+            vVelocity.x += 100000.f;
             _components.GetComponent<Animator>()->SetFlipped(false);
             vFrontDir = { 1, 0 };
         }
@@ -279,7 +288,7 @@ void Player::Roll(bool dir)
     {
         if (vHitNormal.x < 1.f)
         {
-            vAcceleration.x -= (fMoveForce * 2.f) / fMass;
+            vVelocity.x -= 100000.f;
             _components.GetComponent<Animator>()->SetFlipped(true);
             vFrontDir = { -1, 0 };
         }
@@ -295,8 +304,9 @@ void Player::Landing()
 void Player::Attack()
 {
     Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
+    Vector2 worldPos = _components.GetComponent<CameraComponent>()->ConvertWorldPos(mousePos);
     Vector2 pos = GetPos();
-    Vector2 dir = mousePos - pos;
+    Vector2 dir = worldPos - pos;
     dir.Normalize();
 
     float rad = atan2(dir.y, dir.x);
@@ -585,7 +595,6 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
     case ECollisionLayer::WALL:
         bIsWall = false;
         vHitNormal = { 0, 0 };
-        //_wallCollision = WallCollisionState::NONEWALL;
         break;
     case ECollisionLayer::CEILING:
         break;
@@ -595,5 +604,56 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
     default:
         break;
     }
+}
+
+void Player::SetPlayerCamera(Camera* camera)
+{
+    CameraComponent* cameraComp = _components.GetComponent<CameraComponent>();
+    if (cameraComp) cameraComp->SetCamera(camera);
+}
+
+void Player::printState(HDC hdc)
+{
+    wstring str;
+    switch (_stateMachine->GetCurrentStateType())
+    {
+    case EPlayerState::PLAYER_IDLE :
+        str = L"PLAYER_IDLE";
+       break;
+    case EPlayerState::PLAYER_IDLE_TO_RUN:
+        str = L"PLAYER_IDLE_TO_RUN";
+        break;
+    case EPlayerState::PLAYER_RUN:
+        str = L"PLAYER_RUN";
+        break;
+    case EPlayerState::PLAYER_RUN_TO_IDLE:
+        str = L"PLAYER_RUN_TO_IDLE";
+        break;
+    case EPlayerState::PLAYER_JUMP:
+        str = L"PLAYER_JUMP";
+        break;
+    case EPlayerState::PLAYER_FALL:
+        str = L"PLAYER_FALL";
+        break;
+    case EPlayerState::PLAYER_PRECROUCH:
+        str = L"PLAYER_PRECROUCH";
+        break;
+    case EPlayerState::PLAYER_CROUCH:
+        str = L"PLAYER_CROUCH";
+        break;
+    case EPlayerState::PLAYER_POSTCROUCH:
+        str = L"PLAYER_POSTCROUCH";
+        break;
+    case EPlayerState::PLAYER_ATTACK:
+        str = L"PLAYER_ATTACK";
+        break;
+    case EPlayerState::PLAYER_ROLL:
+        str = L"PLAYER_ROLL";
+        break;
+    default:
+        break;
+    }
+
+    ::TextOut(hdc, 100, 50, str.c_str(), static_cast<int32>(str.size()));
 }
 

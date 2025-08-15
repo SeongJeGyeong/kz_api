@@ -9,6 +9,7 @@
 #include "../Scenes/EditorSub.h"
 #include "../Scenes/GameScene.h"
 #include "../Managers/CollisionManager.h"
+#include "../Objects/Camera.h"
 
 void Game::Init(HWND hwnd, HWND hsubwnd)
 {
@@ -157,7 +158,7 @@ void Game::ChangeGameScene()
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene("testScene.json");
+	_nextScene = new GameScene("cameratest.json");
 	_background = WHITENESS;
 }
 
@@ -194,4 +195,34 @@ void Game::ExitGame()
 {
 	DestroyWindow(_hwndSub);
 	DestroyWindow(_hwnd);
+}
+
+Vector2 Game::GetCurrentSceneSize()
+{
+	if (_currScene)
+	{
+		return _currScene->GetSceneSize();
+	}
+
+	return Vector2();
+}
+
+Camera* Game::GetCurrentSceneCamera()
+{
+	if (_currScene)
+	{
+		return _currScene->GetSceneCamera();
+	}
+
+	return nullptr;
+}
+
+Vector2 Game::ConvertCurSceneScreenPos(Vector2 worldPos)
+{
+	if (_currScene == nullptr) return Vector2();
+
+	Camera* camera = _currScene->GetSceneCamera();
+	if (camera == nullptr) return Vector2();
+
+	return camera->ConvertScreenPos(worldPos);
 }

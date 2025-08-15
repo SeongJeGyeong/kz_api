@@ -5,6 +5,16 @@ class Actor;
 class Component
 {
 public:
+
+	enum EComponentPriority : uint32
+	{
+		INPUT,
+		CAMERA,
+		ANIMATION,
+		EFFECT,
+		DEFAULT
+	};
+
 	virtual ~Component() {}
 
 	static size_t StaticClass()
@@ -28,5 +38,7 @@ public:
 	Vector2 GetPos() const;
 
 	virtual void print(){}
+
+	virtual uint32 GetPriority() { return EComponentPriority::DEFAULT; }
 };
 

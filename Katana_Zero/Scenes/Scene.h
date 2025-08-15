@@ -2,8 +2,18 @@
 
 #include "../UI/UIWorkTool.h"
 
+class Camera;
+
 class Scene
 {
+protected:
+	int32 iSceneSizeX;
+	int32 iSceneSizeY;
+
+	Camera* _sceneCamera = nullptr;
+	UIWorkTool _UI;
+	ESceneType _sceneType = ESceneType::NONE;
+
 public:
 	virtual ~Scene(){}
 
@@ -15,8 +25,7 @@ public:
 
 	ESceneType GetSceneType() { return _sceneType; }
 
-protected:
-	UIWorkTool _UI;
-	ESceneType _sceneType = ESceneType::NONE;
+	Vector2 GetSceneSize() { return Vector2(iSceneSizeX, iSceneSizeY); }
+	Camera* GetSceneCamera() { return _sceneCamera; }
 };
 

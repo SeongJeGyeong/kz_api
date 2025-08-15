@@ -127,6 +127,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Objects\Actors\Enemy.h" />
+    <ClInclude Include="Objects\Camera.h" />
+    <ClInclude Include="Components\CameraComponent.h" />
     <ClInclude Include="States\PlayerState.h" />
     <ClInclude Include="States\State.h" />
     <ClInclude Include="States\StateMachine.h" />
@@ -172,6 +175,9 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Objects\Actors\Enemy.cpp" />
+    <ClCompile Include="Objects\Camera.cpp" />
+    <ClCompile Include="Components\CameraComponent.cpp" />
     <ClCompile Include="States\PlayerState.cpp" />
     <ClCompile Include="States\State.cpp" />
     <ClCompile Include="States\StateMachine.cpp" />

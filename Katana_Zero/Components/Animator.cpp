@@ -2,6 +2,8 @@
 #include "Animator.h"
 #include "../Objects/Actors/Actor.h"
 #include "../Resources/Texture.h"
+#include "../Game/Game.h"
+#include "../Components/CameraComponent.h"
 
 void Animator::InitComponent(int32 endIndex)
 {
@@ -33,7 +35,9 @@ void Animator::UpdateComponent(float deltaTime)
 
 void Animator::RenderComponent(HDC hdc)
 {
-	_currentAnimation->RenderStretchedSprite(hdc, GetPos(), 2, bIsFlipped);
+	CameraComponent* cameraComp = GetOwner()->GetComponent<CameraComponent>();
+	Vector2 screenPos = cameraComp->ConvertScreenPos(GetPos());
+	_currentAnimation->RenderStretchedSprite(hdc, screenPos, 2, bIsFlipped);
 }
 
 void Animator::AddAnimation(int32 Index, Texture* sprite)

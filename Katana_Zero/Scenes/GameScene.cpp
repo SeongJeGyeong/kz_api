@@ -4,12 +4,13 @@
 #include "../Objects/Actors/Tile_FG.h"
 #include "../Components/TileRenderer.h"
 #include "../Managers/ResourceManager.h"
-//#include "../Components/Collider.h"
-//#include "../Components/AABBCollider.h"
-//#include "../Components/LineCollider.h"
+#include "../Objects/Camera.h"
 
 GameScene::GameScene(string mapFileName)
 {
+	_sceneCamera = new Camera();
+	_sceneCamera->Init();
+
 	fs::path directory = fs::current_path() / L"../GameResources/Json/";
 	fs::path path = directory / mapFileName;
 	std::ifstream file(path.c_str());
@@ -28,7 +29,9 @@ GameScene::GameScene(string mapFileName)
 	json data = json::parse(file);
 	LoadTiles(data["TileInfo"]);
 	LoadColliders(data["ColliderInfo"]);
-
+	iSceneSizeX = data["MapSize"][0];
+	iSceneSizeY = data["MapSize"][1];
+	_sceneCamera->SetWorldSize(iSceneSizeX, iSceneSizeY);
 	file.close();
 }
 
@@ -122,6 +125,7 @@ void GameScene::Init()
 
 	_player = new Player();
 	_player->Init({ GWinSizeX / 2 + 200, GWinSizeY / 2 });
+	_player->SetPlayerCamera(_sceneCamera);
 }
 
 void GameScene::Destroy()
@@ -131,8 +135,6 @@ void GameScene::Destroy()
 
 void GameScene::Update(float deltaTime)
 {
-	Super::Update(deltaTime);
-
 	if (_player)
 	{
 		_player->Update(deltaTime);
@@ -143,10 +145,7 @@ void GameScene::Update(float deltaTime)
 		collider->Update(deltaTime);
 	}
 
-	/*for (auto tile : _tileList)
-	{
-		tile->Update(deltaTime);
-	}*/
+	Super::Update(deltaTime);
 }
 
 void GameScene::PostUpdate(float deltaTime)

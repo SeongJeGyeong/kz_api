@@ -4,9 +4,14 @@
 
 void ComponentContainer::UpdateComponents(float deltaTime)
 {
-	for (auto it : _componentMap)
+	//for (auto it : _componentMap)
+	//{
+	//	it.second->UpdateComponent(deltaTime);
+	//}
+
+	for (auto& [priority, components] : _priorityGroups)
 	{
-		it.second->UpdateComponent(deltaTime);
+		components->UpdateComponent(deltaTime);
 	}
 }
 

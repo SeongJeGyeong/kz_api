@@ -1,11 +1,12 @@
 #pragma once
 #include "Actor.h"
-#include "../../Utils/ComponentContainer.h"
 
 class Animator;
 class EffectorComponent;
 class InputComponent;
 class StateMachine;
+class Camera;
+class CameraComponent;
 
 class Player : public Actor
 {
@@ -34,6 +35,7 @@ private:
 	
 	bool bOnStair = false;
 	bool bIsCrouch = false;
+	//bool bAlreadyRolled = false;
 
 	//////////////////
 	float fJumpInitialVelocity = 300.f;
@@ -44,8 +46,8 @@ private:
 
 	Vector2 vHitNormal;
 
-	ComponentContainer _components;
 	StateMachine* _stateMachine;
+	//CameraComponent* _cameraComponent = nullptr;
 
 public:
 	virtual void Init(Vector2 pos) override;
@@ -74,7 +76,7 @@ public:
 	void SetIsPlatform(bool isPlatform) { bIsPlatform = isPlatform; }
 
 	bool GetIsCrouch() { return bIsCrouch; }
-	//void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
+	void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
 
 	Vector2 GetNewPos() const { return vNewPos; }
 
@@ -90,17 +92,6 @@ public:
 	void Roll(bool dir);
 	void Landing();
 	void Attack();
-
-	template <typename T>
-	T* GetComponent()
-	{
-		return _components.GetComponent<T>();
-	}
-
-	void UpdateAttachedComponents(float deltaTime)
-	{
-		_components.UpdateComponents(deltaTime);
-	}
 
 	virtual int32 GetCurrentState() override;
 
@@ -120,4 +111,9 @@ public:
 	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
 
 	Vector2 GetVelocity() const { return vVelocity; }
+
+	void SetPlayerCamera(Camera* camera);
+	//CameraComponent* GetPlayerCameraComponent() { return _cameraComponent; }
+
+	void printState(HDC hdc);
 };

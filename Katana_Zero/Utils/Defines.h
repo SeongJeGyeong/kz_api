@@ -78,6 +78,7 @@ enum EColliderMode
 	COL_WALL_V,
 	COL_WALL_H,
 	COL_STAIR,
+	COL_PORTAL,
 	COL_END,
 };
 

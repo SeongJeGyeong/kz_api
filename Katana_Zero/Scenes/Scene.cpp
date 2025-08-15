@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Scene.h"
+#include "../Objects/Camera.h"
 
 void Scene::Init()
 {
@@ -14,6 +15,7 @@ void Scene::Destroy()
 void Scene::Update(float deltaTime)
 {
 	_UI.Update();
+	if(_sceneCamera) _sceneCamera->Update(deltaTime);
 }
 
 void Scene::PostUpdate(float deltaTime)

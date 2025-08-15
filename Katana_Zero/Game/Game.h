@@ -3,6 +3,7 @@
 
 class Scene;
 class EditorSub;
+class Camera;
 
 class Game : public Singleton<Game>
 {
@@ -51,5 +52,9 @@ public:
 
 	bool GetDebugMode() { return bDebugMode; }
 	EditorSub* GetSubWindow() { return _subWindow; }
+
+	Vector2 GetCurrentSceneSize();
+	Camera* GetCurrentSceneCamera();
+	Vector2 ConvertCurSceneScreenPos(Vector2 worldPos);
 };
 

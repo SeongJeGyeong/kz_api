@@ -18,8 +18,7 @@ void AABBCollider::RenderComponent(HDC hdc)
 	if (!Game::GetInstance()->GetDebugMode()) return;
 	Super::RenderComponent(hdc);
 
-	Vector2 pos = GetPos();
-
+	Vector2 pos = Game::GetInstance()->ConvertCurSceneScreenPos(GetPos());
 	int32 left = pos.x - fWidth * 0.5f;
 	int32 right = pos.x + fWidth * 0.5f;
 	int32 top = pos.y - fHeight * 0.5f;

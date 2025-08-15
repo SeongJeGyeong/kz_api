@@ -20,8 +20,10 @@ void LineCollider::RenderComponent(HDC hdc)
 
 	HPEN pen = CreatePen(PS_SOLID, 2, (bOverlapped) ? RGB(0, 255, 0) : RGB(255, 0, 255));
 	HPEN oldPen = (HPEN)SelectObject(hdc, pen);
-	MoveToEx(hdc, vStart.x, vStart.y, nullptr);
-	LineTo(hdc, vEnd.x, vEnd.y);
+	Vector2 screenStart = Game::GetInstance()->ConvertCurSceneScreenPos(vStart);
+	Vector2 screenEnd = Game::GetInstance()->ConvertCurSceneScreenPos(vEnd);
+	MoveToEx(hdc, screenStart.x, screenStart.y, nullptr);
+	LineTo(hdc, screenEnd.x, screenEnd.y);
 	SelectObject(hdc, oldPen);
 	DeleteObject(pen);
 }

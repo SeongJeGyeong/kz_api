@@ -38,5 +38,7 @@ public:
 
 	void SetSprite();
 	void PlayEffect(bool flipped, float radian, float scale, bool attached, Vector2 pos = Vector2(0, 0));
+
+	virtual uint32 GetPriority() override { return EComponentPriority::EFFECT; }
 };
 

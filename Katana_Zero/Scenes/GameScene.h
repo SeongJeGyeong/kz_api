@@ -5,7 +5,7 @@ class Player;
 class Tile_FG;
 class TileRenderer;
 class Actor;
-
+class Camera;
 
 class GameScene : public Scene
 {
@@ -16,7 +16,6 @@ public:
 
 private:
 	Player* _player = nullptr;
-	//vector<Tile_FG*> _tileList;
 	vector<Actor*> _colliderList;
 
 	TileRenderer* _tileRenderer[ERenderLayer::LAYER_END];

@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "TileRenderer.h"
 #include "../Resources/Texture.h"
-
+#include "../Game/Game.h"
+#include "../Objects/Camera.h"
 void TileRenderer::InitComponent(int32 x, int32 y)
 {
 	iPosX = x;
@@ -14,9 +15,13 @@ void TileRenderer::UpdateComponent(float deltaTime)
 
 void TileRenderer::RenderComponent(HDC hdc)
 {
+	Camera* camera = Game::GetInstance()->GetCurrentSceneCamera();
+	if (camera == nullptr) return;
+
 	for (const tileRenderInfo& info : _tileRenderList)
 	{
-		_tileMap->RenderSprite(hdc, info.worldPos, TILE_SIZE, TILE_SIZE, info.tilePos.x * TILE_SIZE, info.tilePos.y * TILE_SIZE);
+		Vector2 screenPos = camera->ConvertScreenPos(info.worldPos);
+		_tileMap->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, info.tilePos.x * TILE_SIZE, info.tilePos.y * TILE_SIZE);
 	}
 }
 

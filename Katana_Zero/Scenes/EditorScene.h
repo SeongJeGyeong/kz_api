@@ -19,11 +19,8 @@ class EditorScene : public Scene
 private:
 	class EditorSub* _subWindow = nullptr;
 
-	int32 iGridMaxX;
-	int32 iGridMaxY;
-
-	int32 iEditorMapSizeX;
-	int32 iEditorMapSizeY;
+	int32 iWorldGridMaxX;
+	int32 iWorldGridMaxY;
 
 	// vector의 인덱스 : 에디터 씬 그리드 인덱스
 	// Vector2 : 타일맵 텍스처의 타일 좌표
@@ -31,7 +28,7 @@ private:
 	vector<Texture*> _tileMapList;
 	vector<ColliderInfo> _colliderList;
 
-	EditorCamera* _camera;
+	//EditorCamera* _camera;
 	EditorMode eMode = EditorMode::TILEMODE;
 	EColliderMode eColMode = EColliderMode::COL_BOX;
 
@@ -49,12 +46,12 @@ public:
 	virtual void Render(HDC hdc) override;
 
 	// y * width + x
-	int32 ConvertGridToIndex(Vector2 pos) { return (int32)pos.y * iGridMaxX + pos.x; }
+	int32 ConvertWorldGridToIndex(Vector2 pos) { return (int32)pos.y * iWorldGridMaxX + pos.x; }
 	// x % width, y / width
-	Vector2 ConvertIndexToGrid(int32 idx) 
+	Vector2 ConvertIndexToWorldGrid(int32 idx)
 	{
-		float x = idx % iGridMaxX;
-		float y = idx / iGridMaxX;
+		float x = idx % iWorldGridMaxX;
+		float y = idx / iWorldGridMaxX;
 		return { x, y };
 	}
 
@@ -64,7 +61,7 @@ public:
 	void TileModeUpdate();
 	void ColliderModeUpdate();
 
-	void RednerBox(HDC hdc, POINT startPoint);
+	void RednerBox(HDC hdc, POINT startPoint, EColliderMode mode);
 	void RednerLine(HDC hdc, POINT startPoint, EColliderMode mode);
 };
 

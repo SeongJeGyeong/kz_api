@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "EditorCamera.h"
-#include "../Managers/InputManager.h"
+#include "Camera.h"
+#
 
-void EditorCamera::Init()
+void Camera::Init()
 {
 	Super::Init();
 
@@ -10,37 +10,20 @@ void EditorCamera::Init()
 	fCameraHeight = 720.f;
 }
 
-void EditorCamera::Update(float deltaTime)
+void Camera::Update(float deltaTime)
 {
-	/*if (InputManager::GetInstance()->GetButtonPressed(KeyType::W))
-	{
-		vPos.y -= 200.f * deltaTime;
-	}
-	if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))
-	{
-		vPos.y += 200.f * deltaTime;
-	}
-	if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
-	{
-		vPos.x -= 200.f * deltaTime;
-	}
-	if (InputManager::GetInstance()->GetButtonPressed(KeyType::D))
-	{
-		vPos.x += 200.f * deltaTime;
-	}*/
-
 	float halfSizeX = fCameraWidth / 2;
 	float halfSizeY = fCameraHeight / 2;
 	vPos.x = clamp(vPos.x, halfSizeX, iWorldSizeX - halfSizeX);
 	vPos.y = clamp(vPos.y, halfSizeY, iWorldSizeY - halfSizeY);
 }
 
-void EditorCamera::Render(HDC hdc)
+void Camera::Render(HDC hdc)
 {
 
 }
 
-Vector2 EditorCamera::ConvertScreenPos(Vector2 worldPos)
+Vector2 Camera::ConvertScreenPos(Vector2 worldPos)
 {
 	Vector2 convertPos;
 	convertPos.x = worldPos.x - (vPos.x - (fCameraWidth / 2));
@@ -48,7 +31,7 @@ Vector2 EditorCamera::ConvertScreenPos(Vector2 worldPos)
 	return convertPos;
 }
 
-Vector2 EditorCamera::ConvertWorldPos(Vector2 screenPos)
+Vector2 Camera::ConvertWorldPos(Vector2 screenPos)
 {
 	Vector2 convertPos;
 	convertPos.x = screenPos.x + (vPos.x - (fCameraWidth / 2));
@@ -56,7 +39,7 @@ Vector2 EditorCamera::ConvertWorldPos(Vector2 screenPos)
 	return convertPos;
 }
 
-POINT EditorCamera::ConvertScreenPos(POINT worldPos)
+POINT Camera::ConvertScreenPos(POINT worldPos)
 {
 	POINT convertPos;
 	convertPos.x = worldPos.x - (vPos.x - (fCameraWidth / 2));
@@ -65,7 +48,7 @@ POINT EditorCamera::ConvertScreenPos(POINT worldPos)
 
 }
 
-POINT EditorCamera::ConvertWorldPos(POINT screenPos)
+POINT Camera::ConvertWorldPos(POINT screenPos)
 {
 	POINT convertPos;
 	convertPos.x = screenPos.x + (vPos.x - (fCameraWidth / 2));

@@ -4,7 +4,7 @@
 
 void StateMachine::Update(float deltaTime)
 {
-	if (_currentState) _currentState->UpdateState(_owner, deltaTime);
+	if (_currentState) _currentState->UpdateState(deltaTime);
 }
 
 void StateMachine::AddState(State* state)
@@ -20,11 +20,11 @@ void StateMachine::ChangeState(int32 stateType)
 {
 	if (_currentState && _currentState->GetStateType() == stateType) return;
 
-	if (_currentState) _currentState->ExitState(_owner);
+	if (_currentState) _currentState->ExitState();
 
 	auto it = _stateMap.find(stateType);
 	if (it == _stateMap.end()) return;
 
 	_currentState = it->second;
-	_currentState->EnterState(_owner);
+	_currentState->EnterState();
 }

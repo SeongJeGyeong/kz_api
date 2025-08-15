@@ -1,124 +1,155 @@
 #pragma once
 #include "State.h"
 
+class Player;
+
 class PlayerState : public State
 {
 public:
+	PlayerState(Player* player) : _player(player) {}
 	virtual ~PlayerState() {}
 
+protected:
+	Player* _player = nullptr;
+
+public:
 	virtual int32 GetStateType() override { return -1; };
 
-	virtual void EnterState(Actor* owner) override {}
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override {}
+	virtual void EnterState() override {}
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override {}
+
+	void InputUpdateForState(EPlayerState state);
 };
 
 class PlayerState_Idle : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Idle(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_IDLE; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Idle_to_Run : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Idle_to_Run(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_IDLE_TO_RUN; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Run : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Run(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_RUN; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Run_to_Idle : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Run_to_Idle(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_RUN_TO_IDLE; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_PreCrouch : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_PreCrouch(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_PRECROUCH; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Crouch : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Crouch(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_CROUCH; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_PostCrouch : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_PostCrouch(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_POSTCROUCH; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Jump: public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Jump(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_JUMP; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Fall : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Fall(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_FALL; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Attack : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Attack(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ATTACK; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };
 
 class PlayerState_Roll : public PlayerState
 {
 	using Super = PlayerState;
 public:
+	PlayerState_Roll(Player* player) : Super(player) {}
+
 	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ROLL; }
-	virtual void EnterState(Actor* owner) override;
-	virtual void UpdateState(Actor* owner, float deltaTime) override;
-	virtual void ExitState(Actor* owner) override;
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
 };

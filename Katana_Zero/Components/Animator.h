@@ -33,5 +33,7 @@ public:
 	bool IsAnimationFinished();
 
 	void SetFlipped(bool isFlip) { bIsFlipped = isFlip; }
+
+	virtual uint32 GetPriority() override { return EComponentPriority::ANIMATION; }
 };
 
