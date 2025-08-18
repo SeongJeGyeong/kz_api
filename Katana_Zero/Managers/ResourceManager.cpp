@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ResourceManager.h"
 #include "../Resources/Texture.h"
+#include "../Resources/Sprite.h"
 
 void ResourceManager::Init(HWND hwnd, fs::path directory)
 {
@@ -16,105 +17,72 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 
 	fs::path texturePath = directory / L"Textures/";
 
-	fs::path UIPath = texturePath / L"UI/";
-
-	Texture* texture1 = new Texture();
-	texture1->Load(UIPath / L"lobby_mask.bmp", {0, 0}, 190);
-	_textures["lobby_mask"] = texture1;
-
-	Texture* texture2 = new Texture();
-	texture2->Load(UIPath / L"spr_title_fence_0.bmp", { 0, 0 });
-	_textures["title_fence"] = texture2;
-
-	Texture* texture3 = new Texture();
-	texture3->Load(UIPath / L"spr_title_background_0.bmp", { 0, 0 });
-	_textures["title_bg"] = texture3;
-
-	Texture* texture4 = new Texture();
-	texture4->Load(UIPath / L"lobby_select_mask.bmp", { 0, 0 }, 100);
-	_textures["select_mask"] = texture4;
-
-	{
-		fs::path tilePath = texturePath / L"Tiles/";
-
-		Texture* bg = new Texture();
-		bg->Load(tilePath / L"bg_mansion_background_0.bmp", { 0, 0 });
-		_tileMapList.push_back(bg);
-
-		Texture* fg = new Texture();
-		fg->Load(tilePath / L"bg_mansion_foreground_0.bmp", { 0, 0 });
-		_tileMapList.push_back(fg);
-
-		Texture* gg = new Texture();
-		gg->Load(tilePath / L"bg_mansion_garage_full_0.bmp", { 0, 0 });
-		_tileMapList.push_back(gg);
-
-		Texture* at = new Texture();
-		at->Load(tilePath / L"actors_set.bmp", { 0, 0 });
-		_tileMapList.push_back(at);
-	}
-
-	// 플레이어 애니메이션
-	{
-		fs::path playerPath = texturePath / L"Sprites/Zero/";
-
-		Texture* idle = new Texture();
-		idle->LoadSprite(playerPath / L"spr_idle.bmp", 36, 35, 11, 0.08f, true, {0, -10});
-		_textures["zero_idle"] = idle;
-
-		Texture* itr = new Texture();
-		itr->LoadSprite(playerPath / L"spr_idle_to_run.bmp", 44, 32, 4, 0.05f, false, { 0, -10 });
-		_textures["zero_idle_to_run"] = itr;
-
-		Texture* run = new Texture();
-		run->LoadSprite(playerPath / L"spr_run.bmp", 44, 32, 10, 0.07f, true, { 0, -5 });
-		_textures["zero_run"] = run;
-
-		Texture* rti = new Texture();
-		rti->LoadSprite(playerPath / L"spr_run_to_idle.bmp", 52, 36, 5, 0.05f, false, { 0, -11 });
-		_textures["zero_run_to_idle"] = rti;
-
-		Texture* prec = new Texture();
-		prec->LoadSprite(playerPath / L"spr_precrouch.bmp", 36, 40, 2, 0.06f, false, { 0, -13 });
-		_textures["zero_PreCrouch"] = prec;
-
-		Texture* c = new Texture();
-		c->LoadSprite(playerPath / L"spr_crouch.bmp", 36, 40, 1, 0.06f, true, { 0, -13 });
-		_textures["zero_Crouch"] = c;
-
-		Texture* posc = new Texture();
-		posc->LoadSprite(playerPath / L"spr_postcrouch.bmp", 36, 40, 2, 0.06f, false, { 0, -13 });
-		_textures["zero_PostCrouch"] = posc;
-
-		Texture* jump = new Texture();
-		jump->LoadSprite(playerPath / L"spr_jump.bmp", 32, 42, 4, 0.06f, true, { -10, 0 });
-		_textures["zero_jump"] = jump;
-
-		Texture* fall = new Texture();
-		fall->LoadSprite(playerPath / L"spr_fall.bmp", 42, 48, 4, 0.06f, true, { -10, -5 });
-		_textures["zero_fall"] = fall;
-
-		Texture* attack = new Texture();
-		attack->LoadSprite(playerPath / L"spr_attack.bmp", 62, 42, 7, 0.03f, false);
-		_textures["zero_attack"] = attack;
-
-		Texture* roll = new Texture();
-		roll->LoadSprite(playerPath / L"spr_roll.bmp", 48, 33, 7, 0.04f, false, { 0, -10 });
-		_textures["zero_roll"] = roll;
-	}
-
-	fs::path effectPath = texturePath / L"Sprites/Effects/";
-	Texture* slash = new Texture();
-	slash->LoadSprite(effectPath / L"spr_slash.bmp", 106, 32, 5, 0.05f, false);
-	_textures["zero_slash"] = slash;
+	LoadFile("Textures", data, texturePath);
 }
 
 void ResourceManager::Destroy()
 {
 }
 
-void ResourceManager::LoadTexture()
+void ResourceManager::LoadFile(const string parentKey, const json& obj, const fs::path& path)
 {
+	if (obj.is_object())
+	{
+		for (auto& [key, val] : obj.items())
+		{
+			LoadFile(key, val, path / key);
+		}
+	}
+	else if (obj.is_array())
+	{
+		for (auto& item : obj)
+		{
+			string fileName = item["FileName"].get<string>();
+			fs::path filePath = path / fileName;
+			filePath.replace_extension(".bmp");
+
+			if (parentKey == "Zero" || parentKey == "Effects")
+			{
+				LoadSpriteFile(item, filePath);
+			}
+			else
+			{
+				LoadTextureFile(parentKey, item, filePath);
+			}
+		}
+	}
+}
+
+void ResourceManager::LoadTextureFile(const string parentKey, const json& obj, const fs::path& path)
+{
+	Texture* texture = new Texture();
+
+	if (parentKey == "Tiles")
+	{
+		texture->Load(path);
+		_tileMapList.push_back(texture);
+	}
+	else
+	{
+		texture->Load(path, obj["Alpha"].get<int>());
+		_textures[obj["FileName"].get<string>()] = texture;
+	}
+}
+
+void ResourceManager::LoadSpriteFile(const json& obj, const fs::path& path)
+{
+	Sprite* sprite = new Sprite();
+	sprite->LoadSprite(
+		path, 
+		obj["FrameX"].get<int>(), 
+		obj["FrameY"].get<int>(), 
+		2, 
+		obj["FrameCount"].get<int>(), 
+		obj["Duration"].get<float>(),
+		obj["Loop"].get<bool>(),
+		obj["Alpha"].get<int>()
+	);
+	_sprites[obj["FileName"].get<string>()] = sprite;
 }
 
 Texture* ResourceManager::GetTexture(string name)
@@ -126,5 +94,16 @@ Texture* ResourceManager::GetTexture(string name)
 	}
 
 	// 로딩이 안됐거나, 이름이 잘못됐거나
+	return nullptr;
+}
+
+Sprite* ResourceManager::GetSprite(string name)
+{
+	auto it = _sprites.find(name);
+	if (it != _sprites.end())
+	{
+		return it->second;
+	}
+
 	return nullptr;
 }

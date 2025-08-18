@@ -38,6 +38,7 @@ enum ECollisionLayer
 	STAIR,
 	PLAYER_HITBOX,
 	ENEMY_HITBOX,
+	PORTAL,
 	END,
 };
 
@@ -104,21 +105,54 @@ enum EPlayerState
 	PLAYER_END
 };
 
+enum EEnemyState
+{
+	ENEMY_IDLE,
+	ENEMY_WALK,
+	ENEMY_TURN,
+	ENEMY_RUN,
+	ENEMY_AIM,
+	ENEMY_HURT_FLY,
+	ENEMY_HURT_GROUND,
+
+	ENEMY_END
+};
+
+enum EBossState
+{
+	BOSS_IDLE,
+	BOSS_READY,
+	BOSS_BLOCK,
+
+	BOSS_PRELUNGE,
+	BOSS_LUNGE,
+	BOSS_LUNGEATTACK,
+
+	BOSS_PREJUMP,
+	BOSS_JUMP,
+	BOSS_JUMPATTACK,
+	BOSS_LAND,
+
+	BOSS_THROWAXE,
+	BOSS_TUGAXE,
+	BOSS_RETURNAXE,
+
+	BOSS_HURT,
+	BOSS_RECOVER,
+
+	BOSS_STRUGGLE,
+	BOSS_DEFEAT,
+	BOSS_FINISH,
+	BOSS_DIE,
+
+	BOSS_END
+};
+
 struct ColliderInfo
 {
 	EColliderMode mode;
 	POINT vStart;
 	POINT vEnd;
-};
-
-struct SpriteInfo
-{
-	int32 iTileSizeX;
-	int32 iTileSizeY;
-	int32 iLastFrame = 0;
-	int32 iCurFrame = 0;
-	float dur = 0;
-	bool loop = false;
 };
 
 struct Vector2
@@ -254,17 +288,6 @@ struct CollisionInfo
 	class Actor* groundActor;        // 충돌한 바닥 액터
 	int32 hitCorner;
 };
-
-//struct PlayerGroundCollisionResult
-//{
-//	ECollisionLayer collisionLayer;
-//	bool isColliding;           // 바닥과 충돌했는지
-//	Vector2 collisionPoint;     // 충돌 지점
-//	Vector2 normal;            // 바닥의 법선 벡터 (위쪽 방향)
-//	float penetrationDepth;    // 바닥에 파묻힌 깊이
-//	class Actor* groundActor;        // 충돌한 바닥 액터
-//	int32 hitCorner;
-//};
 
 // 선분과 사각형의 충돌체크
 bool LineIntersectsAABB(Vector2 p0, Vector2 p1, const RECT& rect, Vector2& outNormal, Vector2& outPos, float& t);

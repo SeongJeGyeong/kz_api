@@ -16,6 +16,7 @@ void EditorScene::Init()
 	iSceneSizeY = 2160;
 	iWorldGridMaxX = iSceneSizeX / TILE_SIZE;
 	iWorldGridMaxY = iSceneSizeY / TILE_SIZE;
+	iHalfTileSize = TILE_SIZE / 2;
 
 	_tileMapList = ResourceManager::GetInstance()->GetTileMapList();
 
@@ -188,10 +189,11 @@ void EditorScene::DrawTile(HDC hdc)
 			// 그리드의 인덱스를 그리드 좌표로 변환
 			Vector2 gridPos = ConvertIndexToWorldGrid(it.first);
 			// 그리드 좌표를 실제 화면 좌표로 변환
-			Vector2 worldPos = { gridPos.x * TILE_SIZE + TILE_SIZE / 2, gridPos.y * TILE_SIZE + TILE_SIZE / 2 };
+			Vector2 worldPos = { gridPos.x * TILE_SIZE + iHalfTileSize, gridPos.y * TILE_SIZE + iHalfTileSize };
 			// 실제 화면 좌표를 카메라에 출력될 좌표로 변환
 			Vector2 screenPos = _sceneCamera->ConvertScreenPos(worldPos);
-			_tileMapList[it.second.iTilesetIndex]->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE);
+			//_tileMapList[it.second.iTilesetIndex]->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE);
+			_tileMapList[it.second.iTilesetIndex]->RenderTexture(hdc, screenPos.x - iHalfTileSize, screenPos.y - iHalfTileSize, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 		}
 	}
 }
@@ -361,6 +363,8 @@ void EditorScene::SaveMap()
 				case COL_STAIR:
 					colliderType = "Stair";
 					break;
+				case COL_PORTAL:
+					colliderType = "Portal";
 				default:
 					break;
 				}
@@ -460,6 +464,9 @@ void EditorScene::LoadMap()
 					break;
 				case COL_STAIR:
 					colliderType = "Stair";
+					break;
+				case COL_PORTAL:
+					colliderType = "Portal";
 					break;
 				default:
 					break;

@@ -22,13 +22,14 @@ private:
 	int32 iWorldGridMaxX;
 	int32 iWorldGridMaxY;
 
+	int32 iHalfTileSize;
+
 	// vector의 인덱스 : 에디터 씬 그리드 인덱스
 	// Vector2 : 타일맵 텍스처의 타일 좌표
 	unordered_map<int32, TileInfo>_tileInfoMap[ERenderLayer::LAYER_END];
 	vector<Texture*> _tileMapList;
 	vector<ColliderInfo> _colliderList;
 
-	//EditorCamera* _camera;
 	EditorMode eMode = EditorMode::TILEMODE;
 	EColliderMode eColMode = EColliderMode::COL_BOX;
 

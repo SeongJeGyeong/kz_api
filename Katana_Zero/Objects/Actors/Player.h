@@ -1,10 +1,12 @@
 #pragma once
 #include "Actor.h"
 
+template<typename EnumType>
+class StateMachine;
+
 class Animator;
 class EffectorComponent;
 class InputComponent;
-class StateMachine;
 class Camera;
 class CameraComponent;
 
@@ -46,8 +48,7 @@ private:
 
 	Vector2 vHitNormal;
 
-	StateMachine* _stateMachine;
-	//CameraComponent* _cameraComponent = nullptr;
+	StateMachine<EPlayerState>* _stateMachine;
 
 public:
 	virtual void Init(Vector2 pos) override;
@@ -113,7 +114,8 @@ public:
 	Vector2 GetVelocity() const { return vVelocity; }
 
 	void SetPlayerCamera(Camera* camera);
-	//CameraComponent* GetPlayerCameraComponent() { return _cameraComponent; }
 
 	void printState(HDC hdc);
+
+	void InitAnimation();
 };

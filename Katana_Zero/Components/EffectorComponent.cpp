@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "EffectorComponent.h"
 #include "../Managers/ResourceManager.h"
-#include "../Resources/Texture.h"
+#include "../Resources/Sprite.h"
 #include "../Objects/Actors/Actor.h"
 #include "../Components/CameraComponent.h"
 
 void EffectorComponent::InitComponent()
 {
-	SetSprite();
+
 }
 
 void EffectorComponent::UpdateComponent(float deltaTime)
@@ -16,14 +16,14 @@ void EffectorComponent::UpdateComponent(float deltaTime)
 	{
 		(*it).fElapsedTime += deltaTime;
 
-		if ((*it).fElapsedTime >= _effectSprite->GetDuration())
+		if ((*it).fElapsedTime >= (*it).fDuration)
 		{
 			(*it).fElapsedTime = 0.f;
-			if ((*it).iCurFrame >= _effectSprite->GetMaxFrameCount())
+			if ((*it).iCurrentFrame >= (*it).iFrameCount)
 			{
-				if (_effectSprite->IsLoop())
+				if ((*it).bLoop)
 				{
-					(*it).iCurFrame = 0;
+					(*it).iCurrentFrame = 0;
 				}
 				else
 				{
@@ -33,7 +33,7 @@ void EffectorComponent::UpdateComponent(float deltaTime)
 			}
 			else
 			{
-				(*it).iCurFrame += 1;
+				(*it).iCurrentFrame += 1;
 			}
 		}
 
@@ -47,7 +47,7 @@ void EffectorComponent::RenderComponent(HDC hdc)
 	for (const SpawnInfo& info : _spawnList)
 	{
 		Vector2 screenPos = cameraComp->ConvertScreenPos(info.bAttached ? GetPos() : info.vPos);
-		_effectSprite->RenderRotatedSprite(hdc, screenPos, info.fRadAngle, info.fScale, info.iCurFrame, info.bIsFlipped);
+		ResourceManager::GetInstance()->GetSprite(info.effectName)->RenderRotatedSprite(hdc, screenPos, info.fRadAngle, info.fScale, info.iCurrentFrame, info.bIsFlipped);
 	}
 }
 
@@ -56,16 +56,18 @@ void EffectorComponent::Destroy()
 
 }
 
-void EffectorComponent::SetSprite()
+void EffectorComponent::PlayEffect(string name, bool flipped, float radian, float scale, bool attached, Vector2 pos)
 {
-	_effectSprite = ResourceManager::GetInstance()->GetTexture("zero_slash");
-}
+	Sprite* sprite = ResourceManager::GetInstance()->GetSprite(name);
+	if (sprite == nullptr) return;
 
-void EffectorComponent::PlayEffect(bool flipped, float radian, float scale, bool attached, Vector2 pos)
-{
 	SpawnInfo info;
+	info.effectName = name;
+	info.iFrameCount = sprite->GetFrameCount();
+	info.fDuration = sprite->GetDuration();
+	info.bLoop = sprite->GetIsLoop();
+	info.iCurrentFrame = 0;
 	info.bIsFlipped = flipped;
-	info.iCurFrame = 0;
 	info.fRadAngle = radian;
 	info.fScale = scale;
 	info.fElapsedTime = 0.f;

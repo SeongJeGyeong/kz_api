@@ -1,31 +1,459 @@
 {
-    "Sprites" : {
-        "Zero" : {
-            "spr_idle" : {
-                   "FrameCount" : 11,
-                   "Duration" : 0.1,
-                   "Loop" : 1,
-                   "Alpha" : 255
+    "Sprites": {
+        "Zero": [
+            {
+                "FileName": "spr_idle",
+                "FrameX": 36,
+                "FrameY": 35,
+                "FrameCount": 11,
+                "Duration": 0.08,
+                "Loop": true,
+                "Alpha": 255
             },
-            "spr_idle_to_run" : {
-                   "FrameCount" : 4,
-                   "Duration" : 0.1,
-                   "Loop" : 0,
-                   "Alpha" : 255
+            {
+                "FileName": "spr_idle_to_run",
+                "FrameX": 44,
+                "FrameY": 32,
+                "FrameCount": 4,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
             },
-            "spr_run" : {
-                   "FrameCount" : 10,
-                   "Duration" : 0.08,
-                   "Loop" : 1,
-                   "Alpha" : 255
-            },            
-            "spr_run_to_idle" : {
-                   "FrameCount" : 5,
-                   "Duration" : 0.1,
-                   "Loop" : 0,
-                   "Alpha" : 255
+            {
+                "FileName": "spr_run",
+                "FrameX": 44,
+                "FrameY": 32,
+                "FrameCount": 10,
+                "Duration": 0.07,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_run_to_idle",
+                "FrameX": 52,
+                "FrameY": 36,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_precrouch",
+                "FrameX": 36,
+                "FrameY": 40,
+                "FrameCount": 2,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_crouch",
+                "FrameX": 36,
+                "FrameY": 40,
+                "FrameCount": 1,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_postcrouch",
+                "FrameX": 36,
+                "FrameY": 40,
+                "FrameCount": 2,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_jump",
+                "FrameX": 32,
+                "FrameY": 42,
+                "FrameCount": 4,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_fall",
+                "FrameX": 42,
+                "FrameY": 48,
+                "FrameCount": 4,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_attack",
+                "FrameX": 62,
+                "FrameY": 42,
+                "FrameCount": 7,
+                "Duration": 0.03,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_roll",
+                "FrameX": 48,
+                "FrameY": 33,
+                "FrameCount": 2,
+                "Duration": 0.04,
+                "Loop": false,
+                "Alpha": 255
             }
+        ],
+        "Enemy": [
+            {
+                "FileName": "spr_gangsteridle",
+                "FrameX": 49,
+                "FrameY": 50,
+                "FrameCount": 8,
+                "Duration": 0.08,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gangsterwalk",
+                "FrameX": 34,
+                "FrameY": 40,
+                "FrameCount": 8,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gangsterturn",
+                "FrameX": 48,
+                "FrameY": 42,
+                "FrameCount": 6,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gangsterrun",
+                "FrameX": 45,
+                "FrameY": 40,
+                "FrameCount": 10,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gangsterhurtfly",
+                "FrameX": 38,
+                "FrameY": 34,
+                "FrameCount": 2,
+                "Duration": 0.08,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gangsterhurtground",
+                "FrameX": 44,
+                "FrameY": 34,
+                "FrameCount": 14,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            }
+        ],
+        "Boss": [
+            {
+                "FileName": "spr_kissyface_tobattle",
+                "FrameX": 50,
+                "FrameY": 63,
+                "FrameCount": 9,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_idle",
+                "FrameX": 37,
+                "FrameY": 50,
+                "FrameCount": 1,
+                "Duration": 0,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_prelunge",
+                "FrameX": 41,
+                "FrameY": 43,
+                "FrameCount": 4,
+                "Duration": 0.08,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_lunge",
+                "FrameX": 83,
+                "FrameY": 53,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_lungeattack",
+                "FrameX": 92,
+                "FrameY": 54,
+                "FrameCount": 9,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_prejump",
+                "FrameX": 42,
+                "FrameY": 49,
+                "FrameCount": 4,
+                "Duration": 0.07,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_jump",
+                "FrameX": 38,
+                "FrameY": 74,
+                "FrameCount": 2,
+                "Duration": 0.1,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_jump_swing",
+                "FrameX": 31,
+                "FrameY": 54,
+                "FrameCount": 3,
+                "Duration": 0.07,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_landattack",
+                "FrameX": 42,
+                "FrameY": 50,
+                "FrameCount": 6,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_throw",
+                "FrameX": 101,
+                "FrameY": 55,
+                "FrameCount": 9,
+                "Duration": 0.07,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_tug",
+                "FrameX": 58,
+                "FrameY": 41,
+                "FrameCount": 6,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_returnaxe",
+                "FrameX": 59,
+                "FrameY": 42,
+                "FrameCount": 5,
+                "Duration": 0.07,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_block",
+                "FrameX": 49,
+                "FrameY": 48,
+                "FrameCount": 5,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_hurt",
+                "FrameX": 75,
+                "FrameY": 45,
+                "FrameCount": 6,
+                "Duration": 0.07,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_recover",
+                "FrameX": 75,
+                "FrameY": 45,
+                "FrameCount": 7,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_struggle",
+                "FrameX": 58,
+                "FrameY": 36,
+                "FrameCount": 2,
+                "Duration": 0.07,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_die",
+                "FrameX": 106,
+                "FrameY": 56,
+                "FrameCount": 14,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_dead",
+                "FrameX": 49,
+                "FrameY": 26,
+                "FrameCount": 12,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_nohead",
+                "FrameX": 52,
+                "FrameY": 20,
+                "FrameCount": 7,
+                "Duration": 0.07,
+                "Loop": false,
+                "Alpha": 255
+            }
+        ],
+        "Effects": [
+            {
+                "FileName": "spr_slash",
+                "FrameX": 106,
+                "FrameY": 32,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_bulletreflect",
+                "FrameX": 70,
+                "FrameY": 64,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_hit_impact",
+                "FrameX": 45,
+                "FrameY": 30,
+                "FrameCount": 6,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_jumpcloud",
+                "FrameX": 32,
+                "FrameY": 51,
+                "FrameCount": 4,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_landcloud",
+                "FrameX": 50,
+                "FrameY": 14,
+                "FrameCount": 8,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_slashfx",
+                "FrameX": 250,
+                "FrameY": 50,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_stompercloud",
+                "FrameX": 37,
+                "FrameY": 23,
+                "FrameCount": 10,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_slash",
+                "FrameX": 106,
+                "FrameY": 32,
+                "FrameCount": 5,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gunsmoke3",
+                "FrameX": 27,
+                "FrameY": 21,
+                "FrameCount": 11,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_gunspark3",
+                "FrameX": 50,
+                "FrameY": 50,
+                "FrameCount": 8,
+                "Duration": 0.05,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_kissyface_axe",
+                "FrameX": 26,
+                "FrameY": 80,
+                "FrameCount": 1,
+                "Duration": 0,
+                "Loop": true,
+                "Alpha": 255
+            }
+        ]
+    },
+    "Tiles": [
+        { "FileName": "bg_mansion_background_0" },
+        { "FileName": "bg_mansion_foreground_0" },
+        { "FileName": "bg_mansion_garage_full_0" },
+        { "FileName": "actors_set" }
+    ],
+    "UI": [
+        {
+            "FileName": "lobby_mask",
+            "Alpha": 190
+        },
+        {
+            "FileName": "spr_title_fence_0",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_title_background_0",
+            "Alpha": 255
+        },
+        {
+            "FileName": "lobby_select_mask",
+            "Alpha": 100
         }
-    }
-
+    ]
 }

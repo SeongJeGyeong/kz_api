@@ -3,7 +3,7 @@
 
 class Player;
 
-class PlayerState : public State
+class PlayerState : public State<EPlayerState>
 {
 public:
 	PlayerState(Player* player) : _player(player) {}
@@ -13,13 +13,11 @@ protected:
 	Player* _player = nullptr;
 
 public:
-	virtual int32 GetStateType() override { return -1; };
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE; };
 
 	virtual void EnterState() override {}
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override {}
-
-	void InputUpdateForState(EPlayerState state);
 };
 
 class PlayerState_Idle : public PlayerState
@@ -28,7 +26,7 @@ class PlayerState_Idle : public PlayerState
 public:
 	PlayerState_Idle(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_IDLE; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -40,7 +38,7 @@ class PlayerState_Idle_to_Run : public PlayerState
 public:
 	PlayerState_Idle_to_Run(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_IDLE_TO_RUN; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE_TO_RUN; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -52,7 +50,7 @@ class PlayerState_Run : public PlayerState
 public:
 	PlayerState_Run(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_RUN; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_RUN; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -64,7 +62,7 @@ class PlayerState_Run_to_Idle : public PlayerState
 public:
 	PlayerState_Run_to_Idle(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_RUN_TO_IDLE; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_RUN_TO_IDLE; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -76,7 +74,7 @@ class PlayerState_PreCrouch : public PlayerState
 public:
 	PlayerState_PreCrouch(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_PRECROUCH; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_PRECROUCH; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -88,7 +86,7 @@ class PlayerState_Crouch : public PlayerState
 public:
 	PlayerState_Crouch(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_CROUCH; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_CROUCH; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -100,7 +98,7 @@ class PlayerState_PostCrouch : public PlayerState
 public:
 	PlayerState_PostCrouch(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_POSTCROUCH; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_POSTCROUCH; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -112,7 +110,7 @@ class PlayerState_Jump: public PlayerState
 public:
 	PlayerState_Jump(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_JUMP; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_JUMP; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -124,7 +122,7 @@ class PlayerState_Fall : public PlayerState
 public:
 	PlayerState_Fall(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_FALL; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_FALL; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -136,7 +134,7 @@ class PlayerState_Attack : public PlayerState
 public:
 	PlayerState_Attack(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ATTACK; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_ATTACK; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;
@@ -148,7 +146,7 @@ class PlayerState_Roll : public PlayerState
 public:
 	PlayerState_Roll(Player* player) : Super(player) {}
 
-	virtual int32 GetStateType() override { return EPlayerState::PLAYER_ROLL; }
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_ROLL; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;

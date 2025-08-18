@@ -12,8 +12,10 @@ void CollisionManager::Init()
 {
 	// 충돌을 무시할 객체들 세팅
 	SetBitFlag(ECollisionLayer::PLAYER, ECollisionLayer::PLAYER, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PLAYER, ECollisionLayer::ENEMY, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::PLAYER, ECollisionLayer::PLAYER_HITBOX, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::ENEMY, ECollisionLayer::ENEMY, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::ENEMY, ECollisionLayer::PLAYER, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::ENEMY, ECollisionLayer::ENEMY_HITBOX, ECollisionResponse::C_IGNORE, true);
 
 	SetBitFlag(ECollisionLayer::GROUND, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
@@ -45,6 +47,15 @@ void CollisionManager::Init()
 	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
 	SetBitFlag(ECollisionLayer::STAIR, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
+
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::ENEMY, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::ENEMY_HITBOX, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::GROUND, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::PLATFORM, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::CEILING, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::WALL, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::STAIR, ECollisionResponse::C_IGNORE, true);
+	SetBitFlag(ECollisionLayer::PORTAL, ECollisionLayer::PLAYER_HITBOX, ECollisionResponse::C_IGNORE, true);
 }
 
 void CollisionManager::Update()

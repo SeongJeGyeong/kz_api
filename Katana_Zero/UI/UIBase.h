@@ -14,7 +14,8 @@ public:
 	bool IsOpen() const { return bIsOpen; }
 	void SetOpen(bool open) { bIsOpen = open; }
 
-	void SetIsStretch(bool stretch, int32 sizeX, int32 sizeY);
+	void SetIsStretch(bool stretch) { bIsStretch = stretch; }
+	void SetSize(int32 sizeX, int32 sizeY) { iSizeX = sizeX; iSizeY = sizeY; }
 
 protected:
 	bool bIsStretch = false;

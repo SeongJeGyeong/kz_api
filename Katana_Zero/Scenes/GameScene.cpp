@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "GameScene.h"
 #include "../Objects/Actors/Player.h"
-#include "../Objects/Actors/Tile_FG.h"
 #include "../Components/TileRenderer.h"
 #include "../Managers/ResourceManager.h"
 #include "../Objects/Camera.h"
@@ -29,6 +28,7 @@ GameScene::GameScene(string mapFileName)
 	json data = json::parse(file);
 	LoadTiles(data["TileInfo"]);
 	LoadColliders(data["ColliderInfo"]);
+	LoadActors(data["TileInfo"]);
 	iSceneSizeX = data["MapSize"][0];
 	iSceneSizeY = data["MapSize"][1];
 	_sceneCamera->SetWorldSize(iSceneSizeX, iSceneSizeY);
@@ -49,13 +49,6 @@ void GameScene::LoadTiles(json tileData)
 		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
 
 		_tileRenderer[1]->AddTileInfo({ screenPos.x, screenPos.y }, { data[3], data[4] });
-	}
-
-	for (auto data : tileData["Actor"])
-	{
-		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
-
-		_tileRenderer[2]->AddTileInfo({ screenPos.x, screenPos.y }, { data[3], data[4] });
 	}
 }
 
@@ -81,6 +74,9 @@ void GameScene::LoadColliders(json colliderData)
 		case COL_STAIR:
 			colliderType = "Stair";
 			break;
+		case COL_PORTAL:
+			colliderType = "Portal";
+			break;
 		default:
 			break;
 		}
@@ -95,6 +91,10 @@ void GameScene::LoadColliders(json colliderData)
 			if (type == EColliderMode::COL_BOX)
 			{
 				collider->CreateAABBCollider(endPoint.x - startPoint.x, endPoint.y - startPoint.y, ECollisionLayer::GROUND);
+			}
+			else if (type == EColliderMode::COL_PORTAL)
+			{
+				collider->CreateAABBCollider(endPoint.x - startPoint.x, endPoint.y - startPoint.y, ECollisionLayer::PORTAL);
 			}
 			else
 			{
@@ -119,13 +119,24 @@ void GameScene::LoadColliders(json colliderData)
 	}
 }
 
+void GameScene::LoadActors(json actorData)
+{
+	for (auto data : actorData["Actor"])
+	{
+		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
+
+		if (data[3].get<int>() == 0)
+		{
+			_player = new Player();
+			_player->Init({ screenPos.x, screenPos.y - 50.f });
+			_player->SetPlayerCamera(_sceneCamera);
+		}
+	}
+}
+
 void GameScene::Init()
 {
 	Super::Init();
-
-	_player = new Player();
-	_player->Init({ GWinSizeX / 2 + 200, GWinSizeY / 2 });
-	_player->SetPlayerCamera(_sceneCamera);
 }
 
 void GameScene::Destroy()

@@ -120,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,9 +128,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="States\EnemyState.h" />
     <ClInclude Include="Objects\Actors\Enemy.h" />
     <ClInclude Include="Objects\Camera.h" />
     <ClInclude Include="Components\CameraComponent.h" />
+    <ClInclude Include="Resources\Sprite.h" />
     <ClInclude Include="States\PlayerState.h" />
     <ClInclude Include="States\State.h" />
     <ClInclude Include="States\StateMachine.h" />
@@ -156,7 +159,6 @@
     <ClInclude Include="Managers\ResourceManager.h" />
     <ClInclude Include="Resources\Texture.h" />
     <ClInclude Include="Datas\TextureData.h" />
-    <ClInclude Include="Objects\Actors\Tile_FG.h" />
     <ClInclude Include="Components\TileRenderer.h" />
     <ClInclude Include="UI\UIImage.h" />
     <ClInclude Include="UI\UIWorkTool.h" />
@@ -175,9 +177,11 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="States\EnemyState.cpp" />
     <ClCompile Include="Objects\Actors\Enemy.cpp" />
     <ClCompile Include="Objects\Camera.cpp" />
     <ClCompile Include="Components\CameraComponent.cpp" />
+    <ClCompile Include="Resources\Sprite.cpp" />
     <ClCompile Include="States\PlayerState.cpp" />
     <ClCompile Include="States\State.cpp" />
     <ClCompile Include="States\StateMachine.cpp" />
@@ -213,7 +217,6 @@
     <ClCompile Include="Managers\ResourceManager.cpp" />
     <ClCompile Include="Resources\Texture.cpp" />
     <ClCompile Include="Datas\TextureData.cpp" />
-    <ClCompile Include="Objects\Actors\Tile_FG.cpp" />
     <ClCompile Include="Components\TileRenderer.cpp" />
     <ClCompile Include="UI\UIImage.cpp" />
     <ClCompile Include="UI\UIWorkTool.cpp" />

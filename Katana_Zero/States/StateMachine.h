@@ -1,8 +1,8 @@
 #pragma once
 #include "State.h"
+#include "../Objects/Actors/Actor.h"
 
-class Actor;
-
+template<typename EnumType>
 class StateMachine
 {
 public:
@@ -12,20 +12,43 @@ public:
 private:
 	Actor* _owner = nullptr;
 
-	State* _currentState = nullptr;
+	State<EnumType>* _currentState = nullptr;
 
-	int32 iCurrentStateType = -1;
-	map<int32, State*> _stateMap;
+	EnumType _currentStateType;
+	map<EnumType, State<EnumType>*> _stateMap;
 
 public:
-	void Update(float deltaTime);
-	void AddState(State* state);
-	void ChangeState(int32 stateType);
-	EPlayerState GetCurrentStateType() 
+	void Update(float deltaTime)
 	{
-		if(_currentState) return (EPlayerState)_currentState->GetStateType();
+		if (_currentState) _currentState->UpdateState(deltaTime);
+	}
 
-		return EPlayerState::PLAYER_END;
+	void AddState(State<EnumType>* state)
+	{
+		if (state == nullptr) return;
+		// 이미 맵에 존재함
+		if (_stateMap.find(state->GetStateType()) != _stateMap.end()) return;
+
+		_stateMap.emplace(state->GetStateType(), state);
+	}
+
+	void ChangeState(EnumType stateType)
+	{
+		if (_currentState && _currentState->GetStateType() == stateType) return;
+
+		if (_currentState) _currentState->ExitState();
+
+		auto it = _stateMap.find(stateType);
+		if (it == _stateMap.end()) return;
+
+		_currentState = it->second;
+		_currentState->EnterState();
+		_currentStateType = stateType;
+	}
+
+	EnumType GetCurrentStateType() const
+	{
+		return _currentStateType;
 	}
 };
 

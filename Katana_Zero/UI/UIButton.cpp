@@ -9,6 +9,18 @@ UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height)
 	: Super(pos)
 {
 	_texture = ResourceManager::GetInstance()->GetTexture(key);
+	if (_texture == nullptr) return;
+	if (width != 0 || height != 0)
+	{
+		iSizeX = width;
+		iSizeY = height;
+		bIsStretch = true;
+	}
+	else
+	{
+		iSizeX = _texture->GetTextureSizeX();
+		iSizeY = _texture->GetTextureSizeY();
+	}
 }
 
 void UIButton::Update()
@@ -36,6 +48,7 @@ void UIButton::Render(HDC hdc)
 {
 	if (_texture)
 	{
+		_texture->RenderTexture(hdc, vPos, iSizeX, iSizeY);
 		_texture->Render(hdc, vPos);
 	}
 

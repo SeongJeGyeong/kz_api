@@ -21,6 +21,7 @@ private:
 	TileRenderer* _tileRenderer[ERenderLayer::LAYER_END];
 	void LoadTiles(json tileData);
 	void LoadColliders(json colliderData);
+	void LoadActors(json actorData);
 public:
 	virtual void Init() override;
 	virtual void Destroy() override;

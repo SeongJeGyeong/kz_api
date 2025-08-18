@@ -32,17 +32,17 @@ void Player::Init(Vector2 pos)
     {
         animator->SetOwner(this);
         animator->InitComponent(EPlayerState::PLAYER_END);
-        animator->AddAnimation(EPlayerState::PLAYER_IDLE, ResourceManager::GetInstance()->GetTexture("zero_idle"));
-        animator->AddAnimation(EPlayerState::PLAYER_IDLE_TO_RUN, ResourceManager::GetInstance()->GetTexture("zero_idle_to_run"));
-        animator->AddAnimation(EPlayerState::PLAYER_RUN, ResourceManager::GetInstance()->GetTexture("zero_run"));
-        animator->AddAnimation(EPlayerState::PLAYER_RUN_TO_IDLE, ResourceManager::GetInstance()->GetTexture("zero_run_to_idle"));
-        animator->AddAnimation(EPlayerState::PLAYER_PRECROUCH, ResourceManager::GetInstance()->GetTexture("zero_PreCrouch"));
-        animator->AddAnimation(EPlayerState::PLAYER_CROUCH, ResourceManager::GetInstance()->GetTexture("zero_Crouch"));
-        animator->AddAnimation(EPlayerState::PLAYER_POSTCROUCH, ResourceManager::GetInstance()->GetTexture("zero_PostCrouch"));
-        animator->AddAnimation(EPlayerState::PLAYER_JUMP, ResourceManager::GetInstance()->GetTexture("zero_jump"));
-        animator->AddAnimation(EPlayerState::PLAYER_FALL, ResourceManager::GetInstance()->GetTexture("zero_fall"));
-        animator->AddAnimation(EPlayerState::PLAYER_ATTACK, ResourceManager::GetInstance()->GetTexture("zero_attack"));
-        animator->AddAnimation(EPlayerState::PLAYER_ROLL, ResourceManager::GetInstance()->GetTexture("zero_roll"));
+        animator->AddAnimation(EPlayerState::PLAYER_IDLE, ResourceManager::GetInstance()->GetSprite("spr_idle"), { 0, -10 });
+        animator->AddAnimation(EPlayerState::PLAYER_IDLE_TO_RUN, ResourceManager::GetInstance()->GetSprite("spr_idle_to_run"), { 0, -10 });
+        animator->AddAnimation(EPlayerState::PLAYER_RUN, ResourceManager::GetInstance()->GetSprite("spr_run"), { 0, -5 });
+        animator->AddAnimation(EPlayerState::PLAYER_RUN_TO_IDLE, ResourceManager::GetInstance()->GetSprite("spr_run_to_idle"), { 0, -11 });
+        animator->AddAnimation(EPlayerState::PLAYER_PRECROUCH, ResourceManager::GetInstance()->GetSprite("spr_precrouch"), { 0, -13 });
+        animator->AddAnimation(EPlayerState::PLAYER_CROUCH, ResourceManager::GetInstance()->GetSprite("spr_crouch"), { 0, -13 });
+        animator->AddAnimation(EPlayerState::PLAYER_POSTCROUCH, ResourceManager::GetInstance()->GetSprite("spr_postcrouch"), { 0, -13 });
+        animator->AddAnimation(EPlayerState::PLAYER_JUMP, ResourceManager::GetInstance()->GetSprite("spr_jump"), { -10, 0 });
+        animator->AddAnimation(EPlayerState::PLAYER_FALL, ResourceManager::GetInstance()->GetSprite("spr_fall"), { -10, -5 });
+        animator->AddAnimation(EPlayerState::PLAYER_ATTACK, ResourceManager::GetInstance()->GetSprite("spr_attack"));
+        animator->AddAnimation(EPlayerState::PLAYER_ROLL, ResourceManager::GetInstance()->GetSprite("spr_roll"), { 0, -10 });
     }
 
     EffectorComponent* effector = _components.GetComponent<EffectorComponent>();
@@ -57,7 +57,7 @@ void Player::Init(Vector2 pos)
     {
         inputComp->InitComponent(this);
     }
-    _stateMachine = new StateMachine(this);
+    _stateMachine = new StateMachine<EPlayerState>(this);
     _stateMachine->AddState(new PlayerState_Idle(this));
     _stateMachine->AddState(new PlayerState_Idle_to_Run(this));
     _stateMachine->AddState(new PlayerState_Run(this));
@@ -323,7 +323,7 @@ void Player::Attack()
         vFrontDir = Vector2(1, 0);
     }
 
-    _components.GetComponent<EffectorComponent>()->PlayEffect((dir.x < 0), rad, 1.5f, true);
+    _components.GetComponent<EffectorComponent>()->PlayEffect("spr_slash", (dir.x < 0), rad, 1.5f, true);
     vVelocity = { 0, 0 };
     vAcceleration.x += dir.x * 100000000.f;
     vAcceleration.y += dir.y * 100000000.f;
@@ -655,5 +655,9 @@ void Player::printState(HDC hdc)
     }
 
     ::TextOut(hdc, 100, 50, str.c_str(), static_cast<int32>(str.size()));
+}
+
+void Player::InitAnimation()
+{
 }
 

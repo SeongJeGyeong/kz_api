@@ -1,18 +1,23 @@
 #pragma once
 #include "Component.h"
 
-class Texture;
+class Sprite;
 
 struct SpawnInfo
 {
+	string effectName;
 	Vector2 vPos;
-	int32 iCurFrame;
+
+	bool bLoop;
+	int32 iFrameCount;
+	int32 iCurrentFrame;
+	float fDuration;
+
 	float fElapsedTime;
 	float fRadAngle;
 	float fScale;
 	bool bAttached;
 	bool bIsFlipped;
-	bool bLoop;
 };
 
 class EffectorComponent : public Component
@@ -26,7 +31,6 @@ public:
 	}
 
 private:
-	Texture* _effectSprite = nullptr;
 	vector<SpawnInfo> _spawnList;
 
 public:
@@ -36,8 +40,7 @@ public:
 
 	void Destroy();
 
-	void SetSprite();
-	void PlayEffect(bool flipped, float radian, float scale, bool attached, Vector2 pos = Vector2(0, 0));
+	void PlayEffect(string name, bool flipped, float radian, float scale, bool attached, Vector2 pos = Vector2(0, 0));
 
 	virtual uint32 GetPriority() override { return EComponentPriority::EFFECT; }
 };

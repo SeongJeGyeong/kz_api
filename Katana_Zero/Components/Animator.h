@@ -1,8 +1,14 @@
 #pragma once
 #include "Component.h"
 
-class Texture;
-//template<typename StateEnum>
+class Sprite;
+
+struct AnimationInfo
+{
+	Sprite* _sprite = nullptr;
+	Vector2 vOffset = Vector2(0, 0);
+};
+
 class Animator : public Component
 {
 public:
@@ -13,10 +19,8 @@ public:
 	}
 
 private:
-	//static_assert(is_enum_v<StateEnum>, "열거형만 설정할 수 있습니다");
-
-	vector<Texture*> _animationList;
-	Texture* _currentAnimation = nullptr;
+	vector<AnimationInfo> _animationList;
+	AnimationInfo _currentAnimation;
 	float fElapsedTime = 0.f;
 
 	bool bPlaying = false;
@@ -27,7 +31,7 @@ public:
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
 
-	void AddAnimation(int32 Index, Texture* sprite);
+	void AddAnimation(int32 Index, Sprite* sprite, Vector2 offset = {0, 0});
 	void SetAnimation(int32 Index);
 
 	bool IsAnimationFinished();
