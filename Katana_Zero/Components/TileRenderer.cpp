@@ -3,6 +3,7 @@
 #include "../Resources/Texture.h"
 #include "../Game/Game.h"
 #include "../Objects/Camera.h"
+
 void TileRenderer::InitComponent()
 {
 	iHalfTileSize = TILE_SIZE / 2;
@@ -20,18 +21,7 @@ void TileRenderer::RenderComponent(HDC hdc)
 	for (const tileRenderInfo& info : _tileRenderList)
 	{
 		Vector2 screenPos = camera->ConvertScreenPos(info.worldPos);
-		
-		//(int32)pos.x - (tileSizeX * 0.5f),
-		//	(int32)pos.y - (tileSizeY * 0.5f),
-		//	tileSizeX,
-		//	tileSizeY,
-		//	_textureHdc,
-		//	originX,
-		//	originY,
-		//	tileSizeX,
-		//	tileSizeY,
 		_tileMap->RenderTexture(hdc, screenPos.x - (TILE_SIZE * 0.5f), screenPos.y - (TILE_SIZE * 0.5f), TILE_SIZE, TILE_SIZE, info.tilePos.x * TILE_SIZE, info.tilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-		//_tileMap->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, info.tilePos.x * TILE_SIZE, info.tilePos.y * TILE_SIZE);
 	}
 }
 
