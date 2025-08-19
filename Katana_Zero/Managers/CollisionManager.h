@@ -65,7 +65,7 @@ private:
 
 	Vector2 CalculateHitPos(OBBCollider* receive, OBBCollider* send, Vector2 normal);
 
-	void ExecuteCollisionFunc(Collider* receive, Collider* send);
+	bool OverlapOnAxis(const std::vector<Vector2>& poly1, const std::vector<Vector2>& poly2, Vector2 axis);
 
 public:
 	void Init();
@@ -76,6 +76,8 @@ public:
 	void AddCollider(Collider* collider);
 
 	vector<Collider*> GetPlacedColliders(ECollisionLayer layer) { return _colliderList[layer]; }
+
+	bool CheckOBBHitBox(POINT OBB[4], RECT AABB);
 
 	CollisionInfo CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
 	CollisionInfo CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);

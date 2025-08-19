@@ -609,9 +609,66 @@ Vector2 CollisionManager::CalculateHitPos(OBBCollider* receive, OBBCollider* sen
 	return (closestVertex1 + closestVertex2) * 0.5f;
 }
 
-void CollisionManager::ExecuteCollisionFunc(Collider* receive, Collider* send)
+bool CollisionManager::OverlapOnAxis(const std::vector<Vector2>& poly1, const std::vector<Vector2>& poly2, Vector2 axis)
 {
-	//send->GetCollider()->
+	// 축 정규화
+	float len = sqrtf(axis.x * axis.x + axis.y * axis.y);
+	if (len == 0.0f) return true; // 잘못된 축 → 무시
+	axis.x /= len;
+	axis.y /= len;
+
+	auto project = [&](const std::vector<Vector2>& poly) {
+		float minProj = FLT_MAX;
+		float maxProj = -FLT_MAX;
+		for (auto& p : poly) {
+			float proj = p.x * axis.x + p.y * axis.y;
+			minProj = min(minProj, proj);
+			maxProj = max(maxProj, proj);
+		}
+		return std::pair<float, float>(minProj, maxProj);
+		};
+
+	auto range1 = project(poly1);
+	auto range2 = project(poly2);
+
+	// 구간 겹침 여부 확인
+	return !(range1.second < range2.first || range2.second < range1.first);
+}
+
+bool CollisionManager::CheckOBBHitBox(POINT OBB[4], RECT AABB)
+{
+	// OBB 좌표 변환
+	std::vector<Vector2> obbPts(4);
+	for (int i = 0; i < 4; i++)
+	{
+		obbPts[i] = { (float)OBB[i].x, (float)OBB[i].y };
+	}
+
+	// AABB 좌표 변환
+	std::vector<Vector2> aabbPts = {
+		{ (float)AABB.left,  (float)AABB.top },
+		{ (float)AABB.right, (float)AABB.top },
+		{ (float)AABB.right, (float)AABB.bottom },
+		{ (float)AABB.left,  (float)AABB.bottom }
+	};
+
+	// 검사할 축: OBB의 두 변 방향, AABB의 x축, y축
+	Vector2 axes[4] = {
+		{ obbPts[1].x - obbPts[0].x, obbPts[1].y - obbPts[0].y }, // OBB edge 1
+		{ obbPts[3].x - obbPts[0].x, obbPts[3].y - obbPts[0].y }, // OBB edge 2
+		{ 1, 0 }, // AABB x축
+		{ 0, 1 }  // AABB y축
+	};
+
+	for (auto& axis : axes)
+	{
+		if (!OverlapOnAxis(obbPts, aabbPts, axis))
+		{
+			return false; // 분리축 발견 → 충돌 없음
+		}
+	}
+
+	return true; // 모든 축에서 겹침 → 충돌 있음
 }
 
 CollisionInfo CollisionManager::CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider)
