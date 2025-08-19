@@ -4,6 +4,7 @@
 #include "../Components/TileRenderer.h"
 #include "../Managers/ResourceManager.h"
 #include "../Objects/Camera.h"
+#include "../Objects/Actors/Enemy.h"
 
 GameScene::GameScene(string mapFileName)
 {
@@ -19,18 +20,21 @@ GameScene::GameScene(string mapFileName)
 		return;
 	}
 
+	json data = json::parse(file);
+	iSceneSizeX = data["MapSize"][0];
+	iSceneSizeY = data["MapSize"][1];
+
+
+	_tileRenderer = new TileRenderer();
+	_tileRenderer->InitComponent(iSceneSizeX, iSceneSizeY);
 	for (int32 i = 0; i < ERenderLayer::LAYER_END; ++i)
 	{
-		_tileRenderer[i] = new TileRenderer();
-		_tileRenderer[i]->SetTileMap(ResourceManager::GetInstance()->GetTileMapForIndex(i));
+		_tileRenderer->AddTileTexture(ResourceManager::GetInstance()->GetTileMapForIndex(i));
 	}
 
-	json data = json::parse(file);
 	LoadTiles(data["TileInfo"]);
 	LoadColliders(data["ColliderInfo"]);
 	LoadActors(data["TileInfo"]);
-	iSceneSizeX = data["MapSize"][0];
-	iSceneSizeY = data["MapSize"][1];
 	_sceneCamera->SetWorldSize(iSceneSizeX, iSceneSizeY);
 	file.close();
 }
@@ -39,16 +43,16 @@ void GameScene::LoadTiles(json tileData)
 {
 	for (auto data : tileData["Background"])
 	{
-		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
+		Vector2 screenPos = { data[1].get<float>() * TILE_SIZE + TILE_SIZE * 0.5f, data[2].get<float>() * TILE_SIZE + TILE_SIZE * 0.5f};
 
-		_tileRenderer[0]->AddTileInfo({ screenPos.x, screenPos.y }, { data[3], data[4] });
+		_tileRenderer->AddTileInfo(data[0].get<int>(), {screenPos.x, screenPos.y}, {data[3], data[4]});
 	}
 
 	for (auto data : tileData["Foreground"])
 	{
-		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
+		Vector2 screenPos = { data[1].get<float>() * TILE_SIZE + TILE_SIZE * 0.5f, data[2].get<float>() * TILE_SIZE + TILE_SIZE * 0.5f };
 
-		_tileRenderer[1]->AddTileInfo({ screenPos.x, screenPos.y }, { data[3], data[4] });
+		_tileRenderer->AddTileInfo(data[0].get<int>(), {screenPos.x, screenPos.y}, {data[3], data[4]});
 	}
 }
 
@@ -131,6 +135,13 @@ void GameScene::LoadActors(json actorData)
 			_player->Init({ screenPos.x, screenPos.y - 50.f });
 			_player->SetPlayerCamera(_sceneCamera);
 		}
+		else
+		{
+			Enemy* enemy = new Enemy();
+			enemy->Init({ screenPos.x, screenPos.y - 70.f });
+			enemy->SetCamera(_sceneCamera);
+			_EnemyList.push_back(enemy);
+		}
 	}
 }
 
@@ -151,6 +162,11 @@ void GameScene::Update(float deltaTime)
 		_player->Update(deltaTime);
 	}
 
+	for (Enemy* enemy : _EnemyList)
+	{
+		enemy->Update(deltaTime);
+	}
+
 	for (Actor* collider : _colliderList)
 	{
 		collider->Update(deltaTime);
@@ -168,6 +184,11 @@ void GameScene::PostUpdate(float deltaTime)
 		_player->PostUpdate(deltaTime);
 	}
 
+	for (Enemy* enemy : _EnemyList)
+	{
+		enemy->PostUpdate(deltaTime);
+	}
+
 	for (Actor* collider : _colliderList)
 	{
 		collider->PostUpdate(deltaTime);
@@ -178,14 +199,19 @@ void GameScene::Render(HDC hdc)
 {
 	Super::Render(hdc);
 
-	for (int32 i = 0; i < ERenderLayer::LAYER_END; ++i)
+	if (_tileRenderer)
 	{
-		_tileRenderer[i]->RenderComponent(hdc);
+		_tileRenderer->RenderComponent(hdc);
 	}
 
 	for (Actor* collider : _colliderList)
 	{
 		collider->Render(hdc);
+	}
+
+	for (Enemy* enemy : _EnemyList)
+	{
+		enemy->Render(hdc);
 	}
 
 	if (_player)

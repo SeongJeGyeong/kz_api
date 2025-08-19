@@ -13,7 +13,7 @@ void Sprite::LoadSprite(wstring filePath, int32 frameSizeX, int32 frameSizeY, fl
 	bLoop = loop;
 }
 
-void Sprite::RenderStretchedSprite(HDC hdc, Vector2 pos, bool isFlipped)
+void Sprite::RenderStretchedSprite(HDC hdc, Vector2 pos, int32 curFrame, bool isFlipped)
 {
 	int32 stretchedWidth = iSpriteSizeX * fMagnification;
 	int32 stretchedHeight = iSpriteSizeY * fMagnification;
@@ -24,11 +24,11 @@ void Sprite::RenderStretchedSprite(HDC hdc, Vector2 pos, bool isFlipped)
 
 	if (isFlipped)
 	{
-		srcX *= (iFrameCount - iCurrentFrame - 1);
+		srcX *= (iFrameCount - curFrame - 1);
 	}
 	else
 	{
-		srcX *= iCurrentFrame;
+		srcX *= curFrame;
 	}
 
 	Super::RenderTexture(hdc, startX, startY, stretchedWidth, stretchedHeight, srcX, 0, iSpriteSizeX, iSpriteSizeY, isFlipped);
@@ -36,6 +36,7 @@ void Sprite::RenderStretchedSprite(HDC hdc, Vector2 pos, bool isFlipped)
 
 void Sprite::RenderRotatedSprite(HDC hdc, Vector2 pos, float radian, float scale, int32 curFrame, bool isFlipped)
 {
+	// 회전한 이미지의 축에 정렬된 AABB 계산(회전된 이미지를 가두는 AABB)
 	RECT bounds = GetRotatedBounds(pos.x, pos.y, radian, iSpriteSizeX, iSpriteSizeY);
 
 	int tempWidth = bounds.right - bounds.left;

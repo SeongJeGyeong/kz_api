@@ -41,7 +41,7 @@ void ResourceManager::LoadFile(const string parentKey, const json& obj, const fs
 			fs::path filePath = path / fileName;
 			filePath.replace_extension(".bmp");
 
-			if (parentKey == "Zero" || parentKey == "Effects")
+			if (parentKey == "Zero" || parentKey == "Effects" || parentKey == "Enemy" || parentKey == "Boss")
 			{
 				LoadSpriteFile(item, filePath);
 			}

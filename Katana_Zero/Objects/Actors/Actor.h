@@ -21,11 +21,10 @@ public:
 	virtual void PostUpdate(float deltaTime) {}
 	virtual void Render(HDC hdc) override;
 
-	virtual void OnCollisionHit(Collider* other) {}
 	virtual void OnCollisionBeginOverlap(const CollisionInfo& info) {}
 	virtual void OnCollisionStayOverlap(const CollisionInfo& info) {}
 	virtual void OnCollisionEndOverlap(const CollisionInfo& info) {}
-	virtual int32 GetCurrentState() { return 0; };
+	virtual int32 GetCurrentState() { return 0; }
 
 	Collider* GetCollider() { return _collider; }
 

@@ -14,12 +14,16 @@ public:
 private:
 	Player* _player = nullptr;
 
+	bool bPressedDown = false;
+
 public:
 	virtual void InitComponent(Actor* owner);
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
 
 	virtual uint32 GetPriority() override { return EComponentPriority::INPUT; }
+	bool GetPressedDown() { return bPressedDown; }
+
 
 	void Input_In_Idle(float deltaTime);
 	void Input_In_IdleToRun(float deltaTime);

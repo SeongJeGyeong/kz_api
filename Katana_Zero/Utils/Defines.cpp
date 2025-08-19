@@ -167,3 +167,29 @@ bool LineIntersectsLine(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, Vector2&
 
 	return false;
 }
+
+void GetRotatedCorners(POINT outPoints[4], float centerX, float centerY, float radian, int imgWidth, int imgHeight)
+{
+	float cosA = cos(radian);
+	float sinA = sin(radian);
+
+	float halfW = imgWidth / 2.0f;
+	float halfH = imgHeight / 2.0f;
+
+	// 네 모서리 (좌상단, 우상단, 우하단, 좌하단)
+	float corners[4][2] = {
+		{-halfW, -halfH},
+		{ halfW, -halfH},
+		{ halfW,  halfH},
+		{-halfW,  halfH}
+	};
+
+	for (int i = 0; i < 4; i++)
+	{
+		float x = corners[i][0] * cosA - corners[i][1] * sinA;
+		float y = corners[i][0] * sinA + corners[i][1] * cosA;
+
+		outPoints[i].x = (LONG)(centerX + x);
+		outPoints[i].y = (LONG)(centerY + y);
+	}
+}

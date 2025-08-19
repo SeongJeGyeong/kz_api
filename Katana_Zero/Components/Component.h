@@ -12,6 +12,7 @@ public:
 		CAMERA,
 		ANIMATION,
 		EFFECT,
+		MOVEMENT,
 		DEFAULT
 	};
 

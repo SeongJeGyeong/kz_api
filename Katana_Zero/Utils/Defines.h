@@ -293,3 +293,5 @@ struct CollisionInfo
 bool LineIntersectsAABB(Vector2 p0, Vector2 p1, const RECT& rect, Vector2& outNormal, Vector2& outPos, float& t);
 // 선분과 선분의 충돌체크
 bool LineIntersectsLine(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, Vector2& outNormal, Vector2& outPos, float& t);
+// 박스 회전
+void GetRotatedCorners(POINT outPoints[4], float centerX, float centerY, float radian, int imgWidth, int imgHeight);

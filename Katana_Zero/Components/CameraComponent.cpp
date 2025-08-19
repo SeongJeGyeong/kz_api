@@ -2,6 +2,7 @@
 #include "CameraComponent.h"
 #include "../Game/Game.h"
 #include "../Objects/Camera.h"
+#include "../Managers/InputManager.h"
 
 void CameraComponent::InitComponent(Actor* owner)
 {
@@ -10,12 +11,22 @@ void CameraComponent::InitComponent(Actor* owner)
 
 void CameraComponent::UpdateComponent(float deltaTime)
 {
-	_camera->SetPos(GetPos());
+	Vector2 pos = GetPos();
+	Vector2 screenSize = _camera->GetCameraSize();
+	Vector2 worldSize = _camera->GetWorldSize();
+	float halfSizeX = screenSize.x / 2;
+	float halfSizeY = screenSize.y / 2;
+
+	pos.x = clamp(pos.x, halfSizeX, worldSize.x - halfSizeX);
+	pos.y = clamp(pos.y, halfSizeY, worldSize.y - halfSizeY);
+
+	_camera->SetPos(pos);
 	//_camera->Update(deltaTime);
 }
 
 void CameraComponent::RenderComponent(HDC hdc)
 {
+	_camera->Render(hdc);
 }
 
 Vector2 CameraComponent::ConvertScreenPos(Vector2 worldPos)

@@ -21,17 +21,22 @@ public:
 	}
 
 private:
+	HDC _mapCacheDC = nullptr;
+	HBITMAP  _mapCacheBitmap = nullptr;
+
+	int32 iMapSizeX;
+	int32 iMapSizeY;
 	int32 iHalfTileSize;
-	Texture* _tileMap;
+	vector<Texture*> _tileMapList;
 
 	vector<tileRenderInfo> _tileRenderList;
 
 public:
-	virtual void InitComponent() override;
+	virtual void InitComponent(int32 mapSizeX, int32 mapSizeY);
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
 
-	void SetTileMap(Texture* texture);
+	void AddTileTexture(Texture* texture);
 
-	void AddTileInfo(Vector2 worldPos, Vector2 tilePos);
+	void AddTileInfo(int32 tileSetIndex, Vector2 worldPos, Vector2 tilePos);
 };

@@ -3,7 +3,7 @@
 #include "../Objects/Actors/Actor.h"
 #include "../Resources/Sprite.h"
 #include "../Game/Game.h"
-#include "../Components/CameraComponent.h"
+#include "../Objects/Actors/Player.h"
 
 void Animator::InitComponent(int32 endIndex)
 {
@@ -18,8 +18,7 @@ void Animator::UpdateComponent(float deltaTime)
 	if (fElapsedTime >= _currentAnimation._sprite->GetDuration())
 	{
 		fElapsedTime = 0.f;
-		_currentAnimation._sprite->IncreaseCurrentFrame();
-		if (_currentAnimation._sprite->IsSpriteEnd())
+		if (_currentAnimation._sprite->IsSpriteEnd(_currentAnimation.iCurrentFrame))
 		{
 			if (!_currentAnimation._sprite->GetIsLoop())
 			{
@@ -27,16 +26,19 @@ void Animator::UpdateComponent(float deltaTime)
 			}
 			else
 			{
-				_currentAnimation._sprite->SetCurrentFrame(0);
+				_currentAnimation.iCurrentFrame = 0;
 			}
+		}
+		else
+		{
+			_currentAnimation.iCurrentFrame += 1;
 		}
 	}
 }
 
 void Animator::RenderComponent(HDC hdc)
 {
-	CameraComponent* cameraComp = GetOwner()->GetComponent<CameraComponent>();
-	Vector2 screenPos = cameraComp->ConvertScreenPos(GetPos());
+	Vector2 screenPos = Game::GetInstance()->ConvertCurSceneScreenPos(GetPos());
 
 	if (bIsFlipped)
 	{
@@ -48,8 +50,7 @@ void Animator::RenderComponent(HDC hdc)
 	}
 	screenPos.y += _currentAnimation.vOffset.y;
 
-
-	_currentAnimation._sprite->RenderStretchedSprite(hdc, screenPos, bIsFlipped);
+	_currentAnimation._sprite->RenderStretchedSprite(hdc, screenPos, _currentAnimation.iCurrentFrame, bIsFlipped);
 }
 
 void Animator::AddAnimation(int32 Index, Sprite* sprite, Vector2 offset)
@@ -63,7 +64,7 @@ void Animator::AddAnimation(int32 Index, Sprite* sprite, Vector2 offset)
 void Animator::SetAnimation(int32 Index)
 {
 	// 이전에 재생중인 애니메이션이 있을 경우 프레임 카운트 초기화
-	if(_currentAnimation._sprite != nullptr) _currentAnimation._sprite->SetCurrentFrame(0);
+	if (_currentAnimation._sprite != nullptr) _currentAnimation.iCurrentFrame = 0;
 	_currentAnimation = _animationList[Index];
 	bPlaying = true;
 }
@@ -72,7 +73,7 @@ bool Animator::IsAnimationFinished()
 {
 	if (_currentAnimation._sprite != nullptr)
 	{
-		return _currentAnimation._sprite->IsSpriteEnd();
+		return _currentAnimation._sprite->IsSpriteEnd(_currentAnimation.iCurrentFrame);
 	}
 
 	return false;

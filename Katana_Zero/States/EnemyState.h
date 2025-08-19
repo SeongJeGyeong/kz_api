@@ -22,6 +22,9 @@ public:
 class EnemyState_Idle : public EnemyState
 {
 	using Super = EnemyState;
+private:
+	float fWaitTime = 0;
+
 public:
 	EnemyState_Idle(Enemy* enemy) : Super(enemy) {}
 
@@ -34,6 +37,9 @@ public:
 class EnemyState_Walk : public EnemyState
 {
 	using Super = EnemyState;
+private:
+	float fPatrolTime = 0;
+
 public:
 	EnemyState_Walk(Enemy* enemy) : Super(enemy) {}
 

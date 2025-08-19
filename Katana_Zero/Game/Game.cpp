@@ -158,7 +158,7 @@ void Game::ChangeGameScene()
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene("Stage1.json");
+	_nextScene = new GameScene("Stage1_0.json");
 	_background = WHITENESS;
 }
 

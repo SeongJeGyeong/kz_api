@@ -6,6 +6,7 @@ class Sprite;
 struct AnimationInfo
 {
 	Sprite* _sprite = nullptr;
+	int32 iCurrentFrame = 0;
 	Vector2 vOffset = Vector2(0, 0);
 };
 

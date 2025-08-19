@@ -2,15 +2,17 @@
 #include "State.h"
 
 class Player;
+class PlayerMovementComponent;
 
 class PlayerState : public State<EPlayerState>
 {
 public:
-	PlayerState(Player* player) : _player(player) {}
+	PlayerState(Player* player);
 	virtual ~PlayerState() {}
 
 protected:
 	Player* _player = nullptr;
+	PlayerMovementComponent* movementComponent = nullptr;
 
 public:
 	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE; };

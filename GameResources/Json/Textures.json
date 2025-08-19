@@ -24,7 +24,7 @@
                 "FrameX": 44,
                 "FrameY": 32,
                 "FrameCount": 10,
-                "Duration": 0.07,
+                "Duration": 0.06,
                 "Loop": true,
                 "Alpha": 255
             },
@@ -95,7 +95,7 @@
                 "FileName": "spr_roll",
                 "FrameX": 48,
                 "FrameY": 33,
-                "FrameCount": 2,
+                "FrameCount": 7,
                 "Duration": 0.04,
                 "Loop": false,
                 "Alpha": 255
@@ -107,7 +107,7 @@
                 "FrameX": 49,
                 "FrameY": 50,
                 "FrameCount": 8,
-                "Duration": 0.08,
+                "Duration": 0.1,
                 "Loop": true,
                 "Alpha": 255
             },

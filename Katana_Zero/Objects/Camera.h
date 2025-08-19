@@ -19,11 +19,9 @@ public:
 	POINT ConvertScreenPos(POINT worldPos);
 	POINT ConvertWorldPos(POINT screenPos);
 
+	Vector2 GetWorldSize() { return Vector2(iWorldSizeX, iWorldSizeY); }
 	void SetWorldSize(int32 x, int32 y) { iWorldSizeX = x; iWorldSizeY = y; }
 
 	Vector2 GetCameraSize() { return { fCameraWidth , fCameraHeight }; }
-
-	//Vector2 GetCameraPos() { return vCameraPos; }
-	//void SetCameraPos(Vector2 pos) { vCameraPos = pos; }
 };
 

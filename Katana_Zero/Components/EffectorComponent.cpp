@@ -3,7 +3,7 @@
 #include "../Managers/ResourceManager.h"
 #include "../Resources/Sprite.h"
 #include "../Objects/Actors/Actor.h"
-#include "../Components/CameraComponent.h"
+#include "../Game/Game.h"
 
 void EffectorComponent::InitComponent()
 {
@@ -43,10 +43,9 @@ void EffectorComponent::UpdateComponent(float deltaTime)
 
 void EffectorComponent::RenderComponent(HDC hdc)
 {
-	CameraComponent* cameraComp = GetOwner()->GetComponent<CameraComponent>();
 	for (const SpawnInfo& info : _spawnList)
 	{
-		Vector2 screenPos = cameraComp->ConvertScreenPos(info.bAttached ? GetPos() : info.vPos);
+		Vector2 screenPos = Game::GetInstance()->ConvertCurSceneScreenPos(info.bAttached ? GetPos() : info.vPos);
 		ResourceManager::GetInstance()->GetSprite(info.effectName)->RenderRotatedSprite(hdc, screenPos, info.fRadAngle, info.fScale, info.iCurrentFrame, info.bIsFlipped);
 	}
 }

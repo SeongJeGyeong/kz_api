@@ -3,6 +3,7 @@
 #include "../Managers/InputManager.h"
 #include "../Objects/Actors/Player.h"
 #include "../Components/Animator.h"
+#include "../Components/CameraComponent.h"
 
 void InputComponent::InitComponent(Actor* owner)
 {
@@ -12,10 +13,19 @@ void InputComponent::InitComponent(Actor* owner)
 
 void InputComponent::UpdateComponent(float deltaTime)
 {
+    if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))
+    {
+        bPressedDown = true;
+    }
+    else
+    {
+        bPressedDown = false;
+    }
 }
 
 void InputComponent::RenderComponent(HDC hdc)
 {
+
 }
 
 void InputComponent::Input_In_Idle(float deltaTime)
@@ -145,6 +155,11 @@ void InputComponent::Input_In_RunToIdle(float deltaTime)
     {
         _player->Move(true);
     }
+
+    if (!_player->GetIsCrouch() && InputManager::GetInstance()->GetButtonPressed(KeyType::S))
+    {
+        _player->Crouch(true);
+    }
 }
 
 void InputComponent::Input_In_Jump(float deltaTime)
@@ -174,11 +189,6 @@ void InputComponent::Input_In_Jump(float deltaTime)
     {
         _player->Move(true);
     }
-
-    if (InputManager::GetInstance()->GetButtonDown(KeyType::S))
-    {
-        _player->Landing();
-    }
 }
 
 void InputComponent::Input_In_Fall(float deltaTime)
@@ -198,11 +208,6 @@ void InputComponent::Input_In_Fall(float deltaTime)
     else if (InputManager::GetInstance()->GetButtonPressed(KeyType::D))
     {
         _player->Move(true);
-    }
-
-    if (InputManager::GetInstance()->GetButtonDown(KeyType::S))
-    {
-        _player->Landing();
     }
 }
 

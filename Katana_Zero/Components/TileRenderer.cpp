@@ -4,8 +4,16 @@
 #include "../Game/Game.h"
 #include "../Objects/Camera.h"
 
-void TileRenderer::InitComponent()
+void TileRenderer::InitComponent(int32 mapSizeX, int32 mapSizeY)
 {
+    iMapSizeX = mapSizeX;
+    iMapSizeY = mapSizeY;
+	HDC screenDC = GetDC(nullptr);
+	_mapCacheDC = CreateCompatibleDC(screenDC);
+	_mapCacheBitmap = CreateCompatibleBitmap(screenDC, iMapSizeX, iMapSizeY);
+	SelectObject(_mapCacheDC, _mapCacheBitmap);
+	ReleaseDC(nullptr, screenDC);
+
 	iHalfTileSize = TILE_SIZE / 2;
 }
 
@@ -18,19 +26,74 @@ void TileRenderer::RenderComponent(HDC hdc)
 	Camera* camera = Game::GetInstance()->GetCurrentSceneCamera();
 	if (camera == nullptr) return;
 
-	for (const tileRenderInfo& info : _tileRenderList)
-	{
-		Vector2 screenPos = camera->ConvertScreenPos(info.worldPos);
-		_tileMap->RenderTexture(hdc, screenPos.x - (TILE_SIZE * 0.5f), screenPos.y - (TILE_SIZE * 0.5f), TILE_SIZE, TILE_SIZE, info.tilePos.x * TILE_SIZE, info.tilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-	}
+	Vector2 screenPos = camera->ConvertScreenPos(Vector2(0, 0));
+	Vector2 screenSize = camera->GetCameraSize();
+
+	/*BLENDFUNCTION blendOp = {};
+	blendOp.BlendOp = AC_SRC_OVER;
+	blendOp.BlendFlags = 0;
+	blendOp.SourceConstantAlpha = 255;
+	blendOp.AlphaFormat = AC_SRC_ALPHA;
+
+	AlphaBlend(
+		hdc,
+		screenPos.x,
+		screenPos.y,
+		iMapSizeX,
+		iMapSizeY,
+		_mapCacheDC,
+		0,
+		0,
+		iMapSizeX,
+		iMapSizeY,
+		blendOp
+	);*/
+
+    BitBlt(
+        hdc,
+        screenPos.x, 
+        screenPos.y,
+        iMapSizeX,
+        iMapSizeY,
+        _mapCacheDC,
+        0, 
+        0,         
+        SRCCOPY
+    );
 }
 
-void TileRenderer::SetTileMap(Texture* texture)
+void TileRenderer::AddTileTexture(Texture* texture)
 {
-	_tileMap = texture;
+	_tileMapList.push_back(texture);
 }
 
-void TileRenderer::AddTileInfo(Vector2 worldPos, Vector2 tilePos)
+void TileRenderer::AddTileInfo(int32 tileSetIndex, Vector2 worldPos, Vector2 tilePos)
 {
-	_tileRenderList.push_back({ worldPos, tilePos});
+    if (_tileMapList.empty()) return;
+
+    BLENDFUNCTION blendOp = {};
+    blendOp.BlendOp = AC_SRC_OVER;
+    blendOp.BlendFlags = 0;
+    blendOp.SourceConstantAlpha = 255;
+    blendOp.AlphaFormat = AC_SRC_ALPHA;
+
+    int32 destX = static_cast<int32>(worldPos.x - TILE_SIZE * 0.5f);
+    int32 destY = static_cast<int>(worldPos.y - TILE_SIZE * 0.5f);
+
+    int32 srcX = static_cast<int32>(tilePos.x * TILE_SIZE);
+    int32 srcY = static_cast<int32>(tilePos.y * TILE_SIZE);
+
+    AlphaBlend(
+        _mapCacheDC,
+        destX,
+        destY,
+        TILE_SIZE,
+        TILE_SIZE,
+        _tileMapList[tileSetIndex]->GetTexture(),
+        srcX,
+        srcY,
+        TILE_SIZE,
+        TILE_SIZE,
+        blendOp
+    );
 }

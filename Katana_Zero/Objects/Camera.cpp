@@ -20,7 +20,9 @@ void Camera::Update(float deltaTime)
 
 void Camera::Render(HDC hdc)
 {
-
+	SetTextColor(hdc, RGB(255, 255, 255));
+	wstring strm = std::format(L"CameraPos ({0}, {1})", vPos.x, vPos.y);
+	::TextOut(hdc, 200, 130, strm.c_str(), static_cast<int32>(strm.size()));
 }
 
 Vector2 Camera::ConvertScreenPos(Vector2 worldPos)

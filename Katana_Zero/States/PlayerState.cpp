@@ -4,61 +4,30 @@
 #include "../Components/Animator.h"
 #include "../Managers/InputManager.h"
 #include "../Components/InputComponent.h"
+#include "../Components/PlayerMovementComponent.h"
+
+PlayerState::PlayerState(Player* player)
+	: _player(player) 
+{
+	movementComponent = player->GetComponent<PlayerMovementComponent>();
+}
 
 void PlayerState::UpdateState(float deltaTime)
 {
 	if (_player == nullptr) return;
 	_player->UpdateAttachedComponents(deltaTime);
 
-	if (!_player->GetIsGround() && !_player->GetIsPlatform() && !_player->GetOnStair() &&
-		_player->GetCurrentState() != EPlayerState::PLAYER_ATTACK &&
-		_player->GetVelocity().y > 0.f)
+	if (!movementComponent->GetIsGround() && !movementComponent->GetIsPlatform() && !movementComponent->GetOnStair())
 	{
-		_player->ChangeState(EPlayerState::PLAYER_FALL);
-		_player->SetIsCrouch(false);
+		movementComponent->SetIsJumped(true);
+
+		if (movementComponent->GetVelocity().y > 0.f && _player->GetCurrentState() != EPlayerState::PLAYER_ATTACK)
+		{
+			_player->ChangeState(EPlayerState::PLAYER_FALL);
+			_player->SetIsCrouch(false);
+		}
 	}
 }
-
-//void PlayerState::InputUpdateForState(EPlayerState state)
-//{
-//	switch (state)
-//	{
-//	case PLAYER_IDLE:
-//		break;
-//	case PLAYER_IDLE_TO_RUN:
-//		break;
-//	case PLAYER_RUN:
-//		break;
-//	case PLAYER_RUN_TO_IDLE:
-//		break;
-//	case PLAYER_JUMP:
-//		break;
-//	case PLAYER_FALL:
-//		break;
-//	case PLAYER_PRECROUCH:
-//		break;
-//	case PLAYER_CROUCH:
-//		break;
-//	case PLAYER_POSTCROUCH:
-//		break;
-//	case PLAYER_ATTACK:
-//		break;
-//	case PLAYER_ROLL:
-//		break;
-//	case PLAYER_HURT_BEGIN:
-//		break;
-//	case PLAYER_HURT_LOOP:
-//		break;
-//	case PLAYER_HURT_GROUND:
-//		break;
-//	case PLAYER_HURT_RECOVER:
-//		break;
-//	case PLAYER_END:
-//		break;
-//	default:
-//		break;
-//	}
-//}
 
 ///////* Idle *///////////////////////////////
 void PlayerState_Idle::EnterState()
@@ -116,7 +85,7 @@ void PlayerState_Run::UpdateState(float deltaTime)
 	Super::UpdateState(deltaTime);
 	_player->GetComponent<InputComponent>()->Input_In_Run(deltaTime);
 
-	Vector2 acceleration = _player->GetAcceleration();
+	Vector2 acceleration = movementComponent->GetAcceleration();
 	if (acceleration.x == 0)
 	{
 		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
@@ -141,7 +110,7 @@ void PlayerState_Run_to_Idle::UpdateState(float deltaTime)
 	Super::UpdateState(deltaTime);
 	_player->GetComponent<InputComponent>()->Input_In_RunToIdle(deltaTime);
 
-	if (_player->GetIsGround() || _player->GetIsPlatform() || _player->GetOnStair())
+	if (movementComponent->GetIsGround() || movementComponent->GetIsPlatform() || movementComponent->GetOnStair())
 	{
 		if (InputManager::GetInstance()->GetButtonPressed(KeyType::A) || InputManager::GetInstance()->GetButtonPressed(KeyType::D))
 		{
@@ -241,7 +210,7 @@ void PlayerState_Jump::UpdateState(float deltaTime)
 	Super::UpdateState(deltaTime);
 	_player->GetComponent<InputComponent>()->Input_In_Jump(deltaTime);
 
-	if (_player->GetIsGround() || _player->GetIsPlatform() || _player->GetOnStair())
+	if (movementComponent->GetIsGround() || movementComponent->GetIsPlatform() || movementComponent->GetOnStair())
 	{
 		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
@@ -265,7 +234,7 @@ void PlayerState_Fall::UpdateState(float deltaTime)
 	Super::UpdateState(deltaTime);
 	_player->GetComponent<InputComponent>()->Input_In_Fall(deltaTime);
 
-	if (!_player->GetIsJumped())
+	if (!movementComponent->GetIsJumped())
 	{
 		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
@@ -291,7 +260,8 @@ void PlayerState_Attack::UpdateState(float deltaTime)
 	Animator* animator = _player->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		if (!_player->GetIsJumped())
+		_player->SetIsAttack(false);
+		if (!movementComponent->GetIsJumped())
 		{
 			_player->ChangeState(EPlayerState::PLAYER_IDLE);
 		}

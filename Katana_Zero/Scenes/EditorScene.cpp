@@ -306,6 +306,8 @@ void EditorScene::SaveMap()
 				json TilesByLayer;
 				for (auto it : _tileInfoMap[i])
 				{
+					if (it.second.iTilesetIndex == -1) continue;
+
 					Vector2 pos = ConvertIndexToWorldGrid(it.first);
 					Vector2 screenPos = { pos.x * TILE_SIZE + TILE_SIZE / 2, pos.y * TILE_SIZE + TILE_SIZE / 2 };
 					if (minPos.x > screenPos.x) minPos.x = screenPos.x;

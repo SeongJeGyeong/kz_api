@@ -131,7 +131,7 @@ ATOM RegisterMainWindowClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_KATANAZERO));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_KATANAZERO);
+    wcex.lpszMenuName   = nullptr; //MAKEINTRESOURCEW(IDC_KATANAZERO);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -175,7 +175,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    // 게임 윈도우 창 크기 조절
    RECT mainWindowRect = { 0, 0, GWinSizeX, GWinSizeY };
-   ::AdjustWindowRect(&mainWindowRect, WS_OVERLAPPEDWINDOW, true);
+   ::AdjustWindowRect(&mainWindowRect, WS_OVERLAPPEDWINDOW, false);
 
    // 실제 윈도우 창 생성
    // 각 윈도우 창을 구분하는 핸들(윈도우 창이 여러개 떠있을 수 있으므로)
