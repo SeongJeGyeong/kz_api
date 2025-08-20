@@ -10,6 +10,7 @@ private:
 	unordered_map<string, Texture*> _textures;
 	unordered_map<string, Sprite*> _sprites;
 	vector<Texture*> _tileMapList;
+	HCURSOR _cursor = nullptr;
 
 public:
 	void Init(HWND hwnd, fs::path directory);
@@ -23,4 +24,8 @@ public:
 	Sprite* GetSprite(string name);
 	vector<Texture*> GetTileMapList() { return _tileMapList; }
 	Texture* GetTileMapForIndex(int32 index) { return _tileMapList[index]; }
+
+	HCURSOR CreateCursorFromImage(const wstring& path);
+
+	HCURSOR GetCursor() { return _cursor; }
 };

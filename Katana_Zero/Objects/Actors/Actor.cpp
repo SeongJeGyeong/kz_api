@@ -4,6 +4,7 @@
 #include "../../Components/OBBCollider.h"
 #include "../../Components/AABBCollider.h"
 #include "../../Components/LineCollider.h"
+#include "../../Components/MovingLineCollider.h"
 
 void Actor::Init(Vector2 pos)
 {
@@ -44,6 +45,16 @@ void Actor::CreateLineCollider(Vector2 start, Vector2 end, ECollisionLayer layer
 {
 	_collider = new LineCollider();
 	_collider->InitLine(start, end);
+	_collider->SetOwner(this);
+	_collider->SetCollisionLayer(layer);
+	_collider->SetColliderType(EColliderType::LINE);
+	CollisionManager::GetInstance()->AddCollider(_collider);
+}
+
+void Actor::CreateMovingLineCollider(float length, float radian, ECollisionLayer layer)
+{
+	_collider = new MovingLineCollider();
+	_collider->InitLine(length, radian);
 	_collider->SetOwner(this);
 	_collider->SetCollisionLayer(layer);
 	_collider->SetColliderType(EColliderType::LINE);

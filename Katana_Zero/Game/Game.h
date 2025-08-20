@@ -4,6 +4,7 @@
 class Scene;
 class EditorSub;
 class Camera;
+class Player;
 
 class Game : public Singleton<Game>
 {

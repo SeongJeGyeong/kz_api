@@ -28,7 +28,7 @@ public:
 	Vector2 GetCenter() { return vCenter; }
 	void SetCenter(Vector2 center) { vCenter = center; }
 
-	pair<float, float> ProjectionAxis(const Vector2& axis) const;
+	pair<float, float> ProjectionToAxis(const Vector2& axis) const;
 
 	virtual float GetWidth() override { return fWidth; }
 	virtual float GetHeight() override { return fHeight; }

@@ -160,6 +160,9 @@ void Game::ChangeGameScene()
 
 	_nextScene = new GameScene("Stage1_0.json");
 	_background = WHITENESS;
+
+	HCURSOR newCurosr = ResourceManager::GetInstance()->GetCursor();
+	SetClassLongPtr(_hwnd, GCLP_HCURSOR, (LONG_PTR)newCurosr);
 }
 
 void Game::ChangeLobbyScene()

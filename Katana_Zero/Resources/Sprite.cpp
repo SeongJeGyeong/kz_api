@@ -100,6 +100,41 @@ void Sprite::RenderRotatedSprite(HDC hdc, Vector2 pos, float radian, float scale
 	DeleteDC(rotatedDC);
 }
 
+void Sprite::RenderRotatedSpriteBitBlt(HDC hdc, Vector2 pos, float radian, float scale, int32 curFrame, bool isFlipped)
+{
+	// 회전한 이미지의 축에 정렬된 AABB 계산(회전된 이미지를 가두는 AABB)
+	RECT bounds = GetRotatedBounds(pos.x, pos.y, radian, iSpriteSizeX, iSpriteSizeY);
+
+	int tempWidth = bounds.right - bounds.left;
+	int tempHeight = bounds.bottom - bounds.top;
+
+	// 중간 DC, 비트맵 설정
+	BITMAPINFO bmi = {};
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = tempWidth;
+	bmi.bmiHeader.biHeight = -tempHeight; // top-down DIB
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	// 임시 DC 좌표계로 조정된 점들
+	POINT points[3];
+	CalculateRotatedPoints(points, pos.x, pos.y, radian, iSpriteSizeX, iSpriteSizeY);
+
+	PlgBlt(
+		hdc, 
+		points, 
+		_textureHdc, 
+		0, 
+		0, 
+		iSpriteSizeX, 
+		iSpriteSizeY, 
+		nullptr, 
+		0, 
+		0
+	);
+}
+
 void Sprite::CalculateRotatedPoints(POINT points[3], float centerX, float centerY, float radian, int imgWidth, int imgHeight)
 {
 	float cosA = cos(radian);

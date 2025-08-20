@@ -76,6 +76,9 @@ public:
 class EnemyState_Aim : public EnemyState
 {
 	using Super = EnemyState;
+private:
+	float fReloadTime = 0.f;
+
 public:
 	EnemyState_Aim(Enemy* enemy) : Super(enemy) {}
 

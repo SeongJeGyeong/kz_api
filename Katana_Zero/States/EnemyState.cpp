@@ -19,8 +19,15 @@ void EnemyState_Idle::EnterState()
 void EnemyState_Idle::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+
+	if (_enemy->GetDetected())
+	{
+		fWaitTime = 0.f;
+		_enemy->ChangeState(EEnemyState::ENEMY_RUN);
+	}
+
 	fWaitTime += deltaTime;
-	if (fWaitTime > 3.f)
+	if (fWaitTime > 1.f)
 	{
 		fWaitTime = 0.f;
 		_enemy->ChangeState(EEnemyState::ENEMY_TURN);
@@ -40,6 +47,13 @@ void EnemyState_Walk::EnterState()
 void EnemyState_Walk::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+
+	if (_enemy->GetDetected())
+	{
+		fPatrolTime = 0.f;
+		_enemy->ChangeState(EEnemyState::ENEMY_RUN);
+	}
+
 	fPatrolTime += deltaTime;
 	if (fPatrolTime > 3.f)
 	{
@@ -78,23 +92,47 @@ void EnemyState_Turn::UpdateState(float deltaTime)
 	Animator* animator = _enemy->GetComponent<Animator>();
 	if (animator->IsAnimationFinished())
 	{
-		_enemy->ChangeState(EEnemyState::ENEMY_WALK);
-		_enemy->TurnFrontDir();
+		if (_enemy->GetDetected())
+		{
+			_enemy->ChangeState(EEnemyState::ENEMY_RUN);
+		}
+		else
+		{
+			_enemy->ChangeState(EEnemyState::ENEMY_WALK);
+		}
 	}
 }
 
 void EnemyState_Turn::ExitState()
 {
+	_enemy->TurnFrontDir();
 }
 
 ///////////////// Run /////////////////
 void EnemyState_Run::EnterState()
 {
+	_enemy->GetComponent<Animator>()->SetAnimation(EEnemyState::ENEMY_RUN);
 }
 
 void EnemyState_Run::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+
+	if (_enemy->InShotRange())
+	{
+		_enemy->ChangeState(EEnemyState::ENEMY_AIM);
+		return;
+	}
+
+	if (_enemy->PlayerIsBack())
+	{
+		_enemy->ChangeState(EEnemyState::ENEMY_TURN);
+	}
+	else
+	{
+		Vector2 dir = _enemy->GetFrontDir();
+		_enemy->GetComponent<EnemyMovementComponent>()->SetVelocityX(dir.x * 400.f);
+	}
 }
 
 void EnemyState_Run::ExitState()
@@ -104,11 +142,33 @@ void EnemyState_Run::ExitState()
 ///////////////// Aim /////////////////
 void EnemyState_Aim::EnterState()
 {
+	_enemy->GetComponent<Animator>()->SetAnimation(EEnemyState::ENEMY_AIM);
 }
 
 void EnemyState_Aim::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+
+	if (!_enemy->InShotRange())
+	{
+		fReloadTime = 0.f;
+		_enemy->ChangeState(EEnemyState::ENEMY_RUN);
+		return;
+	}
+
+	if (_enemy->PlayerIsBack())
+	{
+		fReloadTime = 0.f;
+		_enemy->ChangeState(EEnemyState::ENEMY_TURN);
+		return;
+	}
+
+	fReloadTime += deltaTime;
+	if (fReloadTime >= 2.f)
+	{
+		fReloadTime = 0.f;
+		_enemy->ShotBullet();
+	}
 }
 
 void EnemyState_Aim::ExitState()
@@ -118,11 +178,17 @@ void EnemyState_Aim::ExitState()
 ///////////////// Hurt Fly /////////////////
 void EnemyState_Hurt_Fly::EnterState()
 {
+	_enemy->GetComponent<Animator>()->SetAnimation(EEnemyState::ENEMY_HURT_FLY);
 }
 
 void EnemyState_Hurt_Fly::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+	EnemyMovementComponent* movementComp = _enemy->GetComponent<EnemyMovementComponent>();
+	if (movementComp->GetVelocity().x <= 1.f && movementComp->GetOnGround())
+	{
+		_enemy->ChangeState(EEnemyState::ENEMY_HURT_GROUND);
+	}
 }
 
 void EnemyState_Hurt_Fly::ExitState()
@@ -132,6 +198,7 @@ void EnemyState_Hurt_Fly::ExitState()
 ///////////////// Hurt Ground /////////////////
 void EnemyState_Hurt_Ground::EnterState()
 {
+	_enemy->GetComponent<Animator>()->SetAnimation(EEnemyState::ENEMY_HURT_GROUND);
 }
 
 void EnemyState_Hurt_Ground::UpdateState(float deltaTime)

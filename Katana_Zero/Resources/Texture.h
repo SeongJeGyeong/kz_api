@@ -26,7 +26,8 @@ public:
 	int32 GetAlpha() { return iAlpha; }
 	void SetAlpha(int32 transparent) { iAlpha = transparent; }
 
-	HDC GetTexture() { return _textureHdc; }
+	HDC GetTexture() const { return _textureHdc; }
+	HBITMAP GetBitmap() const { return _bitmap; }
 
 };
 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EnemyMovementComponent.h"
+#include "../Objects/Actors/Actor.h"
 
 void EnemyMovementComponent::InitComponent(Actor* owner)
 {
@@ -22,7 +23,11 @@ void EnemyMovementComponent::ApplyPhysics(float deltaTime)
     Vector2 normalGravity = vGravity.GetNormalize();
     float GravityLength = vVelocity.Dot(normalGravity);
 
-    if (bOnGround)
+    if (GetOwner()->GetWasHit())
+    {
+        vAcceleration += vGravity;
+    }
+    else if (bOnGround)
     {
         vVelocity.y = 0.f;
         GravityLength = 0.f;
@@ -62,8 +67,8 @@ void EnemyMovementComponent::ApplyPhysics(float deltaTime)
     // 가속도는 속도(velocity)를 변화시킨다.
     vVelocity += vAcceleration * deltaTime;
 
-    float upFactor = 400.f;
-    float sideFactor = 400.f;
+    float upFactor = 1000.f;
+    float sideFactor = 1000.f;
 
     Vector2 gravityVector = normalGravity * GravityLength;
     Vector2 sideVec = vVelocity - gravityVector;
@@ -75,6 +80,7 @@ void EnemyMovementComponent::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
+    if (GetOwner()->GetWasHit() && !bOnGround) friction = 0.98f;
 
     sideVec *= friction;
     if (sideVec.Length() < 1.0f)

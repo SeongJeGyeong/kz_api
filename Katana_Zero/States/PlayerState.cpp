@@ -261,6 +261,7 @@ void PlayerState_Attack::UpdateState(float deltaTime)
 	if (animator->IsAnimationFinished())
 	{
 		_player->SetIsAttack(false);
+		_player->ClearHitActors();
 		if (!movementComponent->GetIsJumped())
 		{
 			_player->ChangeState(EPlayerState::PLAYER_IDLE);

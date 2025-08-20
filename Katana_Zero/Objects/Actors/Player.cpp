@@ -87,6 +87,33 @@ void Player::Update(float deltaTime)
     // 속도(velocity) 위치를 변화시킨다.
     Vector2 NewPos = GetPos() + (velocity * deltaTime);
     _movementComp->SetNewPos(NewPos);
+
+    if (_attackInfo.bIsAttack)
+    {
+        Vector2 pos = GetPos();
+        float width = 106 * 1.4f;
+        float height = 32 * 1.4f;
+        vector<Vector2> corners = GetRotatedCorners(pos.x, pos.y, _attackInfo.fAttackRadian, width, height);
+
+        float cosRotation = cosf(_attackInfo.fAttackRadian);
+        float sinRotation = sinf(_attackInfo.fAttackRadian);
+        Vector2 localAxisX = Vector2(cosRotation, sinRotation);
+        Vector2 localAxisY = Vector2(-sinRotation, cosRotation);
+
+        Vector2 min = Vector2(-width * 0.5f, -height * 0.5f);
+        Vector2 max = Vector2(width * 0.5f, height * 0.5f);
+
+        CollisionManager::GetInstance()->CheckOBBHitBox(
+            GetPos(), 
+            _attackInfo.fAttackRadian, 
+            106 * 1.4f, 
+            32 * 1.4f, 
+            ECollisionLayer::PLAYER_HITBOX, 
+            _attackInfo._hitActors, 
+            _attackInfo.vAttackDir
+        );
+        //CollisionManager::GetInstance()->CheckOBBHitBox(corners, ECollisionLayer::PLAYER_HITBOX, _attackInfo._hitActors, _attackInfo.vAttackDir);
+    }
 }
 
 void Player::PostUpdate(float deltaTime)
@@ -115,10 +142,10 @@ void Player::Render(HDC hdc)
     //wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
     //::TextOut(hdc, 100, 120, str5.c_str(), static_cast<int32>(str5.size()));
 
-    if (bIsAttack)
+    if (_attackInfo.bIsAttack)
     {
         Vector2 pos = _components.GetComponent<CameraComponent>()->ConvertScreenPos(GetPos());
-        RenderHitbox(hdc, pos, fAttackRadian, 1.5f);
+        RenderHitbox(hdc, pos, _attackInfo.fAttackRadian, 1.4f, (!_attackInfo._hitActors.empty()) ? RGB(0, 255, 0) : RGB(255, 0, 0));
     }
 }
 
@@ -324,8 +351,9 @@ void Player::Attack()
     _components.GetComponent<Animator>()->SetFlipped((dir.x < 0));
     _stateMachine->ChangeState(EPlayerState::PLAYER_ATTACK);
     fAttackDelayTime = 0.f;
-    bIsAttack = true;
-    fAttackRadian = rad;
+    _attackInfo.vAttackDir = dir;
+    _attackInfo.bIsAttack = true;
+    _attackInfo.fAttackRadian = rad;
 }
 
 int32 Player::GetCurrentState()
@@ -469,7 +497,7 @@ void Player::ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 o
     float halfH = GetCollider()->GetHeight() * 0.5f;
 
     // 계단 방향 판단
-    Collider* stairCollider = collisionInfo.groundActor->GetCollider();
+    Collider* stairCollider = collisionInfo.collisionActor->GetCollider();
     Vector2 stairStart = stairCollider->GetStartPoint();
     Vector2 stairEnd = stairCollider->GetEndPoint();
     Vector2 stairDir = stairEnd - stairStart;
@@ -675,18 +703,20 @@ void Player::printState(HDC hdc)
     ::TextOut(hdc, 100, 50, str.c_str(), static_cast<int32>(str.size()));
 }
 
-void Player::RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale)
+void Player::RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLORREF color)
 {
-    POINT corners[4];
-    GetRotatedCorners(corners, pos.x, pos.y, radian, 106 * scale, 32 * scale);
+    vector<Vector2> corners = GetRotatedCorners(pos.x, pos.y, radian, 106 * scale, 32 * scale);
 
     // 마지막 점은 처음 점과 연결해야 하므로 복사
     POINT polygon[5];
-    memcpy(polygon, corners, sizeof(POINT) * 4);
-    polygon[4] = corners[0];
+    for (int32 i = 0; i < 5; ++i)
+    {
+        int32 idx = (i + 1) % 4;
+        polygon[i] = { (LONG)corners[idx].x, (LONG)corners[idx].y };
+    }
 
     // 빨간색 펜으로 OBB 출력
-    HPEN hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+    HPEN hPen = CreatePen(PS_SOLID, 1, color);
     HGDIOBJ oldPen = SelectObject(hdc, hPen);
     HGDIOBJ oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
 

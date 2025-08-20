@@ -16,6 +16,7 @@ public:
 	void RenderStretchedSprite(HDC hdc, Vector2 pos, int32 curFrame, bool isFlipped);
 
 	void RenderRotatedSprite(HDC hdc, Vector2 pos, float radian, float scale, int32 curFrame, bool isFlipped);
+	void RenderRotatedSpriteBitBlt(HDC hdc, Vector2 pos, float radian, float scale, int32 curFrame, bool isFlipped);
 	void CalculateRotatedPoints(POINT points[3], float centerX, float centerY, float radian, int imgWidth, int imgHeight);
 	RECT GetRotatedBounds(int32 centerX, int32 centerY, float radian, int32 sizeX, int32 sizeY);
 

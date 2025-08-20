@@ -39,6 +39,7 @@ public:
 	virtual void InitOBB(float width, float height, float rotation) {};
 	virtual void InitAABB(float width, float height) {}
 	virtual void InitLine(Vector2 start, Vector2 end) {}
+	virtual void InitLine(float length, float radian) {}
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
 
@@ -51,6 +52,8 @@ public:
 	virtual float GetHeight() { return 0; }
 	virtual Vector2 GetStartPoint() { return Vector2(); }
 	virtual Vector2 GetEndPoint() { return Vector2(); }
+	virtual float GetLength() { return 0; }
+	virtual float GetRadian() { return 0; }
 
 	bool GetOverlapped() { return bOverlapped; }
 	void SetOverlapped(bool overlap) { bOverlapped = overlap; }

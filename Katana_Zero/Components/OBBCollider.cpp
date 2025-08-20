@@ -71,7 +71,7 @@ vector<Vector2> OBBCollider::GetVertices() const
 }
 
 // 축 투영
-pair<float, float> OBBCollider::ProjectionAxis(const Vector2& axis) const
+pair<float, float> OBBCollider::ProjectionToAxis(const Vector2& axis) const
 {
 	// 두 도형이 충돌했다면, 두 도형의 각각의 가장자리에 수직인 모든 벡터에 두 도형의 투영된 벡터들이 겹치게 된다.
 	vector<Vector2> vertices = GetVertices();

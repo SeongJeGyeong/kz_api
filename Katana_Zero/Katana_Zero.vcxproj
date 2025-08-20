@@ -128,6 +128,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Components\MovingLineCollider.h" />
+    <ClInclude Include="Objects\Actors\Bullet.h" />
     <ClInclude Include="Components\PlayerMovementComponent.h" />
     <ClInclude Include="Components\EnemyMovementComponent.h" />
     <ClInclude Include="States\EnemyState.h" />
@@ -179,6 +181,8 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\MovingLineCollider.cpp" />
+    <ClCompile Include="Objects\Actors\Bullet.cpp" />
     <ClCompile Include="Components\PlayerMovementComponent.cpp" />
     <ClCompile Include="Components\EnemyMovementComponent.cpp" />
     <ClCompile Include="States\EnemyState.cpp" />

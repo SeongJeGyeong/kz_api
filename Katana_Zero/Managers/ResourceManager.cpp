@@ -18,6 +18,8 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 	fs::path texturePath = directory / L"Textures/";
 
 	LoadFile("Textures", data, texturePath);
+
+	_cursor = CreateCursorFromImage(texturePath / L"UI/spr_cursor.bmp");
 }
 
 void ResourceManager::Destroy()
@@ -106,4 +108,43 @@ Sprite* ResourceManager::GetSprite(string name)
 	}
 
 	return nullptr;
+}
+
+HCURSOR ResourceManager::CreateCursorFromImage(const wstring& path)
+{
+	HBITMAP hBitmap = (HBITMAP)LoadImageW(
+		NULL,
+		path.c_str(),
+		IMAGE_BITMAP,
+		44, 44,  // 원본 크기
+		LR_LOADFROMFILE | LR_CREATEDIBSECTION
+	);
+
+	if (!hBitmap) {
+		return NULL;
+	}
+
+	// 비트맵 정보 가져오기
+	BITMAP bm;
+	GetObject(hBitmap, sizeof(BITMAP), &bm);
+
+	int actualWidth = bm.bmWidth;
+	int actualHeight = bm.bmHeight;
+
+	// 마스크 생성
+	HBITMAP hMask = CreateBitmap(actualWidth, actualHeight, 1, 1, NULL);
+
+	// 커서 생성
+	ICONINFO ii = {};
+	ii.fIcon = FALSE;
+	ii.xHotspot = actualWidth / 2;
+	ii.yHotspot = actualHeight / 2;
+	ii.hbmMask = hMask;
+	ii.hbmColor = hBitmap;
+
+	HCURSOR hCursor = CreateIconIndirect(&ii);
+	DeleteObject(hBitmap);
+	DeleteObject(hMask);
+
+	return hCursor;
 }

@@ -168,8 +168,10 @@ bool LineIntersectsLine(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, Vector2&
 	return false;
 }
 
-void GetRotatedCorners(POINT outPoints[4], float centerX, float centerY, float radian, int imgWidth, int imgHeight)
+vector<Vector2> GetRotatedCorners(float centerX, float centerY, float radian, int imgWidth, int imgHeight)
 {
+	vector<Vector2> Vertices(4);
+
 	float cosA = cos(radian);
 	float sinA = sin(radian);
 
@@ -189,7 +191,22 @@ void GetRotatedCorners(POINT outPoints[4], float centerX, float centerY, float r
 		float x = corners[i][0] * cosA - corners[i][1] * sinA;
 		float y = corners[i][0] * sinA + corners[i][1] * cosA;
 
-		outPoints[i].x = (LONG)(centerX + x);
-		outPoints[i].y = (LONG)(centerY + y);
+		Vertices[i].x = (float)(centerX + x);
+		Vertices[i].y = (float)(centerY + y);
 	}
+
+	return Vertices;
+}
+
+Vector2 ProjectionAxis(const vector<Vector2>& vertices, const Vector2& axis)
+{
+	float minProj = FLT_MAX;
+	float maxProj = -FLT_MAX;
+	for (auto& vertex : vertices) {
+		float proj = vertex.x * axis.x + vertex.y * axis.y;
+		minProj = min(minProj, proj);
+		maxProj = max(maxProj, proj);
+	}
+
+	return { minProj, maxProj };
 }

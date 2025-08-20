@@ -75,3 +75,7 @@ void EffectorComponent::PlayEffect(string name, bool flipped, float radian, floa
 
 	_spawnList.push_back(info);
 }
+
+void EffectorComponent::PlayEffectForDuration(string name, bool flipped, float radian, float scale, bool attached, float duration, Vector2 pos)
+{
+}

@@ -29,26 +29,6 @@ void TileRenderer::RenderComponent(HDC hdc)
 	Vector2 screenPos = camera->ConvertScreenPos(Vector2(0, 0));
 	Vector2 screenSize = camera->GetCameraSize();
 
-	/*BLENDFUNCTION blendOp = {};
-	blendOp.BlendOp = AC_SRC_OVER;
-	blendOp.BlendFlags = 0;
-	blendOp.SourceConstantAlpha = 255;
-	blendOp.AlphaFormat = AC_SRC_ALPHA;
-
-	AlphaBlend(
-		hdc,
-		screenPos.x,
-		screenPos.y,
-		iMapSizeX,
-		iMapSizeY,
-		_mapCacheDC,
-		0,
-		0,
-		iMapSizeX,
-		iMapSizeY,
-		blendOp
-	);*/
-
     BitBlt(
         hdc,
         screenPos.x, 

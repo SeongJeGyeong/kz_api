@@ -332,6 +332,15 @@
         ],
         "Effects": [
             {
+                "FileName": "spr_bullet",
+                "FrameX": 34,
+                "FrameY": 2,
+                "FrameCount": 1,
+                "Duration": 0,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
                 "FileName": "spr_slash",
                 "FrameX": 106,
                 "FrameY": 32,

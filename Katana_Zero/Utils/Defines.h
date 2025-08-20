@@ -285,7 +285,7 @@ struct CollisionInfo
 	Vector2 collisionPoint;     // 충돌 지점
 	Vector2 vHitNormal;            // 바닥의 법선 벡터 (위쪽 방향)
 	float penetrationDepth;    // 바닥에 파묻힌 깊이
-	class Actor* groundActor;        // 충돌한 바닥 액터
+	class Actor* collisionActor;        // 충돌한 액터
 	int32 hitCorner;
 };
 
@@ -294,4 +294,6 @@ bool LineIntersectsAABB(Vector2 p0, Vector2 p1, const RECT& rect, Vector2& outNo
 // 선분과 선분의 충돌체크
 bool LineIntersectsLine(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, Vector2& outNormal, Vector2& outPos, float& t);
 // 박스 회전
-void GetRotatedCorners(POINT outPoints[4], float centerX, float centerY, float radian, int imgWidth, int imgHeight);
+vector<Vector2> GetRotatedCorners(float centerX, float centerY, float radian, int imgWidth, int imgHeight);
+// 축 투영
+Vector2 ProjectionAxis(const vector<Vector2>& vertices, const Vector2& axis);

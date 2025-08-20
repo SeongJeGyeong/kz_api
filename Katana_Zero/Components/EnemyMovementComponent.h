@@ -27,9 +27,12 @@ public:
 
 	void ApplyPhysics(float deltaTime);
 
+	Vector2 GetAcceleration() { return vAcceleration; }
 	void SetAcceleration(Vector2 accel) { vAcceleration = accel; }
+	void AddAcceleration(Vector2 accel) { vAcceleration += accel; }
 
 	Vector2 GetVelocity() { return vVelocity; }
+	void SetVelocity(Vector2 velocity) { vVelocity = velocity; }
 	void SetVelocityX(float xValue) { vVelocity.x = xValue; }
 	void SetVelocityY(float yValue) { vVelocity.y = yValue; }
 
@@ -37,9 +40,11 @@ public:
 
 	void SetNewPosX(float xValue) { vNewPos.x = xValue; }
 	void SetNewPosY(float yValue) { vNewPos.y = yValue; }
+	void AddNewPos(Vector2 pos) { vNewPos += pos; }
 
 	bool GetOnGround() { return bOnGround; }
 	void SetOnGround(bool onGround) { bOnGround = onGround; }
 	bool GetOnStair() { return bOnStair; }
+	void SetOnStair(bool onStair) { bOnStair = onStair; }
 };
 

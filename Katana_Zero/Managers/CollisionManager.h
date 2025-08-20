@@ -38,6 +38,7 @@ class OBBCollider;
 class AABBCollider;
 class LineCollider;
 class Player;
+class Actor;
 
 class CollisionManager : public Singleton<CollisionManager>
 {
@@ -49,8 +50,8 @@ private:
 
 	unordered_map<uint64, bool> _collisionMap;
 
-	uint8 COLLISION_BIT_MASK_IGNORE[(int32)ECollisionLayer::END] = {};
-	uint8 COLLISION_BIT_MASK_BLOCK[(int32)ECollisionLayer::END] = {};
+	uint16 COLLISION_BIT_MASK_IGNORE[(int32)ECollisionLayer::END] = {};
+	uint16 COLLISION_BIT_MASK_BLOCK[(int32)ECollisionLayer::END] = {};
 
 	void SetIgnoreFlag(ECollisionLayer type, ECollisionLayer ignore);
 	void SetBitFlag(ECollisionLayer layer1, ECollisionLayer layer2, ECollisionResponse responseType, bool on);
@@ -61,11 +62,16 @@ private:
 	bool CheckBetweenAABB(AABBCollider* receive, AABBCollider* send, CollisionInfo& info);
 	bool CheckAABBtoLine(AABBCollider* receive, LineCollider* send, CollisionInfo& info);
 
+	bool CheckLinetoAABB(Vector2 start, Vector2 end, Vector2 AABBmin, Vector2 AABBmax, CollisionInfo& info);
+	bool CheckLinetoLine(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2, CollisionInfo& info);
+
 	bool CheckSeparatingAxis(pair<float, float> proj1, pair<float, float> proj2);
 
 	Vector2 CalculateHitPos(OBBCollider* receive, OBBCollider* send, Vector2 normal);
 
-	bool OverlapOnAxis(const std::vector<Vector2>& poly1, const std::vector<Vector2>& poly2, Vector2 axis);
+	// 세 점의 방향성을 계산 (시계반대방향, 시계방향, 일직선)
+	int32 CCW(const Vector2& a, const Vector2& b, const Vector2& c);
+	bool IsPointOnSegment(const Vector2& a, const Vector2& b, const Vector2& c);
 
 public:
 	void Init();
@@ -77,7 +83,14 @@ public:
 
 	vector<Collider*> GetPlacedColliders(ECollisionLayer layer) { return _colliderList[layer]; }
 
-	bool CheckOBBHitBox(POINT OBB[4], RECT AABB);
+	bool PlayerCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
+	bool EnemyCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
+	bool BulletCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
+
+	bool CheckOBBHitBox(const vector<Vector2>& OBB, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir);
+	bool CheckOBBHitBox(Vector2 center, float radian, float width, float height, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir);
+	bool CheckOBBtoAABB(const vector<Vector2>& OBB, const vector<Vector2>& AABB);
+	bool OverlapOnAxis(const vector<Vector2>& send, const vector<Vector2>& receive, Vector2 axis);
 
 	CollisionInfo CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
 	CollisionInfo CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
@@ -86,10 +99,9 @@ public:
 	CollisionInfo CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
 
 	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t, float& crossOut);
-	bool LineIntersectsWallSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t);
-	Vector2 GetClosestPointOnLineSegment(Vector2 point, Vector2 lineStart, Vector2 lineEnd);
 
 	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY);
-	bool GetXOnLineAtY(const Vector2& a, const Vector2& b, float y, float& outX);
+
+	void DeleteCollider(Actor* actor);
 };
 

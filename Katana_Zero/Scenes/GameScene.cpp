@@ -5,6 +5,8 @@
 #include "../Managers/ResourceManager.h"
 #include "../Objects/Camera.h"
 #include "../Objects/Actors/Enemy.h"
+#include "../Objects/Actors/Bullet.h"
+#include "../Managers/CollisionManager.h"
 
 GameScene::GameScene(string mapFileName)
 {
@@ -140,6 +142,7 @@ void GameScene::LoadActors(json actorData)
 			Enemy* enemy = new Enemy();
 			enemy->Init({ screenPos.x, screenPos.y - 70.f });
 			enemy->SetCamera(_sceneCamera);
+			enemy->OnCreateBullet = bind(&GameScene::CreateBullet, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			_EnemyList.push_back(enemy);
 		}
 	}
@@ -148,6 +151,10 @@ void GameScene::LoadActors(json actorData)
 void GameScene::Init()
 {
 	Super::Init();
+	for (const auto& enemy : _EnemyList)
+	{
+		enemy->SetPlayer(_player);
+	}
 }
 
 void GameScene::Destroy()
@@ -165,6 +172,11 @@ void GameScene::Update(float deltaTime)
 	for (Enemy* enemy : _EnemyList)
 	{
 		enemy->Update(deltaTime);
+	}
+
+	for (Bullet* bullet : _BulletList)
+	{
+		bullet->Update(deltaTime);
 	}
 
 	for (Actor* collider : _colliderList)
@@ -187,6 +199,22 @@ void GameScene::PostUpdate(float deltaTime)
 	for (Enemy* enemy : _EnemyList)
 	{
 		enemy->PostUpdate(deltaTime);
+	}
+
+	for (auto it = _BulletList.begin(); it != _BulletList.end();)
+	{
+		if ((*it)->GetIsDead())
+		{
+			CollisionManager::GetInstance()->DeleteCollider((*it));
+			delete (*it);
+			(*it) = nullptr;
+			it = _BulletList.erase(it);
+		}
+		else
+		{
+			(*it)->PostUpdate(deltaTime);
+			++it;
+		}
 	}
 
 	for (Actor* collider : _colliderList)
@@ -218,4 +246,16 @@ void GameScene::Render(HDC hdc)
 	{
 		_player->Render(hdc);
 	}
+
+	for (Bullet* bullet : _BulletList)
+	{
+		bullet->Render(hdc);
+	}
+}
+
+void GameScene::CreateBullet(Vector2 pos, Vector2 dir, float length, float radian)
+{
+	Bullet* bullet = new Bullet();
+	bullet->Init(pos, dir, length, radian);
+	_BulletList.push_back(bullet);
 }
