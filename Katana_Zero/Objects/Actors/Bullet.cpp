@@ -42,7 +42,7 @@ void Bullet::Render(HDC hdc)
 	Super::Render(hdc);
 }
 
-void Bullet::TakeDamage(const Vector2& hitDir)
+void Bullet::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
 	if (bWasHit) return;
 	bWasHit = true;

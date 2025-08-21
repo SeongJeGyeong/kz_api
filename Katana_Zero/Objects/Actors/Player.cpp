@@ -36,7 +36,7 @@ void Player::Init(Vector2 pos)
         animator->InitComponent(EPlayerState::PLAYER_END);
         animator->AddAnimation(EPlayerState::PLAYER_IDLE, ResourceManager::GetInstance()->GetSprite("spr_idle"), { 0, -10 });
         animator->AddAnimation(EPlayerState::PLAYER_IDLE_TO_RUN, ResourceManager::GetInstance()->GetSprite("spr_idle_to_run"), { 0, -10 });
-        animator->AddAnimation(EPlayerState::PLAYER_RUN, ResourceManager::GetInstance()->GetSprite("spr_run"), { 0, -5 });
+        animator->AddAnimation(EPlayerState::PLAYER_RUN, ResourceManager::GetInstance()->GetSprite("spr_run"), { 0, -6 });
         animator->AddAnimation(EPlayerState::PLAYER_RUN_TO_IDLE, ResourceManager::GetInstance()->GetSprite("spr_run_to_idle"), { 0, -11 });
         animator->AddAnimation(EPlayerState::PLAYER_PRECROUCH, ResourceManager::GetInstance()->GetSprite("spr_precrouch"), { 0, -13 });
         animator->AddAnimation(EPlayerState::PLAYER_CROUCH, ResourceManager::GetInstance()->GetSprite("spr_crouch"), { 0, -13 });
@@ -45,6 +45,10 @@ void Player::Init(Vector2 pos)
         animator->AddAnimation(EPlayerState::PLAYER_FALL, ResourceManager::GetInstance()->GetSprite("spr_fall"), { -10, -5 });
         animator->AddAnimation(EPlayerState::PLAYER_ATTACK, ResourceManager::GetInstance()->GetSprite("spr_attack"));
         animator->AddAnimation(EPlayerState::PLAYER_ROLL, ResourceManager::GetInstance()->GetSprite("spr_roll"), { 0, -10 });
+        animator->AddAnimation(EPlayerState::PLAYER_HURT_BEGIN, ResourceManager::GetInstance()->GetSprite("spr_hurtfly_begin"), { 0, -10 });
+        animator->AddAnimation(EPlayerState::PLAYER_HURT_LOOP, ResourceManager::GetInstance()->GetSprite("spr_hurtfly_loop"));
+        animator->AddAnimation(EPlayerState::PLAYER_HURT_GROUND, ResourceManager::GetInstance()->GetSprite("spr_hurtground"));
+        animator->AddAnimation(EPlayerState::PLAYER_HURT_RECOVER, ResourceManager::GetInstance()->GetSprite("spr_hurtrecover"), { 0, -20 });
     }
 
     EffectorComponent* effector = _components.GetComponent<EffectorComponent>();
@@ -71,14 +75,36 @@ void Player::Init(Vector2 pos)
     _stateMachine->AddState(new PlayerState_Fall(this));
     _stateMachine->AddState(new PlayerState_Attack(this));
     _stateMachine->AddState(new PlayerState_Roll(this));
+    _stateMachine->AddState(new PlayerState_Struggle(this));
+    _stateMachine->AddState(new PlayerState_HurtBegin(this));
+    _stateMachine->AddState(new PlayerState_HurtFly(this));
+    _stateMachine->AddState(new PlayerState_HurtGround(this));
+    _stateMachine->AddState(new PlayerState_Recover(this));
+    _stateMachine->AddState(new PlayerState_Finish(this));
     _stateMachine->ChangeState(EPlayerState::PLAYER_IDLE);
 
     _movementComp = _components.GetComponent<PlayerMovementComponent>();
     if (_movementComp != nullptr) _movementComp->InitComponent(this);
+
+    _attackInfo._attackLayer = ECollisionLayer::PLAYER_HITBOX;
+    _attackInfo.fWidth = 106 * 1.4f;
+    _attackInfo.fHeight = 32 * 1.4f;
+    _attackInfo.vAttackDir = { 0, 0 };
 }
 
 void Player::Update(float deltaTime)
 {
+    if (bBlocked)
+    {
+        fAttackEnableTime += deltaTime;
+        if (fAttackEnableTime >= 1.f)
+        {
+            fAttackEnableTime = 0.f;
+            bBlocked = false;
+        }
+    }
+
+    if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE || GetCurrentState() == EPlayerState::PLAYER_FINISH) return;
     fAttackDelayTime += deltaTime;
     _stateMachine->Update(deltaTime);
 
@@ -91,46 +117,26 @@ void Player::Update(float deltaTime)
     if (_attackInfo.bIsAttack)
     {
         Vector2 pos = GetPos();
-        float width = 106 * 1.4f;
-        float height = 32 * 1.4f;
-        vector<Vector2> corners = GetRotatedCorners(pos.x, pos.y, _attackInfo.fAttackRadian, width, height);
-
-        float cosRotation = cosf(_attackInfo.fAttackRadian);
-        float sinRotation = sinf(_attackInfo.fAttackRadian);
-        Vector2 localAxisX = Vector2(cosRotation, sinRotation);
-        Vector2 localAxisY = Vector2(-sinRotation, cosRotation);
-
-        Vector2 min = Vector2(-width * 0.5f, -height * 0.5f);
-        Vector2 max = Vector2(width * 0.5f, height * 0.5f);
-
         CollisionManager::GetInstance()->CheckOBBHitBox(
-            GetPos(), 
-            _attackInfo.fAttackRadian, 
-            106 * 1.4f, 
-            32 * 1.4f, 
-            ECollisionLayer::PLAYER_HITBOX, 
-            _attackInfo._hitActors, 
-            _attackInfo.vAttackDir
-        );
-        //CollisionManager::GetInstance()->CheckOBBHitBox(corners, ECollisionLayer::PLAYER_HITBOX, _attackInfo._hitActors, _attackInfo.vAttackDir);
+            this, 
+            _attackInfo);
     }
 }
 
 void Player::PostUpdate(float deltaTime)
 {
+    if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE || GetCurrentState() == EPlayerState::PLAYER_FINISH) return;
     SetPos(_movementComp->GetNewPos());
     _movementComp->SetAcceleration({ 0,0 });
 }
 
 void Player::Render(HDC hdc)
 {
+    Super::Render(hdc);
+    if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE || GetCurrentState() == EPlayerState::PLAYER_FINISH) return;
     _components.RenderComponents(hdc);
-	Super::Render(hdc);
 
     SetTextColor(hdc, RGB(255, 255, 255));
-
-    //wstring str = std::format(L"IsGround({0}) IsJumped({1}) IsMaxJump({2}) bIsStair({3}) bIsPlatform({4}) bIsWall({5})", bIsGround, bIsJumped, bIsMaxJump, bOnStair, bIsPlatform, bIsWall);
-    //::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
 
     printState(hdc);
     wstring strs = std::format(L"bIsCrouch({0})", bIsCrouch);
@@ -139,84 +145,12 @@ void Player::Render(HDC hdc)
     wstring str2 = std::format(L"Pos({0}, {1})", GetPos().x, GetPos().y);
     ::TextOut(hdc, 100, 70, str2.c_str(), static_cast<int32>(str2.size()));
 
-    //wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
-    //::TextOut(hdc, 100, 120, str5.c_str(), static_cast<int32>(str5.size()));
-
     if (_attackInfo.bIsAttack)
     {
         Vector2 pos = _components.GetComponent<CameraComponent>()->ConvertScreenPos(GetPos());
         RenderHitbox(hdc, pos, _attackInfo.fAttackRadian, 1.4f, (!_attackInfo._hitActors.empty()) ? RGB(0, 255, 0) : RGB(255, 0, 0));
     }
 }
-
-//void Player::ApplyPhysics(float deltaTime)
-//{
-//    // 중력의 방향 단위 벡터와 속도를 내적하여, 중력 방향의 값만 가진 벡터를 얻음.
-//    Vector2 normalGravity = vGravity.GetNormalize();
-//    float GravityLength = vVelocity.Dot(normalGravity);
-//
-//    if (bIsGround || bIsPlatform)
-//    {
-//        if(vVelocity.y >= 0.f) bIsJumped = false;
-//        vVelocity.y = 0.f;
-//        GravityLength = 0.f;
-//    }
-//    else if (bOnStair)
-//    {
-//        bIsJumped = false;
-//        vVelocity -= normalGravity * GravityLength;
-//    }
-//    else
-//    {
-//        // 중력 가속도 적용
-//        vAcceleration += vGravity;
-//    }
-//
-//    if (_components.GetComponent<InputComponent>()->GetPressedDown()) vAcceleration.y += 10000.f;
-//
-//    // 최고점 근처에서 체공 효과를 위한 공기저항 시뮬레이션
-//    if (vVelocity.y < 0) // 상승 중일 때
-//    {
-//        // 속도가 느려질수록 공기저항도 감소 (자연스러운 감속)
-//        float airResistance = fAirResistance * (vVelocity.y * vVelocity.y) / (fJumpInitialVelocity * fJumpInitialVelocity);
-//        vAcceleration.y += airResistance;
-//    }
-//
-//    // 가속도는 속도(velocity)를 변화시킨다.
-//    vVelocity += vAcceleration * deltaTime;
-//
-//    float upFactor = 400.f;
-//    float sideFactor = 400.f;
-//    if (GetCurrentState() == EPlayerState::PLAYER_ROLL) sideFactor = 800.f;
-//
-//    Vector2 gravityVector = normalGravity * GravityLength;
-//    Vector2 sideVec = vVelocity - gravityVector;
-//    float sideLength = sideVec.Length();
-//
-//    if (GravityLength > upFactor) gravityVector = normalGravity * upFactor;
-//
-//    if (sideLength > sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
-//    else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
-//
-//    float friction = 0.8f;
-//    if (GetCurrentState() == EPlayerState::PLAYER_ATTACK || GetCurrentState() == EPlayerState::PLAYER_ROLL)
-//    {
-//        friction = 0.98f;
-//        gravityVector *= friction;
-//    }
-//
-//    sideVec *= friction;
-//    if (sideVec.Length() < 1.0f)
-//        sideVec = Vector2(0.f, 0.f);
-//
-//    // 최종적인 velocity
-//    // v : (3,4), a :(3,0), b : (0,4)
-//    // v = a + b
-//    vVelocity = gravityVector + sideVec;
-//
-//    // 속도(velocity) 위치를 변화시킨다.
-//    vNewPos = GetPos() + (vVelocity * deltaTime);
-//}
 
 void Player::Jump()
 {
@@ -276,7 +210,7 @@ void Player::Move(bool dir)
             vFrontDir = { -1, 0 };
         }
     }
-    if ((_movementComp->GetIsGround() || _movementComp->GetIsPlatform() || _movementComp->GetOnStair()) && _movementComp->GetAcceleration().x != 0.f)
+    if ((_movementComp->GetOnGround() || _movementComp->GetIsPlatform() || _movementComp->GetOnStair()) && _movementComp->GetAcceleration().x != 0.f)
     {
         if (_stateMachine->GetCurrentStateType() == EPlayerState::PLAYER_IDLE || prevDir != vFrontDir)
         {
@@ -326,6 +260,7 @@ void Player::Roll(bool dir)
 
 void Player::Attack()
 {
+    if (bBlocked) return;
     Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
     Vector2 worldPos = _components.GetComponent<CameraComponent>()->ConvertWorldPos(mousePos);
     Vector2 pos = GetPos();
@@ -361,9 +296,9 @@ int32 Player::GetCurrentState()
     return _stateMachine->GetCurrentStateType();
 }
 
-void Player::ChangeState(EPlayerState stateType)
+void Player::ChangeState(int32 stateType)
 {
-    _stateMachine->ChangeState(stateType);
+    _stateMachine->ChangeState(static_cast<EPlayerState>(stateType));
 }
 
 void Player::ProcessGroundCollision(const CollisionInfo& collisionInfo)
@@ -388,7 +323,7 @@ void Player::ProcessGroundFloor(const CollisionInfo& collisionInfo)
     _movementComp->SetNewPosY(collisionInfo.collisionPoint.y - GetCollider()->GetHeight() * 0.5f);
     //newPos.y = collisionInfo.collisionPoint.y - GetCollider()->GetHeight() * 0.5f;
     _movementComp->SetVelocityY(0.f);
-    _movementComp->SetIsGround(true);
+    _movementComp->SetOnGround(true);
     vHitNormal = collisionInfo.vHitNormal;
 }
 
@@ -633,7 +568,7 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
     {
     case ECollisionLayer::GROUND:
         vHitNormal = { 0, 0 };
-        _movementComp->SetIsGround(false);
+        _movementComp->SetOnGround(false);
         break;
     case ECollisionLayer::PLATFORM:
         _movementComp->SetIsPlatform(false);
@@ -650,6 +585,12 @@ void Player::OnCollisionEndOverlap(const CollisionInfo& info)
     default:
         break;
     }
+}
+
+void Player::AddForce(Vector2 force)
+{
+    _movementComp->SetVelocity(force);
+    if (force.y < 0)_movementComp->SetOnGround(false);
 }
 
 void Player::SetPlayerCamera(Camera* camera)
@@ -726,4 +667,9 @@ void Player::RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLOR
     SelectObject(hdc, oldPen);
     SelectObject(hdc, oldBrush);
     DeleteObject(hPen);
+}
+
+void Player::AttackBlocked()
+{
+    bBlocked = true;
 }

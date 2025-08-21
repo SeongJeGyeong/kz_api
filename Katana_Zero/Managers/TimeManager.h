@@ -27,5 +27,12 @@ public:
 	float GetDeltaTime() { return fDeltaTime; }
 
 	void SetPrevCount(uint64 now) { iPrevCount = now; }
+
+	int32 GetRandom()
+	{
+		LARGE_INTEGER counter;
+		QueryPerformanceCounter(&counter);
+		return counter.LowPart & 1;
+	}
 };
 

@@ -17,7 +17,7 @@ public:
 	void Update(float deltaTime);
 	void Destroy() override;
 
-	void LoadFile(const string parentKey, const json& obj, const fs::path& path);
+	void LoadFile(const string currentKey, const string parentKey, const json& obj, const fs::path& path);
 	void LoadTextureFile(const string parentKey, const json& obj, const fs::path& path);
 	void LoadSpriteFile(const json& obj, const fs::path& path);
 	Texture* GetTexture(string name);

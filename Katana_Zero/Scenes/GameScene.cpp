@@ -6,7 +6,9 @@
 #include "../Objects/Camera.h"
 #include "../Objects/Actors/Enemy.h"
 #include "../Objects/Actors/Bullet.h"
+#include "../Objects/Actors/Boss.h"
 #include "../Managers/CollisionManager.h"
+#include "../Objects/Actors/Axe.h"
 
 GameScene::GameScene(string mapFileName)
 {
@@ -23,10 +25,17 @@ GameScene::GameScene(string mapFileName)
 	}
 
 	json data = json::parse(file);
-	iSceneSizeX = data["MapSize"][0];
-	iSceneSizeY = data["MapSize"][1];
 
-
+	if (data["TileInfo"].is_null())
+	{
+		iSceneSizeX = 1280;
+		iSceneSizeY = 720;
+	}
+	else
+	{
+		iSceneSizeX = data["MapSize"][0];
+		iSceneSizeY = data["MapSize"][1];
+	}
 	_tileRenderer = new TileRenderer();
 	_tileRenderer->InitComponent(iSceneSizeX, iSceneSizeY);
 	for (int32 i = 0; i < ERenderLayer::LAYER_END; ++i)
@@ -34,9 +43,17 @@ GameScene::GameScene(string mapFileName)
 		_tileRenderer->AddTileTexture(ResourceManager::GetInstance()->GetTileMapForIndex(i));
 	}
 
-	LoadTiles(data["TileInfo"]);
+	if (data["TileInfo"].is_null())
+	{
+		_tileRenderer->AddWholeMap(2);
+	}
+	else
+	{
+		LoadTiles(data["TileInfo"]);
+	}
+
 	LoadColliders(data["ColliderInfo"]);
-	LoadActors(data["TileInfo"]);
+	LoadActors(data["ActorInfo"]);
 	_sceneCamera->SetWorldSize(iSceneSizeX, iSceneSizeY);
 	file.close();
 }
@@ -131,7 +148,15 @@ void GameScene::LoadActors(json actorData)
 	{
 		Vector2 screenPos = { (float)data[1] * TILE_SIZE + TILE_SIZE / 2, (float)data[2] * TILE_SIZE + TILE_SIZE / 2 };
 
-		if (data[3].get<int>() == 0)
+		if (data[3].get<int>() == 2)
+		{
+			Enemy* enemy = new Enemy();
+			enemy->Init({ screenPos.x, screenPos.y - 70.f });
+			enemy->SetCamera(_sceneCamera);
+			enemy->OnCreateBullet = bind(&GameScene::CreateBullet, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			_EnemyList.push_back(enemy);
+		}
+		else if (data[3].get<int>() == 0)
 		{
 			_player = new Player();
 			_player->Init({ screenPos.x, screenPos.y - 50.f });
@@ -139,11 +164,9 @@ void GameScene::LoadActors(json actorData)
 		}
 		else
 		{
-			Enemy* enemy = new Enemy();
-			enemy->Init({ screenPos.x, screenPos.y - 70.f });
-			enemy->SetCamera(_sceneCamera);
-			enemy->OnCreateBullet = bind(&GameScene::CreateBullet, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-			_EnemyList.push_back(enemy);
+			_boss = new Boss();
+			_boss->Init({ screenPos.x, screenPos.y - 40.f });
+			_boss->OnSpawnAxe = bind(&GameScene::SpawnAxe, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 		}
 	}
 }
@@ -154,6 +177,10 @@ void GameScene::Init()
 	for (const auto& enemy : _EnemyList)
 	{
 		enemy->SetPlayer(_player);
+	}
+	if (_boss)
+	{
+		_boss->SetPlayer(_player);
 	}
 }
 
@@ -169,6 +196,11 @@ void GameScene::Update(float deltaTime)
 		_player->Update(deltaTime);
 	}
 
+	if (_boss)
+	{
+		_boss->Update(deltaTime);
+	}
+
 	for (Enemy* enemy : _EnemyList)
 	{
 		enemy->Update(deltaTime);
@@ -177,6 +209,11 @@ void GameScene::Update(float deltaTime)
 	for (Bullet* bullet : _BulletList)
 	{
 		bullet->Update(deltaTime);
+	}
+
+	if (_axe)
+	{
+		_axe->Update(deltaTime);
 	}
 
 	for (Actor* collider : _colliderList)
@@ -194,6 +231,11 @@ void GameScene::PostUpdate(float deltaTime)
 	if (_player)
 	{
 		_player->PostUpdate(deltaTime);
+	}
+
+	if (_boss)
+	{
+		_boss->PostUpdate(deltaTime);
 	}
 
 	for (Enemy* enemy : _EnemyList)
@@ -215,6 +257,11 @@ void GameScene::PostUpdate(float deltaTime)
 			(*it)->PostUpdate(deltaTime);
 			++it;
 		}
+	}
+
+	if (_axe)
+	{
+		_axe->PostUpdate(deltaTime);
 	}
 
 	for (Actor* collider : _colliderList)
@@ -242,9 +289,19 @@ void GameScene::Render(HDC hdc)
 		enemy->Render(hdc);
 	}
 
+	if (_boss)
+	{
+		_boss->Render(hdc);
+	}
+
 	if (_player)
 	{
 		_player->Render(hdc);
+	}
+
+	if (_axe)
+	{
+		_axe->Render(hdc);
 	}
 
 	for (Bullet* bullet : _BulletList)
@@ -258,4 +315,14 @@ void GameScene::CreateBullet(Vector2 pos, Vector2 dir, float length, float radia
 	Bullet* bullet = new Bullet();
 	bullet->Init(pos, dir, length, radian);
 	_BulletList.push_back(bullet);
+}
+
+void GameScene::SpawnAxe(Vector2 pos, Vector2 ownerPos, Vector2 dir, bool throwOrSwing)
+{
+	if (_axe == nullptr)
+	{
+		_axe = new Axe();
+	}
+	_axe->Init(pos, ownerPos, dir, throwOrSwing);
+	_axe->SetActive(true);
 }

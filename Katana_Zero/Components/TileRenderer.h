@@ -21,6 +21,8 @@ public:
 	}
 
 private:
+	bool bBossRoom = false;
+
 	HDC _mapCacheDC = nullptr;
 	HBITMAP  _mapCacheBitmap = nullptr;
 
@@ -37,6 +39,6 @@ public:
 	virtual void RenderComponent(HDC hdc) override;
 
 	void AddTileTexture(Texture* texture);
-
 	void AddTileInfo(int32 tileSetIndex, Vector2 worldPos, Vector2 tilePos);
+	void AddWholeMap(int32 tileSetIndex);
 };

@@ -128,6 +128,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Objects\Actors\Axe.h" />
+    <ClInclude Include="States\BossState.h" />
+    <ClInclude Include="Objects\Actors\Boss.h" />
     <ClInclude Include="Components\MovingLineCollider.h" />
     <ClInclude Include="Objects\Actors\Bullet.h" />
     <ClInclude Include="Components\PlayerMovementComponent.h" />
@@ -181,6 +184,9 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Objects\Actors\Axe.cpp" />
+    <ClCompile Include="States\BossState.cpp" />
+    <ClCompile Include="Objects\Actors\Boss.cpp" />
     <ClCompile Include="Components\MovingLineCollider.cpp" />
     <ClCompile Include="Objects\Actors\Bullet.cpp" />
     <ClCompile Include="Components\PlayerMovementComponent.cpp" />

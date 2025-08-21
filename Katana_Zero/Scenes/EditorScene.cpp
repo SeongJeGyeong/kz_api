@@ -192,7 +192,6 @@ void EditorScene::DrawTile(HDC hdc)
 			Vector2 worldPos = { gridPos.x * TILE_SIZE + iHalfTileSize, gridPos.y * TILE_SIZE + iHalfTileSize };
 			// 실제 화면 좌표를 카메라에 출력될 좌표로 변환
 			Vector2 screenPos = _sceneCamera->ConvertScreenPos(worldPos);
-			//_tileMapList[it.second.iTilesetIndex]->RenderSprite(hdc, screenPos, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE);
 			_tileMapList[it.second.iTilesetIndex]->RenderTexture(hdc, screenPos.x - iHalfTileSize, screenPos.y - iHalfTileSize, TILE_SIZE, TILE_SIZE, it.second.vTilePos.x * TILE_SIZE, it.second.vTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 		}
 	}
@@ -296,6 +295,7 @@ void EditorScene::SaveMap()
 		if (file.is_open()) 
 		{
 			json tileData;
+			json actorData;
 			Vector2 minPos = Vector2(iSceneSizeX, iSceneSizeY);
 			Vector2 maxPos = Vector2(0, 0);
 			// 타일 데이터 저장
@@ -328,19 +328,22 @@ void EditorScene::SaveMap()
 				{
 				case ERenderLayer::BACKGROUND:
 					tileType = "Background";
+					tileData[tileType] = TilesByLayer;
 					break;
 				case ERenderLayer::FOREGROUND:
 					tileType = "Foreground";
+					tileData[tileType] = TilesByLayer;
 					break;
 				case ERenderLayer::ACTOR:
 					tileType = "Actor";
+					actorData[tileType] = TilesByLayer;
 					break;
 				default:
 					break;
 				}
-				tileData[tileType] = TilesByLayer;
 			}
 			jsonfile["TileInfo"] = tileData;
+			jsonfile["ActorInfo"] = actorData;
 
 			json colliderData;
 			for (int32 i = 0; i < _colliderList.size(); i++)
@@ -487,7 +490,18 @@ void EditorScene::LoadMap()
 				}
 			}
 
+			json actorData = mapData["ActorInfo"];
+
+			_tileInfoMap[ERenderLayer::ACTOR].clear();
+
+			for (auto data : actorData["Actor"])
+			{
+				int32 index = ConvertWorldGridToIndex({ data[1], data[2] });
+				_tileInfoMap[ERenderLayer::ACTOR][index] = { data[0], {data[3], data[4]} };
+			}
+
 			file.close();
+
 			MessageBox(hwnd, L"타일맵이 로드되었습니다.", L"로드 완료", MB_OK | MB_ICONINFORMATION);
 		}
 		else {

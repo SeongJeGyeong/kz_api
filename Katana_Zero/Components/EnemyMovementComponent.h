@@ -11,7 +11,7 @@ public:
 	}
 
 private:
-	Vector2 vGravity = Vector2(0, 1000.f);
+	Vector2 vGravity = Vector2(0, 2000.f);
 	Vector2 vVelocity = {0, 0};
 	Vector2 vAcceleration = {0, 0};
 
@@ -46,5 +46,10 @@ public:
 	void SetOnGround(bool onGround) { bOnGround = onGround; }
 	bool GetOnStair() { return bOnStair; }
 	void SetOnStair(bool onStair) { bOnStair = onStair; }
+
+	void SetGravityZero(bool set) 
+	{
+		vGravity.y = set ? 0.f : 2000.f;
+	}
 };
 

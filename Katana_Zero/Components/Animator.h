@@ -32,13 +32,18 @@ public:
 	virtual void UpdateComponent(float deltaTime) override;
 	virtual void RenderComponent(HDC hdc) override;
 
-	void AddAnimation(int32 Index, Sprite* sprite, Vector2 offset = {0, 0});
+	void AddAnimation(int32 Index, Sprite* sprite, Vector2 offset = { 0, 0 });
 	void SetAnimation(int32 Index);
 
 	bool IsAnimationFinished();
 
 	void SetFlipped(bool isFlip) { bIsFlipped = isFlip; }
+	void FlipAnimation() { bIsFlipped = !bIsFlipped; }
 
 	virtual uint32 GetPriority() override { return EComponentPriority::ANIMATION; }
+
+	void SetPlaying(bool playing) { bPlaying = playing; }
+
+	int32 GetCurrentFrame() { return _currentAnimation.iCurrentFrame; }
 };
 

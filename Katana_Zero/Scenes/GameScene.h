@@ -8,6 +8,8 @@ class TileRenderer;
 class Actor;
 class Camera;
 class Bullet;
+class Boss;
+class Axe;
 
 class GameScene : public Scene
 {
@@ -21,6 +23,8 @@ private:
 	vector<Enemy*> _EnemyList;
 	vector<Bullet*> _BulletList;
 	vector<Actor*> _colliderList;
+	Boss* _boss = nullptr;
+	Axe* _axe = nullptr;
 
 	TileRenderer* _tileRenderer;
 	void LoadTiles(json tileData);
@@ -35,4 +39,5 @@ public:
 	virtual void Render(HDC hdc) override;
 
 	void CreateBullet(Vector2 pos, Vector2 dir, float length, float radian);
+	void SpawnAxe(Vector2 pos, Vector2 ownerPos, Vector2 dir, bool throwOrSwing);
 };

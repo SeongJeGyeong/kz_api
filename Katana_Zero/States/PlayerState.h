@@ -3,6 +3,7 @@
 
 class Player;
 class PlayerMovementComponent;
+class Animator;
 
 class PlayerState : public State<EPlayerState>
 {
@@ -12,7 +13,8 @@ public:
 
 protected:
 	Player* _player = nullptr;
-	PlayerMovementComponent* movementComponent = nullptr;
+	PlayerMovementComponent* _movementComponent = nullptr;
+	Animator* _animator = nullptr;
 
 public:
 	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE; };
@@ -149,6 +151,80 @@ public:
 	PlayerState_Roll(Player* player) : Super(player) {}
 
 	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_ROLL; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_Struggle : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	PlayerState_Struggle(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_STRUGGLE; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_HurtBegin : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	PlayerState_HurtBegin(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_HURT_BEGIN; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_HurtFly : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	PlayerState_HurtFly(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_HURT_LOOP; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_HurtGround : public PlayerState
+{
+	using Super = PlayerState;
+private:
+	float fRecoverTime = 0.f;
+public:
+	PlayerState_HurtGround(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_HURT_GROUND; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_Recover : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	PlayerState_Recover(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_HURT_RECOVER; }
+	virtual void EnterState() override;
+	virtual void UpdateState(float deltaTime) override;
+	virtual void ExitState() override;
+};
+
+class PlayerState_Finish : public PlayerState
+{
+	using Super = PlayerState;
+public:
+	PlayerState_Finish(Player* player) : Super(player) {}
+
+	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_FINISH; }
 	virtual void EnterState() override;
 	virtual void UpdateState(float deltaTime) override;
 	virtual void ExitState() override;

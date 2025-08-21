@@ -45,7 +45,7 @@ public:
 	void ProcessGroundCollision(const CollisionInfo& collisionInfo);
 	void ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 oldPos);
 
-	void ChangeState(EEnemyState stateType);
+	virtual void ChangeState(int32 stateType) override;
 
 	void SetPlayer(Actor* player) { _targetPlayer = player; }
 	bool PlayerIsBack();
@@ -57,5 +57,5 @@ public:
 
 	void ShotBullet();
 
-	virtual void TakeDamage(const Vector2& hitDir) override;
+	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
 };

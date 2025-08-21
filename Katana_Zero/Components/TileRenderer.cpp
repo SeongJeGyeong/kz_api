@@ -77,3 +77,8 @@ void TileRenderer::AddTileInfo(int32 tileSetIndex, Vector2 worldPos, Vector2 til
         blendOp
     );
 }
+
+void TileRenderer::AddWholeMap(int32 tileSetIndex)
+{
+    _mapCacheDC = _tileMapList[tileSetIndex]->GetTexture();
+}

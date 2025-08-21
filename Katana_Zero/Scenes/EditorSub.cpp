@@ -65,7 +65,14 @@ void EditorSub::Update()
 
 void EditorSub::Render()
 {
-	_tileTextureList[iSelectedTileSet]->Render(_hdcBack, vRenderPos);
+	if (iSelectedTileSet == 2)
+	{
+		_tileTextureList[iSelectedTileSet]->RenderTextureNoAlpha(_hdcBack, vRenderPos);
+	}
+	else
+	{
+		_tileTextureList[iSelectedTileSet]->RenderTexture(_hdcBack, vRenderPos);
+	}
 
 	int32 maxX = GWinSizeY / TILE_SIZE;
 	for (int y = 0; y <= maxX; y++)

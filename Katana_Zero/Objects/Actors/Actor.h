@@ -37,9 +37,11 @@ public:
 	void CreateLineCollider(Vector2 start, Vector2 end, ECollisionLayer layer);
 	void CreateMovingLineCollider(float length, float radian, ECollisionLayer layer);
 
-	virtual void TakeDamage(const Vector2& hitDir) {}
+	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) {}
 
 	virtual bool GetIsDead() { return bIsDead; }
+
+	virtual void AddForce(Vector2 force) {};
 
 	template <typename T>
 	T* GetComponent()
@@ -51,5 +53,7 @@ public:
 	{
 		_components.UpdateComponents(deltaTime);
 	}
+
+	virtual void ChangeState(int32 stateType) {}
 };
 

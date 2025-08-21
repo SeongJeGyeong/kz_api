@@ -1,9 +1,6 @@
 #pragma once
 #include "Actor.h"
 
-template<typename EnumType>
-class StateMachine;
-
 class Animator;
 class EffectorComponent;
 class InputComponent;
@@ -11,14 +8,8 @@ class Camera;
 class CameraComponent;
 class PlayerMovementComponent;
 
-struct AttackInfo
-{
-	vector<Collider*> _hitActors;
-	Vector2 vAttackDir;
-	float fAttackRadian = 0.f;
-	bool bIsAttack = false;
-};
-
+template<typename EnumType>
+class StateMachine;
 
 class Player : public Actor
 {
@@ -35,6 +26,8 @@ private:
 
 	bool bIsMaxJump = false;
 	bool bIsCrouch = false;
+	bool bBlocked = false;
+	float fAttackEnableTime = 0.f;
 
 	float fMaxJumpHoldTime = 0.4f;
 	float fJumpHoldForce = 1000.f;
@@ -74,7 +67,7 @@ public:
 
 	virtual int32 GetCurrentState() override;
 
-	void ChangeState(EPlayerState stateType);
+	virtual void ChangeState(int32 stateType) override;
 
 	void ProcessGroundCollision(const CollisionInfo& collisionInfo);
 	void ProcessGroundFloor(const CollisionInfo& collisionInfo);
@@ -90,9 +83,13 @@ public:
 	virtual void OnCollisionStayOverlap(const CollisionInfo& info) override;
 	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
 
+	virtual void AddForce(Vector2 force) override;
+
 	void SetPlayerCamera(Camera* camera);
 
 	void printState(HDC hdc);
 
 	void RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLORREF color);
+
+	void AttackBlocked();
 };

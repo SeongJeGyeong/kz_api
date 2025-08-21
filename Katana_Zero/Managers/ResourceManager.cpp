@@ -17,7 +17,7 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 
 	fs::path texturePath = directory / L"Textures/";
 
-	LoadFile("Textures", data, texturePath);
+	LoadFile("Textures", "Textures", data, texturePath);
 
 	_cursor = CreateCursorFromImage(texturePath / L"UI/spr_cursor.bmp");
 }
@@ -26,13 +26,13 @@ void ResourceManager::Destroy()
 {
 }
 
-void ResourceManager::LoadFile(const string parentKey, const json& obj, const fs::path& path)
+void ResourceManager::LoadFile(const string currentKey, const string parentKey, const json& obj, const fs::path& path)
 {
 	if (obj.is_object())
 	{
 		for (auto& [key, val] : obj.items())
 		{
-			LoadFile(key, val, path / key);
+			LoadFile(key, currentKey, val, path / key);
 		}
 	}
 	else if (obj.is_array())
@@ -43,13 +43,13 @@ void ResourceManager::LoadFile(const string parentKey, const json& obj, const fs
 			fs::path filePath = path / fileName;
 			filePath.replace_extension(".bmp");
 
-			if (parentKey == "Zero" || parentKey == "Effects" || parentKey == "Enemy" || parentKey == "Boss")
+			if (parentKey == "Sprites")
 			{
 				LoadSpriteFile(item, filePath);
 			}
 			else
 			{
-				LoadTextureFile(parentKey, item, filePath);
+				LoadTextureFile(currentKey, item, filePath);
 			}
 		}
 	}

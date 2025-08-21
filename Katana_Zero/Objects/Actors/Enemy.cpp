@@ -126,7 +126,7 @@ void Enemy::OnCollisionBeginOverlap(const CollisionInfo& info)
 		ProcessStairCollision(info, GetPos());
 		break;
 	case ECollisionLayer::ENEMY_HITBOX:
-		TakeDamage(info.vHitNormal);
+		TakeDamage(info.collisionActor, info.vHitNormal);
 		break;
 	default:
 		break;
@@ -269,9 +269,9 @@ void Enemy::ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 ol
 	movementComp->SetOnStair(true);
 }
 
-void Enemy::ChangeState(EEnemyState stateType)
+void Enemy::ChangeState(int32 stateType)
 {
-	_stateMachine->ChangeState(stateType);
+	_stateMachine->ChangeState(static_cast<EEnemyState>(stateType));
 }
 
 bool Enemy::PlayerIsBack()
@@ -355,7 +355,7 @@ void Enemy::ShotBullet()
 	OnCreateBullet(ShotPoint, dir, 34.f, rad);
 }
 
-void Enemy::TakeDamage(const Vector2& hitDir)
+void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
 	if (bWasHit) return;
 	bIsDead = true;
@@ -363,6 +363,6 @@ void Enemy::TakeDamage(const Vector2& hitDir)
 	_stateMachine->ChangeState(EEnemyState::ENEMY_HURT_FLY);
 	EnemyMovementComponent* movementComp = _components.GetComponent<EnemyMovementComponent>();
 	movementComp->SetOnGround(false);
-	movementComp->SetVelocityX(hitDir.x * 10000.f);
-	movementComp->SetVelocityY(hitDir.y * 1000.f);
+	movementComp->SetVelocityX(attackDirection.x * 10000.f);
+	movementComp->SetVelocityY(attackDirection.y * 1000.f);
 }

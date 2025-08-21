@@ -158,7 +158,7 @@ void Game::ChangeGameScene()
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene("Stage1_0.json");
+	_nextScene = new GameScene("BossRoom.json");
 	_background = WHITENESS;
 
 	HCURSOR newCurosr = ResourceManager::GetInstance()->GetCursor();

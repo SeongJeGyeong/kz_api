@@ -18,6 +18,12 @@ void PlayerMovementComponent::RenderComponent(HDC hdc)
     SetTextColor(hdc, RGB(255, 255, 255));
     wstring str2 = std::format(L"newPos({0}, {1})", vNewPos.x, vNewPos.y);
     ::TextOut(hdc, 100, 90, str2.c_str(), static_cast<int32>(str2.size()));
+
+    wstring str = std::format(L"IsGround({0}) IsJumped({1}) bIsStair({2}) bIsPlatform({3}) bIsWall({4})", bOnGround, bIsJumped, bOnStair, bIsPlatform, bIsWall);
+    ::TextOut(hdc, 450, 30, str.c_str(), static_cast<int32>(str.size()));
+
+    wstring str5 = std::format(L"velocity ( {0}, {1} )", vVelocity.x, vVelocity.y);
+    ::TextOut(hdc, 100, 120, str5.c_str(), static_cast<int32>(str5.size()));
 }
 
 void PlayerMovementComponent::ApplyPhysics(float deltaTime)
@@ -26,7 +32,7 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     Vector2 normalGravity = vGravity.GetNormalize();
     float GravityLength = vVelocity.Dot(normalGravity);
 
-    if (bIsGround || bIsPlatform)
+    if (bOnGround || bIsPlatform)
     {
         if (vVelocity.y >= 0.f) bIsJumped = false;
         vVelocity.y = 0.f;
@@ -43,7 +49,12 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
         vAcceleration += vGravity;
     }
 
-    if (InputManager::GetInstance()->GetButtonPressed(KeyType::S)) vAcceleration.y += 10000.f;
+    if ((_player->GetCurrentState() == EPlayerState::PLAYER_FALL ||
+        _player->GetCurrentState() == EPlayerState::PLAYER_JUMP) &&
+        InputManager::GetInstance()->GetButtonPressed(KeyType::S))
+    {
+        vAcceleration.y += 10000.f;
+    }
 
     // 최고점 근처에서 체공 효과를 위한 공기저항 시뮬레이션
     if (vVelocity.y < 0) // 상승 중일 때
@@ -58,7 +69,12 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
 
     float upFactor = 400.f;
     float sideFactor = 400.f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL) sideFactor = 800.f;
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
+        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
+        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
+    {
+        sideFactor = 800.f;
+    }
 
     Vector2 gravityVector = normalGravity * GravityLength;
     Vector2 sideVec = vVelocity - gravityVector;
@@ -70,7 +86,10 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ATTACK || _player->GetCurrentState() == EPlayerState::PLAYER_ROLL)
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ATTACK || 
+        _player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
+        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
+        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
     {
         friction = 0.98f;
         gravityVector *= friction;
@@ -95,7 +114,7 @@ void PlayerMovementComponent::UpdatePosition()
 void PlayerMovementComponent::Jump()
 {
     vVelocity.y = -fJumpInitialVelocity; // 음수는 위쪽 방향
-    bIsGround = false;
+    bOnGround = false;
     bIsPlatform = false;
     bOnStair = false;
     bIsJumped = true;

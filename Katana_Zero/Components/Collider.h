@@ -71,5 +71,7 @@ public:
 	Vector2 newPos;
 
 	uint64 GetColliderId() { return iColliderId; }
+
+	virtual void ChangeSize(float width, float height) {}
 };
 

@@ -4,8 +4,8 @@
 constexpr int GWinSizeX = 1280;
 constexpr int GWinSizeY = 720;
 
-constexpr int SubWinSizeX = 992;
-constexpr int SubWinSizeY = 492;
+constexpr int SubWinSizeX = 1280;
+constexpr int SubWinSizeY = 720;
 
 const int TILE_SIZE = 32;
 const int TileMapWidth = 42;
@@ -102,6 +102,9 @@ enum EPlayerState
 	PLAYER_HURT_GROUND,
 	PLAYER_HURT_RECOVER,
 
+	PLAYER_STRUGGLE,
+	PLAYER_FINISH,
+
 	PLAYER_END
 };
 
@@ -122,6 +125,7 @@ enum EBossState
 {
 	BOSS_IDLE,
 	BOSS_READY,
+	BOSS_TOBATTLE,
 	BOSS_BLOCK,
 
 	BOSS_PRELUNGE,
@@ -141,8 +145,8 @@ enum EBossState
 	BOSS_RECOVER,
 
 	BOSS_STRUGGLE,
+	BOSS_FINISHED,
 	BOSS_DEFEAT,
-	BOSS_FINISH,
 	BOSS_DIE,
 
 	BOSS_END
@@ -270,6 +274,17 @@ struct Vector2
 		// 법선 벡터가 필요한게 아니고, 부호를 판단하는 스칼라값이 필요하다.
 		return x * other.y - y * other.x;
 	}
+};
+
+struct AttackInfo
+{
+	ECollisionLayer _attackLayer;
+	vector<class Collider*> _hitActors;
+	Vector2 vAttackDir;
+	float fWidth;
+	float fHeight;
+	float fAttackRadian = 0.f;
+	bool bIsAttack = false;
 };
 
 struct TileInfo

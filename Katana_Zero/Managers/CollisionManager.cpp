@@ -61,14 +61,6 @@ void CollisionManager::Update()
 		{
 			for (int32 sendLayer = 0; sendLayer < ECollisionLayer::END; ++sendLayer)
 			{
-				if (receiveLayer == ECollisionLayer::ENEMY && sendLayer == ECollisionLayer::ENEMY_HITBOX)
-				{
-					wstring strs = std::format(L"{0}\n", 1 << 8);
-					OutputDebugString(strs.c_str());
-					wstring str2 = std::format(L"{0}\n", (COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint16)(1 << sendLayer)));
-					OutputDebugString(str2.c_str());
-				}
-
 				if (!(COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint16)(1 << sendLayer))) continue;
 
 				for (auto sendCollider : _colliderList[(ECollisionLayer)sendLayer])
@@ -779,73 +771,30 @@ bool CollisionManager::BulletCollisionCheck(Collider* receive, Collider* send, C
 	return info.isColliding;
 }
 
-bool CollisionManager::CheckOBBHitBox(const vector<Vector2>& OBB, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir)
+bool CollisionManager::CheckOBBHitBox(Actor* attackActor, AttackInfo& hitInfo)
 {
-	bool flag = false;
-
-	for (int32 receiveLayer = 0; receiveLayer < ECollisionLayer::END; ++receiveLayer)
-	{
-		if (!(COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint8)(1 << layer))) continue;
-
-		for (auto receiveCollider : _colliderList[(ECollisionLayer)receiveLayer])
-		{
-			if (receiveCollider->GetOwner()->GetWasHit()) continue;
-
-			if (receiveLayer == ECollisionLayer::ENEMY)
-			{
-				float halfWidth = receiveCollider->GetWidth() * 0.5f;
-				float halfHeight = receiveCollider->GetHeight() * 0.5f;
-				Vector2 pos = receiveCollider->GetPos();
-
-				// 왼쪽 위, 오른쪽 위, 오른쪽 아래, 왼쪽 아래 순
-				vector<Vector2> colliderCorners = {
-					Vector2(pos.x - halfWidth, pos.y - halfHeight),
-					Vector2(pos.x + halfWidth, pos.y - halfHeight),
-					Vector2(pos.x + halfWidth, pos.y + halfHeight),
-					Vector2(pos.x - halfWidth, pos.y + halfHeight)
-				};
-
-				if (CheckOBBtoAABB(OBB, colliderCorners))
-				{
-					flag = true;
-					hitActors.push_back(receiveCollider);
-					receiveCollider->GetOwner()->TakeDamage(attackDir);
-				}
-			}
-			else if (receiveLayer == ECollisionLayer::ENEMY_HITBOX)
-			{
-				if (receiveCollider->GetColliderType() == EColliderType::LINE)
-				{
-				}
-			}
-		}
-	}
-
-	return flag;
-}
-
-bool CollisionManager::CheckOBBHitBox(Vector2 center, float radian, float width, float height, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir)
-{
+	Vector2 center = attackActor->GetPos();
 	// obb vs aabb 용
-	vector<Vector2> corners = GetRotatedCorners(center.x, center.y, radian, width, height);
+	vector<Vector2> corners = GetRotatedCorners(center.x, center.y, hitInfo.fAttackRadian, hitInfo.fWidth, hitInfo.fHeight);
 
 	// obb vs line 용
-	float cosRotation = cosf(radian);
-	float sinRotation = sinf(radian);
+	float cosRotation = cosf(hitInfo.fAttackRadian);
+	float sinRotation = sinf(hitInfo.fAttackRadian);
 	Vector2 localAxisX = Vector2(cosRotation, sinRotation);
 	Vector2 localAxisY = Vector2(-sinRotation, cosRotation);
-	Vector2 AABBmin = Vector2(-width * 0.5f, -height * 0.5f);
-	Vector2 AABBmax = Vector2(width * 0.5f, height * 0.5f);
+	Vector2 AABBmin = Vector2(-hitInfo.fWidth * 0.5f, -hitInfo.fHeight * 0.5f);
+	Vector2 AABBmax = Vector2(hitInfo.fWidth * 0.5f, hitInfo.fHeight * 0.5f);
 
 	bool flag = false;
 
 	for (int32 receiveLayer = 0; receiveLayer < ECollisionLayer::END; ++receiveLayer)
 	{
-		if (!(COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint8)(1 << layer))) continue;
+		if (!(COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint8)(1 << hitInfo._attackLayer))) continue;
 
 		for (auto receiveCollider : _colliderList[(ECollisionLayer)receiveLayer])
 		{
 			if (receiveCollider->GetOwner()->GetWasHit()) continue;
+			if (MatchColliderId(receiveCollider, hitInfo._hitActors)) continue;
 
 			if (receiveLayer == ECollisionLayer::ENEMY)
 			{
@@ -864,8 +813,8 @@ bool CollisionManager::CheckOBBHitBox(Vector2 center, float radian, float width,
 				if (CheckOBBtoAABB(corners, colliderCorners))
 				{
 					flag = true;
-					hitActors.push_back(receiveCollider);
-					receiveCollider->GetOwner()->TakeDamage(attackDir);
+					hitInfo._hitActors.push_back(receiveCollider);
+					receiveCollider->GetOwner()->TakeDamage(attackActor, hitInfo.vAttackDir);
 				}
 			}
 			else if (receiveLayer == ECollisionLayer::ENEMY_HITBOX)
@@ -884,8 +833,8 @@ bool CollisionManager::CheckOBBHitBox(Vector2 center, float radian, float width,
 					if (CheckLinetoAABB(relative1, relative2, AABBmin, AABBmax, info))
 					{
 						flag = true;
-						hitActors.push_back(receiveCollider);
-						receiveCollider->GetOwner()->TakeDamage(attackDir);
+						hitInfo._hitActors.push_back(receiveCollider);
+						receiveCollider->GetOwner()->TakeDamage(attackActor, hitInfo.vAttackDir);
 					}
 				}
 			}
@@ -1349,4 +1298,13 @@ void CollisionManager::DeleteCollider(Actor* actor)
 	{
 		iter = _colliderList[layer].erase(iter);
 	}
+}
+
+bool CollisionManager::MatchColliderId(Collider* collider, vector<Collider*> list)
+{
+	for (Collider* col : list)
+	{
+		if (collider->GetColliderId() == col->GetColliderId()) return true;
+	}
+	return false;
 }

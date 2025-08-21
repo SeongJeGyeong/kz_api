@@ -30,7 +30,7 @@ private:
 	//float fJumpHoldForce = 1000.f;
 	float fAirResistance = 50.f;
 
-	bool bIsGround = false;
+	bool bOnGround = false;
 	bool bIsWall = false;
 	bool bIsJumped = false;
 	bool bIsPlatform = false;
@@ -64,8 +64,8 @@ public:
 	void SetNewPosX(float xValue) { vNewPos.x = xValue; }
 	void SetNewPosY(float yValue) { vNewPos.y = yValue; }
 
-	bool GetIsGround() { return bIsGround; }
-	void SetIsGround(bool isGround) { bIsGround = isGround; }
+	bool GetOnGround() { return bOnGround; }
+	void SetOnGround(bool isGround) { bOnGround = isGround; }
 	bool GetOnStair() { return bOnStair; }
 	void SetOnStair(bool onStair) { bOnStair = onStair; }
 	bool GetIsJumped() { return bIsJumped; }

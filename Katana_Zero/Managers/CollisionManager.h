@@ -87,8 +87,7 @@ public:
 	bool EnemyCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
 	bool BulletCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
 
-	bool CheckOBBHitBox(const vector<Vector2>& OBB, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir);
-	bool CheckOBBHitBox(Vector2 center, float radian, float width, float height, ECollisionLayer layer, vector<Collider*>& hitActors, Vector2 attackDir);
+	bool CheckOBBHitBox(Actor* attackActor, AttackInfo& info);
 	bool CheckOBBtoAABB(const vector<Vector2>& OBB, const vector<Vector2>& AABB);
 	bool OverlapOnAxis(const vector<Vector2>& send, const vector<Vector2>& receive, Vector2 axis);
 
@@ -103,5 +102,7 @@ public:
 	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY);
 
 	void DeleteCollider(Actor* actor);
+
+	bool MatchColliderId(Collider* collider, vector<Collider*> list);
 };
 

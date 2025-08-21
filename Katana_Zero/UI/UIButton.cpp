@@ -49,7 +49,6 @@ void UIButton::Render(HDC hdc)
 	if (_texture)
 	{
 		_texture->RenderTexture(hdc, vPos, iSizeX, iSizeY);
-		_texture->Render(hdc, vPos);
 	}
 
 	if (sButtonText != L"")

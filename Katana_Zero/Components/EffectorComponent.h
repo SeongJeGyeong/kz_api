@@ -44,5 +44,6 @@ public:
 	void PlayEffectForDuration(string name, bool flipped, float radian, float scale, bool attached, float duration, Vector2 pos = Vector2(0, 0));
 
 	virtual uint32 GetPriority() override { return EComponentPriority::EFFECT; }
+	void ClearSpawnList() { _spawnList.clear(); }
 };
 

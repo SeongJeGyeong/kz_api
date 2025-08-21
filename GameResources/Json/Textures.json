@@ -99,6 +99,42 @@
                 "Duration": 0.04,
                 "Loop": false,
                 "Alpha": 255
+            },
+            {
+                "FileName": "spr_hurtfly_begin",
+                "FrameX": 50,
+                "FrameY": 43,
+                "FrameCount": 2,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_hurtfly_loop",
+                "FrameX": 50,
+                "FrameY": 43,
+                "FrameCount": 4,
+                "Duration": 0.06,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_hurtground",
+                "FrameX": 57,
+                "FrameY": 25,
+                "FrameCount": 6,
+                "Duration": 0.06,
+                "Loop": false,
+                "Alpha": 255
+            },
+            {
+                "FileName": "spr_hurtrecover",
+                "FrameX": 56,
+                "FrameY": 46,
+                "FrameCount": 9,
+                "Duration": 0.04,
+                "Loop": false,
+                "Alpha": 255
             }
         ],
         "Enemy": [
@@ -159,6 +195,15 @@
         ],
         "Boss": [
             {
+                "FileName": "spr_kissyface_casual_idle",
+                "FrameX": 40,
+                "FrameY": 49,
+                "FrameCount": 1,
+                "Duration": 0,
+                "Loop": true,
+                "Alpha": 255
+            },
+            {
                 "FileName": "spr_kissyface_tobattle",
                 "FrameX": 50,
                 "FrameY": 63,
@@ -190,7 +235,7 @@
                 "FrameX": 83,
                 "FrameY": 53,
                 "FrameCount": 5,
-                "Duration": 0.05,
+                "Duration": 0.1,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -199,7 +244,7 @@
                 "FrameX": 92,
                 "FrameY": 54,
                 "FrameCount": 9,
-                "Duration": 0.05,
+                "Duration": 0.06,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -208,7 +253,7 @@
                 "FrameX": 42,
                 "FrameY": 49,
                 "FrameCount": 4,
-                "Duration": 0.07,
+                "Duration": 0.1,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -244,7 +289,7 @@
                 "FrameX": 101,
                 "FrameY": 55,
                 "FrameCount": 9,
-                "Duration": 0.07,
+                "Duration": 0.1,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -253,7 +298,7 @@
                 "FrameX": 58,
                 "FrameY": 41,
                 "FrameCount": 6,
-                "Duration": 0.06,
+                "Duration": 0.1,
                 "Loop": true,
                 "Alpha": 255
             },
@@ -271,7 +316,7 @@
                 "FrameX": 49,
                 "FrameY": 48,
                 "FrameCount": 5,
-                "Duration": 0.06,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -280,7 +325,7 @@
                 "FrameX": 75,
                 "FrameY": 45,
                 "FrameCount": 6,
-                "Duration": 0.07,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -289,7 +334,7 @@
                 "FrameX": 75,
                 "FrameY": 45,
                 "FrameCount": 7,
-                "Duration": 0.06,
+                "Duration": 0.07,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -307,7 +352,7 @@
                 "FrameX": 106,
                 "FrameY": 56,
                 "FrameCount": 14,
-                "Duration": 0.06,
+                "Duration": 0.1,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -316,7 +361,7 @@
                 "FrameX": 49,
                 "FrameY": 26,
                 "FrameCount": 12,
-                "Duration": 0.06,
+                "Duration": 0.1,
                 "Loop": true,
                 "Alpha": 255
             },
@@ -325,7 +370,7 @@
                 "FrameX": 52,
                 "FrameY": 20,
                 "FrameCount": 7,
-                "Duration": 0.07,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             }
@@ -439,12 +484,23 @@
                 "Loop": true,
                 "Alpha": 255
             }
+        ],
+        "AnimUI": [
+            {
+                "FileName": "spr_left_click_anim",
+                "FrameX": 13,
+                "FrameY": 17,
+                "FrameCount": 2,
+                "Duration": 0.5,
+                "Loop": true,
+                "Alpha": 255
+            }
         ]
     },
     "Tiles": [
         { "FileName": "bg_mansion_background_0" },
         { "FileName": "bg_mansion_foreground_0" },
-        { "FileName": "bg_mansion_garage_full_0" },
+        { "FileName": "bg_mansion_garage_full" },
         { "FileName": "actors_set" }
     ],
     "UI": [
@@ -463,6 +519,18 @@
         {
             "FileName": "lobby_select_mask",
             "Alpha": 100
+        },
+        {
+            "FileName": "progress_background",
+            "Alpha": 255
+        },
+                    {
+            "FileName": "progress_gauge",
+            "Alpha": 255
+        },
+                    {
+            "FileName": "progress_prevgauge",
+            "Alpha": 255
         }
     ]
 }
