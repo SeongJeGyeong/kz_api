@@ -86,16 +86,19 @@ public:
 	bool PlayerCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
 	bool EnemyCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
 	bool BulletCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
+	bool AxeCollisionCheck(Collider* receive, Collider* send, CollisionInfo& info);
 
 	bool CheckOBBHitBox(Actor* attackActor, AttackInfo& info);
+	bool CheckAABBHitBox(Actor* attackActor, Vector2 center, float width, float height);
 	bool CheckOBBtoAABB(const vector<Vector2>& OBB, const vector<Vector2>& AABB);
 	bool OverlapOnAxis(const vector<Vector2>& send, const vector<Vector2>& receive, Vector2 axis);
 
 	CollisionInfo CheckAABBGroundCollision(const RECT& playerOldRect, const RECT& playerNewRect, Collider* groundCollider);
-	CollisionInfo CheckLinePlatformCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* lineCollider);
-	CollisionInfo CheckLineWallCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
-	CollisionInfo CheckLineCeilingCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* wallCollider);
-	CollisionInfo CheckLineStairCollision(Vector2 playerOldPos, Vector2 playerNewPos, float playerWidth, float playerHeight, Collider* stairCollider, bool wasStair);
+	
+	CollisionInfo CheckAABBtoLinePlatformCollision(Vector2 oldPos, Vector2 newPos, float halfWidth, float halfHeight, Collider* lineCollider);
+	CollisionInfo CheckAABBtoLineWallCollision(Vector2 oldPos, Vector2 newPos, float halfWidth, float halfHeight, Collider* wallCollider);
+	CollisionInfo CheckAABBtoLineCeilingCollision(Vector2 oldPos, Vector2 newPos, float halfWidth, float halfHeight, Collider* wallCollider);
+	CollisionInfo CheckAABBtoLineStairCollision(Vector2 oldPos, Vector2 newPos, float halfWidth, float halfHeight, Collider* stairCollider, bool wasStair);
 
 	bool LineIntersectsLineSegment(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, Vector2& intersection, float& t, float& crossOut);
 

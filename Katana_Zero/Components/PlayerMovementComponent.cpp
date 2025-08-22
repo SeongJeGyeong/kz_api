@@ -69,9 +69,12 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
 
     float upFactor = 400.f;
     float sideFactor = 400.f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
-        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
-        _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL)
+    {
+        sideFactor = 1500.f;
+    }
+    else if (_player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
+             _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
     {
         sideFactor = 800.f;
     }
@@ -86,8 +89,12 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL)
+    {
+        friction = 0.95f;
+    }
     if (_player->GetCurrentState() == EPlayerState::PLAYER_ATTACK || 
-        _player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
+        //_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
     {

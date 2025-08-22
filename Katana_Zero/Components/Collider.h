@@ -17,8 +17,6 @@ private:
 	const uint64 iColliderId;
 
 	bool bCollideActive;
-	Vector2 vHittedNormal;
-	Vector2 vHitPos;
 	Vector2 vHitMTV;
 
 protected:
@@ -60,15 +58,8 @@ public:
 	bool GetBlocked() { return bBlocked; }
 	void SetBlocked(bool block) { bBlocked = block; }
 
-	Vector2 GetHittedNormal() { return vHittedNormal; }
-	void SetHittedNormal(Vector2 normal) { vHittedNormal = normal; }
-	Vector2 GetHitPos() { return vHitPos; }
-	void SetHitPos(Vector2 pos) { vHitPos = pos; }
 	Vector2 GetHitMTV() { return vHitMTV; }
 	void SetHitMTV(Vector2 mtv) { vHitMTV = mtv; }
-
-	virtual void SetHitInfo(Vector2 pos, Vector2 normal) {}
-	Vector2 newPos;
 
 	uint64 GetColliderId() { return iColliderId; }
 

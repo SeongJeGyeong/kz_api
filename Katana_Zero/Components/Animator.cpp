@@ -73,7 +73,7 @@ bool Animator::IsAnimationFinished()
 {
 	if (_currentAnimation._sprite != nullptr)
 	{
-		return _currentAnimation._sprite->IsSpriteEnd(_currentAnimation.iCurrentFrame);
+		return (_currentAnimation._sprite->IsSpriteEnd(_currentAnimation.iCurrentFrame) && !bPlaying);
 	}
 
 	return false;

@@ -27,6 +27,7 @@ private:
 	bool bIsMaxJump = false;
 	bool bIsCrouch = false;
 	bool bBlocked = false;
+	bool bInvincible = false;
 	float fAttackEnableTime = 0.f;
 
 	float fMaxJumpHoldTime = 0.4f;
@@ -54,6 +55,8 @@ public:
 	void ClearHitActors() { _attackInfo._hitActors.clear(); }
 
 	float GetAttackDelayTime() { return fAttackDelayTime; }
+
+	void SetInvincible(bool invincible) { bInvincible = invincible; }
 
 	bool IsFlipped() { return vFrontDir.x < 0; }
 
@@ -92,4 +95,8 @@ public:
 	void RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLORREF color);
 
 	void AttackBlocked();
+
+	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
+
+	virtual Vector2 GetNewPos() override;
 };

@@ -366,3 +366,8 @@ void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 	movementComp->SetVelocityX(attackDirection.x * 10000.f);
 	movementComp->SetVelocityY(attackDirection.y * 1000.f);
 }
+
+Vector2 Enemy::GetNewPos()
+{
+	return _components.GetComponent<EnemyMovementComponent>()->GetNewPos();
+}

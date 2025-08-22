@@ -58,4 +58,5 @@ public:
 	void ShotBullet();
 
 	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
+	virtual Vector2 GetNewPos() override;
 };

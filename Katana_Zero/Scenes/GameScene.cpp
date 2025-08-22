@@ -317,12 +317,13 @@ void GameScene::CreateBullet(Vector2 pos, Vector2 dir, float length, float radia
 	_BulletList.push_back(bullet);
 }
 
-void GameScene::SpawnAxe(Vector2 pos, Vector2 ownerPos, Vector2 dir, bool throwOrSwing)
+void GameScene::SpawnAxe(Vector2 pos, Actor* owner, Vector2 dir, bool throwOrSwing)
 {
 	if (_axe == nullptr)
 	{
 		_axe = new Axe();
 	}
-	_axe->Init(pos, ownerPos, dir, throwOrSwing);
-	_axe->SetActive(true);
+	_axe->Init(pos, owner, dir, throwOrSwing);
+	_axe->SetIsActive(true);
+	_axe->OnReturnAxe = bind(&Boss::ReturnAxe, _boss);
 }

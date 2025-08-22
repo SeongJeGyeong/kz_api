@@ -39,5 +39,5 @@ public:
 	virtual void Render(HDC hdc) override;
 
 	void CreateBullet(Vector2 pos, Vector2 dir, float length, float radian);
-	void SpawnAxe(Vector2 pos, Vector2 ownerPos, Vector2 dir, bool throwOrSwing);
+	void SpawnAxe(Vector2 pos, Actor* owner, Vector2 dir, bool throwOrSwing);
 };

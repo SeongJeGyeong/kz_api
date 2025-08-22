@@ -10,3 +10,4 @@
 9. 배경 타일맵 렌더링을 위해 수백번의 alphablend 사용으로 성능이 굉장히 떨어짐. 수정 필요
 -> 하나의 hdc로 합친 후 hdc 하나만 bitblt로 렌더링 v
 10. axe, bullet에 새로운 collisionLayer 필요?(도끼가 벽에 박혀야 함)
+11, 계단 충돌 개선

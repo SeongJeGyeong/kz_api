@@ -275,6 +275,7 @@ void PlayerState_Attack::ExitState()
 void PlayerState_Roll::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_ROLL);
+	_player->SetInvincible(true);
 }
 
 void PlayerState_Roll::UpdateState(float deltaTime)
@@ -290,6 +291,7 @@ void PlayerState_Roll::UpdateState(float deltaTime)
 
 void PlayerState_Roll::ExitState()
 {
+	_player->SetInvincible(false);
 }
 //////////////////////////////////////////////
 
@@ -341,8 +343,10 @@ void PlayerState_HurtGround::EnterState()
 void PlayerState_HurtGround::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+	if (_player->GetIsDead()) return;
+
 	fRecoverTime += deltaTime;
-	if (fRecoverTime >= 1.f)
+	if (fRecoverTime >= 0.5f)
 	{
 		fRecoverTime = 0.f;
 		_player->ChangeState(EPlayerState::PLAYER_HURT_RECOVER);

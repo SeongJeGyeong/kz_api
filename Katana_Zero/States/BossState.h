@@ -47,6 +47,8 @@ class BossState_Idle : public BossState
 {
 	using Super = BossState;
 private:
+	bool bPrevMelee = false;
+	bool bSwitchPattern = false;
 	float fWaitTime = 0.f;
 public:
 	BossState_Idle(Boss* boss) : Super(boss) {}
@@ -96,6 +98,8 @@ public:
 class BossState_PreJump : public BossState
 {
 	using Super = BossState;
+private:
+	float fChargeTime = 0.f;
 public:
 	BossState_PreJump(Boss* boss) : Super(boss) {}
 
@@ -144,6 +148,8 @@ public:
 class BossState_ThrowAxe : public BossState
 {
 	using Super = BossState;
+private:
+	bool bDoOnce = false;
 public:
 	BossState_ThrowAxe(Boss* boss) : Super(boss) {}
 

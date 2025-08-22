@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Components\BossMovementComponent.h" />
     <ClInclude Include="Objects\Actors\Axe.h" />
     <ClInclude Include="States\BossState.h" />
     <ClInclude Include="Objects\Actors\Boss.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\BossMovementComponent.cpp" />
     <ClCompile Include="Objects\Actors\Axe.cpp" />
     <ClCompile Include="States\BossState.cpp" />
     <ClCompile Include="Objects\Actors\Boss.cpp" />

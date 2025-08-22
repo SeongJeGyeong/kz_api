@@ -2,7 +2,7 @@
 #include "BossState.h"
 #include "../Objects/Actors/Boss.h"
 #include "../Components/Animator.h"
-#include "../Components/EnemyMovementComponent.h"
+#include "../Components/BossMovementComponent.h"
 #include "../Components/Collider.h"
 #include "../Managers/TimeManager.h"
 
@@ -60,26 +60,36 @@ void BossState_Idle::EnterState()
 void BossState_Idle::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+	if (_boss->TargetNotFound()) return;
 	fWaitTime += deltaTime;
 	if (fWaitTime >= 0.5f)
 	{
 		fWaitTime = 0.f;
-		if (_boss->CheckDistance() <= 200.f)
+		if (_boss->CheckDistance() <= 230.f)
 		{
-			_boss->ChangeState(EBossState::BOSS_PREJUMP);
+			if (bSwitchPattern)
+			{
+				_boss->ChangeState(EBossState::BOSS_PREJUMP);
+				bSwitchPattern = false;
+			}
+			else
+			{
+				_boss->ChangeState(EBossState::BOSS_THROWAXE);
+				bSwitchPattern = true;
+			}
 		}
 		else
 		{
-			_boss->ChangeState(EBossState::BOSS_THROWAXE);
-
-			//if (TimeManager::GetInstance()->GetRandom())
-			//{
-			//	_boss->ChangeState(EBossState::BOSS_PRELUNGE);
-			//}
-			//else
-			//{
-			//	_boss->ChangeState(EBossState::BOSS_THROWAXE);
-			//}
+			if (bSwitchPattern)
+			{
+				_boss->ChangeState(EBossState::BOSS_THROWAXE);
+				bSwitchPattern = false;
+			}
+			else
+			{
+				_boss->ChangeState(EBossState::BOSS_PRELUNGE);
+				bSwitchPattern = true;
+			}
 		}
 	}
 	_boss->UpdateDirection();
@@ -112,16 +122,15 @@ void BossState_PreLunge::ExitState()
 void BossState_Lunge::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_LUNGE);
-	Vector2 frontDir = _boss->GetFrontDir();
-	_boss->GetComponent<EnemyMovementComponent>()->SetVelocity({ frontDir.x * 1000.f, -500.f });
-	_boss->GetComponent<EnemyMovementComponent>()->SetOnGround(false);
+	_boss->Lunge();
 }
 
 void BossState_Lunge::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
-	if (_boss->GetComponent<EnemyMovementComponent>()->GetOnGround())
+	if (_boss->GetComponent<BossMovementComponent>()->GetOnGround())
 	{
+		_boss->GetComponent<BossMovementComponent>()->SetLungeJump(false);
 		_boss->ChangeState(EBossState::BOSS_LUNGEATTACK);
 	}
 }
@@ -147,6 +156,7 @@ void BossState_LungeAttack::UpdateState(float deltaTime)
 
 void BossState_LungeAttack::ExitState()
 {
+	_boss->SetAttack(false);
 }
 
 ///////////////// PreJump /////////////////
@@ -160,24 +170,31 @@ void BossState_PreJump::UpdateState(float deltaTime)
 	Super::UpdateState(deltaTime);
 	if (_boss->GetComponent<Animator>()->IsAnimationFinished())
 	{
-		_boss->ChangeState(EBossState::BOSS_JUMP);
+		fChargeTime += deltaTime;
+		if (fChargeTime >= 0.1f)
+		{
+			_boss->ChangeState(EBossState::BOSS_JUMP);
+		}
 	}
 }
 
 void BossState_PreJump::ExitState()
 {
+	fChargeTime = 0.f;
 }
 
 ///////////////// Jump /////////////////
 void BossState_Jump::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_JUMP);
+	_boss->GetComponent<BossMovementComponent>()->SetVelocityY(-700.f);
+	_boss->GetComponent<BossMovementComponent>()->SetOnGround(false);
 }
 
 void BossState_Jump::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
-	if (_boss->GetComponent<EnemyMovementComponent>()->GetVelocity().y >= 0.f)
+	if (_boss->GetComponent<Animator>()->IsAnimationFinished())
 	{
 		_boss->ChangeState(EBossState::BOSS_JUMPATTACK);
 	}
@@ -191,11 +208,16 @@ void BossState_Jump::ExitState()
 void BossState_JumpAttack::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_JUMPATTACK);
+	_boss->ThrowAxe();
 }
 
 void BossState_JumpAttack::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
+	if (_boss->GetComponent<BossMovementComponent>()->GetOnGround())
+	{
+		_boss->ChangeState(EBossState::BOSS_LAND);
+	}
 }
 
 void BossState_JumpAttack::ExitState()
@@ -234,17 +256,22 @@ void BossState_ThrowAxe::UpdateState(float deltaTime)
 	{
 		_boss->ChangeState(EBossState::BOSS_TUGAXE);
 	}
+	else if (!bDoOnce && _boss->GetComponent<Animator>()->GetCurrentFrame() == 7)
+	{
+		_boss->ThrowAxe();
+		bDoOnce = true;
+	}
 }
 
 void BossState_ThrowAxe::ExitState()
 {
+	bDoOnce = false;
 }
 
 ///////////////// TugAxe /////////////////
 void BossState_TugAxe::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_TUGAXE);
-	_boss->ThrowAxe();
 }
 
 void BossState_TugAxe::UpdateState(float deltaTime)
@@ -306,7 +333,7 @@ void BossState_Hurt::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
 
-	EnemyMovementComponent* movementComp = _boss->GetComponent<EnemyMovementComponent>();
+	BossMovementComponent* movementComp = _boss->GetComponent<BossMovementComponent>();
 
 	if (movementComp->GetOnGround())
 	{

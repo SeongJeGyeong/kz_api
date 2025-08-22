@@ -31,6 +31,7 @@ enum ECollisionLayer
 {
 	PLAYER,
 	ENEMY,
+	BOSS,
 	GROUND,
 	PLATFORM,
 	WALL,

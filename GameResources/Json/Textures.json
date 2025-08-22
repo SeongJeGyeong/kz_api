@@ -253,7 +253,7 @@
                 "FrameX": 42,
                 "FrameY": 49,
                 "FrameCount": 4,
-                "Duration": 0.1,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -262,7 +262,7 @@
                 "FrameX": 38,
                 "FrameY": 74,
                 "FrameCount": 2,
-                "Duration": 0.1,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -307,7 +307,7 @@
                 "FrameX": 59,
                 "FrameY": 42,
                 "FrameCount": 5,
-                "Duration": 0.07,
+                "Duration": 0.08,
                 "Loop": false,
                 "Alpha": 255
             },

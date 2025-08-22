@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
-class EnemyMovementComponent : public Component
+
+class BossMovementComponent : public Component
 {
 	using Super = Component;
 public:
@@ -12,13 +13,18 @@ public:
 
 private:
 	Vector2 vGravity = Vector2(0, 2000.f);
-	Vector2 vVelocity = {0, 0};
-	Vector2 vAcceleration = {0, 0};
+	Vector2 vVelocity = { 0, 0 };
+	Vector2 vAcceleration = { 0, 0 };
 
 	Vector2 vNewPos;
 
 	bool bOnGround = false;
 	bool bOnStair = false;
+
+	////// lunge //////
+	bool bIsLunge;
+	const float fLungeSpeed = 1000.f;
+	///////////////////
 
 
 public:
@@ -47,5 +53,10 @@ public:
 	void SetOnGround(bool onGround) { bOnGround = onGround; }
 	bool GetOnStair() { return bOnStair; }
 	void SetOnStair(bool onStair) { bOnStair = onStair; }
+
+	void SetLungeJump(bool lunge) { bIsLunge = lunge; }
+
+	void ParabolicJump(const Vector2& targetPos);
+	Vector2 CalculateParabolicVelocity(const Vector2& startPos, const Vector2& targetPos);
 };
 

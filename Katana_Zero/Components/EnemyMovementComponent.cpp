@@ -54,7 +54,7 @@ void EnemyMovementComponent::ApplyPhysics(float deltaTime)
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
     float friction = 0.8f;
-    if ((GetOwner()->GetWasHit() && !bOnGround) || GetOwner()->GetCurrentState() == EBossState::BOSS_LUNGE) friction = 0.98f;
+    if ((GetOwner()->GetWasHit() && !bOnGround)) friction = 0.98f;
 
     sideVec *= friction;
     if (sideVec.Length() < 1.0f)

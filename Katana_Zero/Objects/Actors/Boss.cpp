@@ -2,7 +2,7 @@
 #include "Boss.h"
 #include "../../Components/Animator.h"
 #include "../../Components/EffectorComponent.h"
-#include "../../Components/EnemyMovementComponent.h"
+#include "../../Components/BossMovementComponent.h"
 #include "../../Managers/ResourceManager.h"
 #include "../../States/StateMachine.h"
 #include "../../States/BossState.h"
@@ -11,6 +11,7 @@
 #include "../../Resources/Texture.h"
 #include "../../Managers/InputManager.h"
 #include "../../Managers/CollisionManager.h"
+#include "../../Game/Game.h"
 
 void Boss::Init(Vector2 pos)
 {
@@ -19,7 +20,7 @@ void Boss::Init(Vector2 pos)
 	CreateAABBCollider(50, 100, ECollisionLayer::ENEMY);
 	_components.AddComponent<Animator>();
 	_components.AddComponent<EffectorComponent>();
-	_components.AddComponent<EnemyMovementComponent>();
+	_components.AddComponent<BossMovementComponent>();
 
 	Animator* animator = _components.GetComponent<Animator>();
 	if (animator != nullptr)
@@ -29,7 +30,7 @@ void Boss::Init(Vector2 pos)
 		animator->AddAnimation(EBossState::BOSS_READY, ResourceManager::GetInstance()->GetSprite("spr_kissyface_casual_idle"), { 0, 0 });
 		animator->AddAnimation(EBossState::BOSS_TOBATTLE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_tobattle"), {-12, -14});
 		animator->AddAnimation(EBossState::BOSS_IDLE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_idle"), {0, -1});
-		animator->AddAnimation(EBossState::BOSS_BLOCK, ResourceManager::GetInstance()->GetSprite("spr_kissyface_block"), { 0, -1 });
+		animator->AddAnimation(EBossState::BOSS_BLOCK, ResourceManager::GetInstance()->GetSprite("spr_kissyface_block"), { 0, 2 });
 		animator->AddAnimation(EBossState::BOSS_HURT, ResourceManager::GetInstance()->GetSprite("spr_kissyface_hurt"), { 10, 3 });
 		animator->AddAnimation(EBossState::BOSS_RECOVER, ResourceManager::GetInstance()->GetSprite("spr_kissyface_recover"), { 14, 3 });
 		animator->AddAnimation(EBossState::BOSS_STRUGGLE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_struggle"), { 0, 13 });
@@ -40,13 +41,13 @@ void Boss::Init(Vector2 pos)
 		animator->AddAnimation(EBossState::BOSS_LUNGE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_lunge"), { 50, 0 });
 		animator->AddAnimation(EBossState::BOSS_LUNGEATTACK, ResourceManager::GetInstance()->GetSprite("spr_kissyface_lungeattack"), { 50, -5 });
 		animator->AddAnimation(EBossState::BOSS_PREJUMP, ResourceManager::GetInstance()->GetSprite("spr_kissyface_prejump"), { 0, 0 });
-		animator->AddAnimation(EBossState::BOSS_JUMP, ResourceManager::GetInstance()->GetSprite("spr_kissyface_jump"), { 0, 0 });
+		animator->AddAnimation(EBossState::BOSS_JUMP, ResourceManager::GetInstance()->GetSprite("spr_kissyface_jump"), { 0, -20 });
 		animator->AddAnimation(EBossState::BOSS_JUMPATTACK, ResourceManager::GetInstance()->GetSprite("spr_kissyface_jump_swing"), { 0, 0 });
 		animator->AddAnimation(EBossState::BOSS_LAND, ResourceManager::GetInstance()->GetSprite("spr_kissyface_landattack"), { 0, 0 });
 
 		animator->AddAnimation(EBossState::BOSS_THROWAXE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_throw"), { 2, -5 });
 		animator->AddAnimation(EBossState::BOSS_TUGAXE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_tug"), { 47, 9 });
-		animator->AddAnimation(EBossState::BOSS_RETURNAXE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_returnaxe"), { 0, 0 });
+		animator->AddAnimation(EBossState::BOSS_RETURNAXE, ResourceManager::GetInstance()->GetSprite("spr_kissyface_returnaxe"), { -10, 7 });
 	}
 
 	EffectorComponent* effector = _components.GetComponent<EffectorComponent>();
@@ -56,7 +57,7 @@ void Boss::Init(Vector2 pos)
 		effector->SetOwner(this);
 	}
 
-	_components.GetComponent<EnemyMovementComponent>()->InitComponent(this);
+	_components.GetComponent<BossMovementComponent>()->InitComponent(this);
 
 	_stateMachine = new StateMachine<EBossState>(this);
 	_stateMachine->AddState(new BossState_Ready(this));
@@ -81,7 +82,7 @@ void Boss::Init(Vector2 pos)
 	_stateMachine->AddState(new BossState_Die(this));
 	_stateMachine->ChangeState(EBossState::BOSS_READY);
 
-	_components.GetComponent<EnemyMovementComponent>()->InitComponent(this);
+	_components.GetComponent<BossMovementComponent>()->InitComponent(this);
 
 	animator->SetFlipped(true);
 	vFrontDir = { -1, 0 };
@@ -109,12 +110,19 @@ void Boss::Update(float deltaTime)
 	{
 		Defeat();
 	}
+
+	if (bAttack)
+	{
+		Vector2 pos = GetPos();
+		pos.x += vFrontDir.x * 50.f;
+		bAttack = CollisionManager::GetInstance()->CheckAABBHitBox(this, pos, 150.f ,100.f);
+	}
 }
 
 void Boss::PostUpdate(float deltaTime)
 {
-	SetPos(_components.GetComponent<EnemyMovementComponent>()->GetNewPos());
-	_components.GetComponent<EnemyMovementComponent>()->SetAcceleration({ 0, 0 });
+	SetPos(_components.GetComponent<BossMovementComponent>()->GetNewPos());
+	_components.GetComponent<BossMovementComponent>()->SetAcceleration({ 0, 0 });
 }
 
 void Boss::Render(HDC hdc)
@@ -129,6 +137,25 @@ void Boss::Render(HDC hdc)
 		_progressBackground->RenderProgress(hdc, pos, 100, 10);
 		_progressPrev->RenderProgress(hdc, pos, (int32)fPrevGauge, 10);
 		_progressCurrent->RenderProgress(hdc, pos, (int32)fStruggleGauge, 10);
+	}
+
+	if (GetCurrentState() == EBossState::BOSS_LUNGE || GetCurrentState() == EBossState::BOSS_LUNGEATTACK)
+	{
+		Vector2 pos = Game::GetInstance()->ConvertCurSceneScreenPos(GetPos());
+
+		pos.x += vFrontDir.x * 50.f;
+
+		int32 left = pos.x - 150 * 0.5f;
+		int32 right = pos.x + 150 * 0.5f;
+		int32 top = pos.y - 100 * 0.5f;
+		int32 bottom = pos.y + 100 * 0.5f;
+
+		HPEN redPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+		HPEN oldPen = (HPEN)SelectObject(hdc, redPen);
+		SelectObject(hdc, GetStockObject(NULL_BRUSH));
+		Rectangle(hdc, left, top, right, bottom);
+		(HPEN)SelectObject(hdc, oldPen);
+		DeleteObject(redPen);
 	}
 }
 
@@ -161,7 +188,7 @@ void Boss::EndStruggle()
 {
 	_targetPlayer->ChangeState(EPlayerState::PLAYER_HURT_BEGIN);
 	_targetPlayer->AddForce({ vFrontDir.x * 2000.f, -150.f });
-	fPrevGauge = fStruggleGauge;
+	if (fStruggleGauge > fPrevGauge) fPrevGauge = fStruggleGauge;
 	fStruggleGauge = 0.f;
 }
 
@@ -203,17 +230,54 @@ void Boss::UpdateDirection()
 
 void Boss::ThrowAxe()
 {
-	Vector2 pos = GetPos();
-	//Vector2 targetPos = _targetPlayer->GetPos();
-	//targetPos.y -= 20.f;
-	//Vector2 dir = (targetPos - GetPos()).GetNormalize();
-	pos.x += vFrontDir.x * 100.f;
-	pos.y -= 15.f;
-	OnSpawnAxe(pos, GetPos(), vFrontDir, true);
+	if (GetCurrentState() == EBossState::BOSS_THROWAXE)
+	{
+		Vector2 pos = GetPos();
+		pos.x += vFrontDir.x * 100.f;
+		pos.y -= 15.f;
+		OnSpawnAxe(pos, this, vFrontDir, true);
+	}
+	else
+	{
+		Vector2 pos = GetPos();
+		pos.x += 100.f;
+		pos.y -= 15.f;
+		OnSpawnAxe(pos, this, vFrontDir, false);
+	}
+}
+
+void Boss::ReturnAxe()
+{
+	if (GetCurrentState() == EBossState::BOSS_TUGAXE)
+	{
+		ChangeState(EBossState::BOSS_RETURNAXE);
+	}
+}
+
+void Boss::Lunge()
+{
+	Vector2 targetPos = _targetPlayer->GetPos();
+	targetPos.x += -vFrontDir.x * 80.f;
+	_components.GetComponent<BossMovementComponent>()->ParabolicJump(targetPos);
+	bAttack = true;
+}
+
+void Boss::Hurt(Vector2 attackDir)
+{
+	if ((attackDir.x > 0 && vFrontDir.x > 0) || (attackDir.x < 0 && vFrontDir.x < 0))
+	{
+		vFrontDir.x = -vFrontDir.x;
+		_components.GetComponent<Animator>()->FlipAnimation();
+	}
+
+	ChangeState(EBossState::BOSS_HURT);
+	Vector2 knockbackDir = { -vFrontDir.x * 1000.f, -500.f };
+	_components.GetComponent<BossMovementComponent>()->SetVelocity(knockbackDir);
 }
 
 void Boss::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
+
 	if (GetCurrentState() == EBossState::BOSS_HURT)
 	{
 		StartStruggle();
@@ -225,13 +289,19 @@ void Boss::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 		return;
 	}
 
-	if ((attackDirection.x > 0 && vFrontDir.x > 0) || (attackDirection.x < 0 && vFrontDir.x < 0))
+	if (GetCurrentState() == EBossState::BOSS_JUMPATTACK || GetCurrentState() == EBossState::BOSS_TUGAXE)
 	{
-		ChangeState(EBossState::BOSS_HURT);
-		Vector2 knockbackDir = { vFrontDir.x * 1000.f, -500.f };
-		vFrontDir.x = -vFrontDir.x;
-		_components.GetComponent<Animator>()->FlipAnimation();
-		_components.GetComponent<EnemyMovementComponent>()->SetVelocity(knockbackDir);
+		Hurt(attackDirection);
+	}
+	else if ((attackDirection.x > 0 && vFrontDir.x > 0) || (attackDirection.x < 0 && vFrontDir.x < 0))
+	{
+		Hurt(attackDirection);
+	}
+	else if (GetCurrentState() == EBossState::BOSS_LUNGE || GetCurrentState() == EBossState::BOSS_LUNGEATTACK)
+	{
+		Vector2 reflectVector = { -attackDirection.x, -attackDirection.y };
+		_targetPlayer->AddForce(reflectVector * 500.f);
+		_targetPlayer->AttackBlocked();
 	}
 	else
 	{
@@ -252,7 +322,7 @@ void Boss::OnCollisionBeginOverlap(const CollisionInfo& info)
 	case ECollisionLayer::WALL:
 		ProcessWallCollision(info);
 		break;
-	case ECollisionLayer::ENEMY_HITBOX:
+	case ECollisionLayer::PLAYER_HITBOX:
 		TakeDamage(info.collisionActor, info.vHitNormal);
 		break;
 	default:
@@ -280,7 +350,7 @@ void Boss::OnCollisionEndOverlap(const CollisionInfo& info)
 	switch (info.collisionLayer)
 	{
 	case ECollisionLayer::GROUND:
-		_components.GetComponent<EnemyMovementComponent>()->SetOnGround(false);
+		_components.GetComponent<BossMovementComponent>()->SetOnGround(false);
 		break;
 	default:
 		break;
@@ -289,7 +359,7 @@ void Boss::OnCollisionEndOverlap(const CollisionInfo& info)
 
 void Boss::ProcessGroundCollision(const CollisionInfo& collisionInfo)
 {
-	EnemyMovementComponent* movementComp = _components.GetComponent<EnemyMovementComponent>();
+	BossMovementComponent* movementComp = _components.GetComponent<BossMovementComponent>();
 
 	switch (collisionInfo.hitCorner)
 	{
@@ -322,7 +392,11 @@ void Boss::ProcessGroundCollision(const CollisionInfo& collisionInfo)
 
 void Boss::ProcessWallCollision(const CollisionInfo& collisionInfo)
 {
-	EnemyMovementComponent* movementComp = _components.GetComponent<EnemyMovementComponent>();
+	BossMovementComponent* movementComp = _components.GetComponent<BossMovementComponent>();
+
+	Vector2 velocity = movementComp->GetVelocity();
+
+	if ((velocity.x > 0.f && collisionInfo.vHitNormal.x > 0) || (velocity.x < 0.f && collisionInfo.vHitNormal.x < 0)) return;
 
 	float halfWidth = GetCollider()->GetWidth() * 0.5f;
 	// 벽 방향에 따른 위치 조정
@@ -342,4 +416,14 @@ float Boss::CheckDistance()
 {
 	Vector2 dir = _targetPlayer->GetPos() - GetPos();
 	return dir.Length();
+}
+
+Vector2 Boss::GetNewPos()
+{
+	return _components.GetComponent<BossMovementComponent>()->GetNewPos();
+}
+
+bool Boss::TargetNotFound()
+{
+	return (_targetPlayer == nullptr || _targetPlayer->GetIsDead());
 }

@@ -117,9 +117,7 @@ void Player::Update(float deltaTime)
     if (_attackInfo.bIsAttack)
     {
         Vector2 pos = GetPos();
-        CollisionManager::GetInstance()->CheckOBBHitBox(
-            this, 
-            _attackInfo);
+        CollisionManager::GetInstance()->CheckOBBHitBox(this, _attackInfo);
     }
 }
 
@@ -239,7 +237,6 @@ void Player::Roll(bool dir)
         if (vHitNormal.x > -1.f)
         {
             _movementComp->AddVelocity({100000.f, 0});
-            //vVelocity.x += 100000.f;
             _components.GetComponent<Animator>()->SetFlipped(false);
             vFrontDir = { 1, 0 };
         }
@@ -249,7 +246,6 @@ void Player::Roll(bool dir)
         if (vHitNormal.x < 1.f)
         {
             _movementComp->AddVelocity({ -100000.f, 0 });
-            //vVelocity.x -= 100000.f;
             _components.GetComponent<Animator>()->SetFlipped(true);
             vFrontDir = { -1, 0 };
         }
@@ -510,7 +506,9 @@ void Player::ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 o
 
 void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
 {
-  switch (info.collisionLayer)
+    if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE) return;
+
+    switch (info.collisionLayer)
     {
     case ECollisionLayer::GROUND:
         ProcessGroundCollision(info);
@@ -528,6 +526,10 @@ void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
         if (_movementComp->GetIsPlatform()) break;
         ProcessStairCollision(info, GetPos());
         break;
+    case ECollisionLayer::ENEMY_HITBOX:
+        if(!info.collisionActor->GetIsActive())break;
+        TakeDamage(info.collisionActor, { -info.vHitNormal.x, -info.vHitNormal.y });
+        break;
     default:
         break;
     }
@@ -535,6 +537,8 @@ void Player::OnCollisionBeginOverlap(const CollisionInfo& info)
 
 void Player::OnCollisionStayOverlap(const CollisionInfo& info)
 {
+    if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE) return;
+
     switch (info.collisionLayer)
     {
     case ECollisionLayer::GROUND:
@@ -556,7 +560,11 @@ void Player::OnCollisionStayOverlap(const CollisionInfo& info)
         break;
     case ECollisionLayer::STAIR:
         ProcessStairCollision(info, GetPos());
-    break;
+        break;
+    case ECollisionLayer::ENEMY_HITBOX:
+        if (!info.collisionActor->GetIsActive())break;
+        TakeDamage(info.collisionActor, info.vHitNormal);
+        break;
     default:
         break;
     }
@@ -672,4 +680,18 @@ void Player::RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLOR
 void Player::AttackBlocked()
 {
     bBlocked = true;
+}
+
+void Player::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
+{
+    if (bInvincible || bIsDead) return;
+
+    bIsDead = true;
+    ChangeState(EPlayerState::PLAYER_HURT_BEGIN);
+    AddForce({ attackDirection.x * 2000.f, -200.f });
+}
+
+Vector2 Player::GetNewPos()
+{
+    return _components.GetComponent<PlayerMovementComponent>()->GetNewPos();
 }

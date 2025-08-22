@@ -11,7 +11,7 @@ class Boss : public Actor
 {
 	using Super = Actor;
 public:
-	function<void(Vector2, Vector2, Vector2, bool)> OnSpawnAxe;
+	function<void(Vector2, Actor*, Vector2, bool)> OnSpawnAxe;
 private:
 	StateMachine<EBossState>* _stateMachine;
 
@@ -25,6 +25,8 @@ private:
 	Texture* _progressPrev = nullptr;
 	float fStruggleGauge = 0.f;
 	float fPrevGauge = 0.f;
+
+	bool bAttack = false;
 
 public:
 	virtual void Init(Vector2 pos) override;
@@ -45,6 +47,9 @@ public:
 	void Die();
 	void UpdateDirection();
 	void ThrowAxe();
+	void ReturnAxe();
+	void Lunge();
+	void Hurt(Vector2 attackDir);
 
 	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
 	void SetWasHit(bool wasHit) { bWasHit = wasHit; }
@@ -58,5 +63,10 @@ public:
 
 	Vector2 GetFrontDir() { return vFrontDir; }
 	float CheckDistance();
+
+	void SetAttack(bool attack) { bAttack = attack; }
+	virtual Vector2 GetNewPos() override;
+
+	bool TargetNotFound();
 };
 
