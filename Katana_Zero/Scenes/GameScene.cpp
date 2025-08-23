@@ -9,11 +9,42 @@
 #include "../Objects/Actors/Boss.h"
 #include "../Managers/CollisionManager.h"
 #include "../Objects/Actors/Axe.h"
+#include "../UI/UIImage.h"
+#include "../UI/UIButton.h"
+#include "../Managers/InputManager.h"
 
 GameScene::GameScene(string mapFileName)
 {
 	_sceneCamera = new Camera();
 	_sceneCamera->Init();
+
+	UIImage* pauseBackground = _UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2), "spr_pausemenu_bg_0");
+	UIImage* pauseBackground2 = _UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 336), "spr_pausemenu_bg_2");
+
+	UIButton* resume = _UI.CreateButton(Vector2(GWinSizeX / 2, 120), "lobby_select_mask", L"이어하기", 1280, 50, 4);
+	UIButton* retry = _UI.CreateButton(Vector2(GWinSizeX / 2, 180), "lobby_select_mask", L"재시작", 1280, 50, 4);
+	UIButton* mainMenu = _UI.CreateButton(Vector2(GWinSizeX / 2, 240), "lobby_select_mask", L"메인 메뉴", 1280, 50, 4);
+	resume->SetButtonTextAlign(EButtonTextAlign::LEFT);
+	resume->SetMargin(20.f);
+	retry->SetButtonTextAlign(EButtonTextAlign::LEFT);
+	retry->SetMargin(20.f);
+	mainMenu->SetButtonTextAlign(EButtonTextAlign::LEFT);
+	mainMenu->SetMargin(20.f);
+
+	pauseBackground->SetOpen(false);
+	pauseBackground2->SetOpen(false);
+	resume->SetOpen(false);
+	retry->SetOpen(false);
+	mainMenu->SetOpen(false);
+
+	OnPause = [pauseBackground, pauseBackground2, resume, retry, mainMenu](bool isOpen)
+		{
+			pauseBackground->SetOpen(isOpen);
+			pauseBackground2->SetOpen(isOpen);
+			resume->SetOpen(isOpen);
+			retry->SetOpen(isOpen);
+			mainMenu->SetOpen(isOpen);
+		};
 
 	fs::path directory = fs::current_path() / L"../GameResources/Json/";
 	fs::path path = directory / mapFileName;
@@ -191,6 +222,8 @@ void GameScene::Destroy()
 
 void GameScene::Update(float deltaTime)
 {
+	if (bIsPaused) return;
+
 	if (_player)
 	{
 		_player->Update(deltaTime);
@@ -226,6 +259,14 @@ void GameScene::Update(float deltaTime)
 
 void GameScene::PostUpdate(float deltaTime)
 {
+	if (InputManager::GetInstance()->GetButtonDown(KeyType::ESC))
+	{
+		bIsPaused = !bIsPaused;
+		OnPause(bIsPaused);
+	}
+
+	if (bIsPaused) return;
+
 	Super::PostUpdate(deltaTime);
 
 	if (_player)
@@ -272,8 +313,6 @@ void GameScene::PostUpdate(float deltaTime)
 
 void GameScene::Render(HDC hdc)
 {
-	Super::Render(hdc);
-
 	if (_tileRenderer)
 	{
 		_tileRenderer->RenderComponent(hdc);
@@ -307,6 +346,21 @@ void GameScene::Render(HDC hdc)
 	for (Bullet* bullet : _BulletList)
 	{
 		bullet->Render(hdc);
+	}
+
+	Super::Render(hdc);
+
+	if (bIsPaused)
+	{
+		SetTextColor(hdc, RGB(255, 255, 0));
+
+		HFONT font = ResourceManager::GetInstance()->GetFont(4);
+		HFONT oldFont = (HFONT)SelectObject(hdc, font);
+
+		wstring pausestr = std::format(L"KATANA ZERO 일시정지");
+		::TextOut(hdc, 50, 680, pausestr.c_str(), static_cast<int32>(pausestr.size()));
+
+		SelectObject(hdc, oldFont);
 	}
 }
 

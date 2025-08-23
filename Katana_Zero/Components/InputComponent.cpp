@@ -13,13 +13,23 @@ void InputComponent::InitComponent(Actor* owner)
 
 void InputComponent::UpdateComponent(float deltaTime)
 {
+    if (bWaitForAttack)
+    {
+        fAttackDelay += deltaTime;
+        if (fAttackDelay >= 0.5f)
+        {
+            bWaitForAttack = false;
+            fAttackDelay = 0.f;
+        }
+    }
+
     if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))
     {
-        bPressedDown = true;
+        _player->SetPressedDown(true);
     }
     else
     {
-        bPressedDown = false;
+        _player->SetPressedDown(false);
     }
 }
 
@@ -32,10 +42,7 @@ void InputComponent::Input_In_Idle(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -75,10 +82,7 @@ void InputComponent::Input_In_IdleToRun(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -105,10 +109,7 @@ void InputComponent::Input_In_Run(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -136,10 +137,7 @@ void InputComponent::Input_In_RunToIdle(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -166,10 +164,7 @@ void InputComponent::Input_In_Jump(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (!_player->GetIsMaxJump() && InputManager::GetInstance()->GetButtonPressed(KeyType::W))
@@ -195,10 +190,7 @@ void InputComponent::Input_In_Fall(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonPressed(KeyType::A))
@@ -215,10 +207,7 @@ void InputComponent::Input_In_PreCrouch(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -245,10 +234,7 @@ void InputComponent::Input_In_Crouch(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -275,10 +261,7 @@ void InputComponent::Input_In_PostCrouch(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))
@@ -309,10 +292,7 @@ void InputComponent::Input_In_Roll(float deltaTime)
 {
     if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
     {
-        if (_player->GetAttackDelayTime() > 0.3f)
-        {
-            _player->Attack();
-        }
+        _player->Attack();
     }
 
     if (InputManager::GetInstance()->GetButtonDown(KeyType::W))

@@ -172,8 +172,7 @@ void Boss::ChangeState(int32 stateType)
 bool Boss::ToBattle()
 {
 	float length = (_targetPlayer->GetPos() - GetPos()).LengthSquared();
-	// 500 이내일 때
-	return length <= 250000;
+	return length <= fDetectRange * fDetectRange;
 }
 
 void Boss::StartStruggle()

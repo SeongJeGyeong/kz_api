@@ -16,7 +16,7 @@ public:
 private:
 	Player* _player = nullptr;
 
-	Vector2 vGravity = Vector2(0, 1000.f);
+	Vector2 vGravity = Vector2(0, 2000.f);
 	Vector2 vVelocity = {};
 	Vector2 vAcceleration = {};
 
@@ -25,9 +25,7 @@ private:
 	//float fMoveForce = 10000;
 	//float fMass = 1;
 
-	float fJumpInitialVelocity = 300.f;
-	//float fMaxJumpHoldTime = 0.4f;
-	//float fJumpHoldForce = 1000.f;
+	float fJumpInitialVelocity = 450.f;
 	float fAirResistance = 50.f;
 
 	bool bOnGround = false;

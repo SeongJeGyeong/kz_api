@@ -524,13 +524,21 @@
             "FileName": "progress_background",
             "Alpha": 255
         },
-                    {
+        {
             "FileName": "progress_gauge",
             "Alpha": 255
         },
-                    {
+        {
             "FileName": "progress_prevgauge",
             "Alpha": 255
+        },
+        {
+            "FileName": "spr_pausemenu_bg_0",
+            "Alpha": 150
+        },
+        {
+            "FileName": "spr_pausemenu_bg_2",
+            "Alpha": 150
         }
     ]
 }

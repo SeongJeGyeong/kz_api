@@ -10,6 +10,11 @@ private:
 	int32 iWorldSizeX;
 	int32 iWorldSizeY;
 
+	Vector2 vShakePos{ 0, -10.f };
+	float fShakeTime = 0.f;
+	float fShakeDuration = 0.f;
+	bool bCameraShake = false;
+
 public:
 	virtual void Init() override;
 	virtual void Update(float deltaTime) override;
@@ -23,5 +28,8 @@ public:
 	void SetWorldSize(int32 x, int32 y) { iWorldSizeX = x; iWorldSizeY = y; }
 
 	Vector2 GetCameraSize() { return { fCameraWidth , fCameraHeight }; }
+
+	void SetCameraShake(bool cameraShake) { bCameraShake = cameraShake; }
+
 };
 

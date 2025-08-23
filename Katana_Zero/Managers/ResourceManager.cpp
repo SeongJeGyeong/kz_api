@@ -20,6 +20,23 @@ void ResourceManager::Init(HWND hwnd, fs::path directory)
 	LoadFile("Textures", "Textures", data, texturePath);
 
 	_cursor = CreateCursorFromImage(texturePath / L"UI/spr_cursor.bmp");
+
+	for (int i = 0; i < 5; ++i)
+	{
+		_fontList[i] = CreateFont(
+			(int32)16 + i * 4, 0, 0, 0,
+			FW_NORMAL,
+			FALSE,
+			FALSE,
+			FALSE,
+			DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS,
+			CLIP_DEFAULT_PRECIS,
+			ANTIALIASED_QUALITY,
+			DEFAULT_PITCH | FF_DONTCARE,
+			L"µÕ±Ù¸ð²Ã"
+		);
+	}
 }
 
 void ResourceManager::Destroy()
@@ -147,4 +164,11 @@ HCURSOR ResourceManager::CreateCursorFromImage(const wstring& path)
 	DeleteObject(hMask);
 
 	return hCursor;
+}
+
+HFONT ResourceManager::GetFont(int32 size)
+{
+	if (size < 0) size = 0;
+	if (size > 4) size = 4;
+	return _fontList[size];
 }

@@ -35,20 +35,6 @@ void Game::Init(HWND hwnd, HWND hsubwnd)
 	fs::path directory = fs::current_path() / L"../GameResources/";
 	AddFontResourceEx((directory / L"Fonts/DungGeunMo.ttf").c_str(), FR_PRIVATE, 0);
 
-	_font = CreateFont(
-		(int32)16, 0, 0, 0,
-		FW_NORMAL,
-		FALSE,
-		FALSE,
-		FALSE,
-		DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS,
-		CLIP_DEFAULT_PRECIS,
-		ANTIALIASED_QUALITY,
-		DEFAULT_PITCH | FF_DONTCARE,
-		L"둥근모꼴"
-	);
-
 	// 게임과 관련된 초기화가 필요한 항목들은 여기서
 	InputManager::GetInstance()->Init(_hwnd, _hwndSub);	// 객체를 생성
 	ResourceManager::GetInstance()->Init(_hwnd, directory);
@@ -158,8 +144,8 @@ void Game::ChangeGameScene()
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene("BossRoom.json");
-	_background = WHITENESS;
+	_nextScene = new GameScene("Stage1_new.json");
+	_background = BLACKNESS;
 
 	HCURSOR newCurosr = ResourceManager::GetInstance()->GetCursor();
 	SetClassLongPtr(_hwnd, GCLP_HCURSOR, (LONG_PTR)newCurosr);

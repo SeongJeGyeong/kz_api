@@ -17,6 +17,7 @@ class GameScene : public Scene
 
 public:
 	GameScene(string mapFileName);
+	function<void(bool)> OnPause;
 
 private:
 	Player* _player = nullptr;
@@ -30,6 +31,8 @@ private:
 	void LoadTiles(json tileData);
 	void LoadColliders(json colliderData);
 	void LoadActors(json actorData);
+
+	bool bIsPaused = false;
 
 public:
 	virtual void Init() override;

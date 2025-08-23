@@ -14,7 +14,8 @@ public:
 private:
 	Player* _player = nullptr;
 
-	bool bPressedDown = false;
+	bool bWaitForAttack = false;
+	float fAttackDelay = 0.f;
 
 public:
 	virtual void InitComponent(Actor* owner);
@@ -22,8 +23,6 @@ public:
 	virtual void RenderComponent(HDC hdc) override;
 
 	virtual uint32 GetPriority() override { return EComponentPriority::INPUT; }
-	bool GetPressedDown() { return bPressedDown; }
-
 
 	void Input_In_Idle(float deltaTime);
 	void Input_In_IdleToRun(float deltaTime);

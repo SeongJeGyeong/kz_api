@@ -22,16 +22,19 @@ private:
 	float fMoveForce = 10000;
 
 	float fJumpPressedTime = 0.f;
-	float fAttackDelayTime = 0.f;
 
+	bool bPressedDown = false;
 	bool bIsMaxJump = false;
 	bool bIsCrouch = false;
 	bool bBlocked = false;
+	bool bWaitForAttack = false;
 	bool bInvincible = false;
+
+	bool bFirstAttack = true;
 	float fAttackEnableTime = 0.f;
 
 	float fMaxJumpHoldTime = 0.4f;
-	float fJumpHoldForce = 1000.f;
+	float fJumpHoldForce = 2000.f;
 
 	Vector2 vHitNormal;
 
@@ -45,16 +48,18 @@ public:
 	virtual void PostUpdate(float deltaTime) override;
 	virtual void Render(HDC hdc) override;
 
+
+	bool GetPressedDown() { return bPressedDown; }
+	void SetPressedDown(bool pressedDown) { bPressedDown = pressedDown; }
+
 	bool GetIsMaxJump() { return bIsMaxJump; }
 	void SetIsMaxJump(bool maxJump) { bIsMaxJump = maxJump; }
 
 	bool GetIsCrouch() { return bIsCrouch; }
 	void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
 
-	void SetIsAttack(bool isAttack) { _attackInfo.bIsAttack = isAttack; }
-	void ClearHitActors() { _attackInfo._hitActors.clear(); }
 
-	float GetAttackDelayTime() { return fAttackDelayTime; }
+	void ClearHitActors() { _attackInfo._hitActors.clear(); }
 
 	void SetInvincible(bool invincible) { bInvincible = invincible; }
 
@@ -72,6 +77,22 @@ public:
 
 	virtual void ChangeState(int32 stateType) override;
 
+	virtual void AddForce(Vector2 force) override;
+	void SetPlayerCamera(Camera* camera);
+
+	void AttackBlocked();
+
+	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
+
+	virtual Vector2 GetNewPos() override;
+
+	virtual void OnCollisionBeginOverlap(const CollisionInfo& info) override;
+	virtual void OnCollisionStayOverlap(const CollisionInfo& info) override;
+	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
+
+private:
+	void AttackDelay(float deltaTime);
+
 	void ProcessGroundCollision(const CollisionInfo& collisionInfo);
 	void ProcessGroundFloor(const CollisionInfo& collisionInfo);
 	void ProcessGroundCeiling(const CollisionInfo& collisionInfo);
@@ -82,21 +103,7 @@ public:
 	void ProcessCeilingCollision(const CollisionInfo& collisionInfo);
 	void ProcessStairCollision(const CollisionInfo& collisionInfo, Vector2 oldPos);
 
-	virtual void OnCollisionBeginOverlap(const CollisionInfo& info) override;
-	virtual void OnCollisionStayOverlap(const CollisionInfo& info) override;
-	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
-
-	virtual void AddForce(Vector2 force) override;
-
-	void SetPlayerCamera(Camera* camera);
-
 	void printState(HDC hdc);
 
 	void RenderHitbox(HDC hdc, Vector2 pos, float radian, float scale, COLORREF color);
-
-	void AttackBlocked();
-
-	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) override;
-
-	virtual Vector2 GetNewPos() override;
 };

@@ -5,7 +5,7 @@
 #include "../Managers/InputManager.h"
 #include "../Resources/Texture.h"
 
-UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height)
+UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height, int32 fontSize, uint64 textColor)
 	: Super(pos)
 {
 	_texture = ResourceManager::GetInstance()->GetTexture(key);
@@ -21,6 +21,8 @@ UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height)
 		iSizeX = _texture->GetTextureSizeX();
 		iSizeY = _texture->GetTextureSizeY();
 	}
+	iFontSize = fontSize;
+	ulTextColor = textColor;
 }
 
 void UIButton::Update()
@@ -53,10 +55,38 @@ void UIButton::Render(HDC hdc)
 
 	if (sButtonText != L"")
 	{
-		SetTextAlign(hdc, TA_CENTER);
-		SetTextColor(hdc, RGB(255, 255, 255));
+		SetBkColor(hdc, RGB(0, 0, 0));
+		HFONT font = ResourceManager::GetInstance()->GetFont(iFontSize);
+		HFONT oldFont = (HFONT)SelectObject(hdc, font);
+
+		COLORREF oldColor = SetTextColor(hdc, ulTextColor);
 		SetBkMode(hdc, TRANSPARENT);
-		::TextOut(hdc, vPos.x, vPos.y - 5, sButtonText.c_str(), static_cast<int32>(sButtonText.size()));
+
+		UINT oldAlign = GetTextAlign(hdc);
+		float alignPos = vPos.x;
+
+		if (_textAlign == EButtonTextAlign::LEFT)
+		{
+			SetTextAlign(hdc, TA_LEFT);
+			alignPos -= iSizeX * 0.5f;
+			alignPos += fMargin;
+		}
+		else if (_textAlign == EButtonTextAlign::RIGHT)
+		{
+			SetTextAlign(hdc, TA_RIGHT);
+			alignPos += iSizeX * 0.5f;
+			alignPos -= fMargin;
+		}
+		else
+		{
+			SetTextAlign(hdc, TA_CENTER);
+		}
+
+		::TextOut(hdc, alignPos, vPos.y - 5 - iFontSize * 3, sButtonText.c_str(), static_cast<int32>(sButtonText.size()));
+
+		SetTextAlign(hdc, oldAlign);
+		SelectObject(hdc, oldFont);
+		SetTextColor(hdc, oldColor);
 	}
 }
 

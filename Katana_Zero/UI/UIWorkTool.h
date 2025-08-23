@@ -15,7 +15,7 @@ public:
 
 	void DestroyAllWidget();
 
-	UIButton* CreateButton(Vector2 pos, string key, int32 width = 0, int32 height = 0, wstring text = L"");
+	UIButton* CreateButton(Vector2 pos, string key, wstring text = L"", int32 width = 0, int32 height = 0, int32 fontSize = 0, uint64 textColor = RGB(255, 255, 255));
 	UIImage* CreateImage(Vector2 pos, string key, int32 width = 0, int32 height = 0);
 
 private:

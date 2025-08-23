@@ -2,6 +2,7 @@
 #include "LobbyScene.h"
 #include "../Game/Game.h"
 #include "../UI/UIButton.h"
+#include "../Managers/ResourceManager.h"
 
 void LobbyScene::Init()
 {
@@ -12,9 +13,9 @@ void LobbyScene::Init()
 	_UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2 - 400), "spr_title_fence_0", 1400, 1575);
 	_UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 200), "lobby_mask");
 
-	UIButton* GameStartButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 100), "lobby_select_mask", 0, 0, L"게임 시작");
-	UIButton* mapEditorButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 150), "lobby_select_mask", 0, 0, L"에디터 열기");
-	UIButton* ExitButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 200), "lobby_select_mask", 0, 0, L"게임 종료");
+	UIButton* GameStartButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 100), "lobby_select_mask", L"게임 시작", 0, 0);
+	UIButton* mapEditorButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 150), "lobby_select_mask", L"에디터 열기", 0, 0);
+	UIButton* ExitButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 200), "lobby_select_mask", L"게임 종료", 0, 0);
 
 	// 함수 포인터 연결
 	GameStartButton->SetClickEvent([this]() { OnClickStartGameBtn(); });
@@ -36,7 +37,7 @@ void LobbyScene::Render(HDC hdc)
 {
 	Super::Render(hdc);
 	SetBkColor(hdc, RGB(0, 0, 0));
-	HFONT font = Game::GetInstance()->GetFont();
+	HFONT font = ResourceManager::GetInstance()->GetFont(0);
 	SelectObject(hdc, font);
 }
 

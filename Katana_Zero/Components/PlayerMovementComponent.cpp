@@ -53,15 +53,15 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
         _player->GetCurrentState() == EPlayerState::PLAYER_JUMP) &&
         InputManager::GetInstance()->GetButtonPressed(KeyType::S))
     {
-        vAcceleration.y += 10000.f;
+        vAcceleration.y += 100000.f;
     }
 
     // 최고점 근처에서 체공 효과를 위한 공기저항 시뮬레이션
     if (vVelocity.y < 0) // 상승 중일 때
     {
         // 속도가 느려질수록 공기저항도 감소 (자연스러운 감속)
-        float airResistance = fAirResistance * (vVelocity.y * vVelocity.y) / (fJumpInitialVelocity * fJumpInitialVelocity);
-        vAcceleration.y += airResistance;
+        //float airResistance = fAirResistance * (vVelocity.y * vVelocity.y) / (fJumpInitialVelocity * fJumpInitialVelocity);
+        //vAcceleration.y += airResistance;
     }
 
     // 가속도는 속도(velocity)를 변화시킨다.
@@ -69,7 +69,7 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
 
     float upFactor = 400.f;
     float sideFactor = 400.f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL)
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL || _player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
         sideFactor = 1500.f;
     }
@@ -88,12 +88,12 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     if (sideLength > sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
-    float friction = 0.8f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL)
+    float friction = 0.85f;
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL || _player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
         friction = 0.95f;
     }
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ATTACK || 
+    if ( 
         //_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
@@ -120,6 +120,7 @@ void PlayerMovementComponent::UpdatePosition()
 
 void PlayerMovementComponent::Jump()
 {
+    vVelocity.x = 0.f;
     vVelocity.y = -fJumpInitialVelocity; // 음수는 위쪽 방향
     bOnGround = false;
     bIsPlatform = false;

@@ -27,6 +27,13 @@ float RadianToDegree(float radian);
 float DegreeToRadian(float degree);
 bool IsInPoint(RECT rect, POINT pos);
 
+enum EButtonTextAlign
+{
+	LEFT,
+	CENTER,
+	RIGHT
+};
+
 enum ECollisionLayer
 {
 	PLAYER,
@@ -285,7 +292,6 @@ struct AttackInfo
 	float fWidth;
 	float fHeight;
 	float fAttackRadian = 0.f;
-	bool bIsAttack = false;
 };
 
 struct TileInfo

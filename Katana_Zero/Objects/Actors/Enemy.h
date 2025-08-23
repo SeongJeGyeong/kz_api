@@ -26,6 +26,8 @@ private:
 	float fShotRnage = 500.f;
 	bool bDetected = false;
 
+	void Die();
+
 public:
 	virtual void Init(Vector2 pos) override;
 	virtual void Update(float deltaTime) override;

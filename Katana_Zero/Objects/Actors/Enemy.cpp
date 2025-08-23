@@ -10,6 +10,7 @@
 #include "../../Components/Collider.h"
 #include "../../Game/Game.h"
 #include "../../Managers/CollisionManager.h"
+#include "../Camera.h"
 
 void Enemy::Init(Vector2 pos)
 {
@@ -358,16 +359,23 @@ void Enemy::ShotBullet()
 void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
 	if (bWasHit) return;
-	bIsDead = true;
 	bWasHit = true;
+
 	_stateMachine->ChangeState(EEnemyState::ENEMY_HURT_FLY);
 	EnemyMovementComponent* movementComp = _components.GetComponent<EnemyMovementComponent>();
 	movementComp->SetOnGround(false);
 	movementComp->SetVelocityX(attackDirection.x * 10000.f);
 	movementComp->SetVelocityY(attackDirection.y * 1000.f);
+	Die();
 }
 
 Vector2 Enemy::GetNewPos()
 {
 	return _components.GetComponent<EnemyMovementComponent>()->GetNewPos();
+}
+
+void Enemy::Die()
+{
+	bIsDead = true;
+	Game::GetInstance()->GetCurrentSceneCamera()->SetCameraShake(true);
 }

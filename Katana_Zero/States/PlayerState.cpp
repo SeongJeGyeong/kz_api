@@ -266,7 +266,6 @@ void PlayerState_Attack::UpdateState(float deltaTime)
 
 void PlayerState_Attack::ExitState()
 {
-	_player->SetIsAttack(false);
 	_player->ClearHitActors();
 }
 //////////////////////////////////////////////

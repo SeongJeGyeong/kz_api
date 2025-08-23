@@ -12,6 +12,8 @@ private:
 	vector<Texture*> _tileMapList;
 	HCURSOR _cursor = nullptr;
 
+	HFONT _fontList[5];
+
 public:
 	void Init(HWND hwnd, fs::path directory);
 	void Update(float deltaTime);
@@ -28,4 +30,6 @@ public:
 	HCURSOR CreateCursorFromImage(const wstring& path);
 
 	HCURSOR GetCursor() { return _cursor; }
+
+	HFONT GetFont(int32 size);
 };

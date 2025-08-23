@@ -31,7 +31,6 @@ private:
 	Scene* _nextScene = nullptr;	// 현재 씬이 모두 끝나고 다음 틱에 변경
 	EditorSub* _subWindow = nullptr;
 
-	HFONT _font;
 	bool bDebugMode = false;
 
 public:
@@ -49,7 +48,6 @@ public:
 	HWND GetHwnd() { return _hwnd; }
 	HWND GetHwndSub() { return _hwndSub; }
 	Scene* GetCurrScene() { return _currScene; }
-	HFONT  GetFont() { return _font; }
 
 	bool GetDebugMode() { return bDebugMode; }
 	EditorSub* GetSubWindow() { return _subWindow; }

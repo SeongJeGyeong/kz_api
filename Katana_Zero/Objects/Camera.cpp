@@ -12,17 +12,32 @@ void Camera::Init()
 
 void Camera::Update(float deltaTime)
 {
-	float halfSizeX = fCameraWidth / 2;
-	float halfSizeY = fCameraHeight / 2;
-	vPos.x = clamp(vPos.x, halfSizeX, iWorldSizeX - halfSizeX);
-	vPos.y = clamp(vPos.y, halfSizeY, iWorldSizeY - halfSizeY);
+	if (bCameraShake)
+	{
+		fShakeDuration += deltaTime;
+		if (fShakeDuration >= 0.03f)
+		{
+			fShakeDuration = 0;
+
+			vPos.y += vShakePos.y * 2.f;
+			vShakePos = { -vShakePos.x, -vShakePos.y };
+		}
+		fShakeTime += deltaTime;
+		if (fShakeTime >= 1.f) bCameraShake = false;
+	}
+	else
+	{
+		float halfSizeX = fCameraWidth / 2;
+		float halfSizeY = fCameraHeight / 2;
+		vPos.x = clamp(vPos.x, halfSizeX, iWorldSizeX - halfSizeX);
+		vPos.y = clamp(vPos.y, halfSizeY, iWorldSizeY - halfSizeY);
+	}
 }
 
 void Camera::Render(HDC hdc)
 {
-	SetTextColor(hdc, RGB(255, 255, 255));
-	wstring strm = std::format(L"CameraPos ({0}, {1})", vPos.x, vPos.y);
-	::TextOut(hdc, 200, 130, strm.c_str(), static_cast<int32>(strm.size()));
+	wstring strs = std::format(L"cameraPos({0}, {1})", vPos.x, vPos.y);
+	::TextOut(hdc, 450, 100, strs.c_str(), static_cast<int32>(strs.size()));
 }
 
 Vector2 Camera::ConvertScreenPos(Vector2 worldPos)

@@ -25,6 +25,7 @@ private:
 	Texture* _progressPrev = nullptr;
 	float fStruggleGauge = 0.f;
 	float fPrevGauge = 0.f;
+	float fDetectRange = 800.f;
 
 	bool bAttack = false;
 

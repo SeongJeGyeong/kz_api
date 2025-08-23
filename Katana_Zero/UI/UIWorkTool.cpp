@@ -40,9 +40,9 @@ void UIWorkTool::DestroyAllWidget()
 {
 }
 
-UIButton* UIWorkTool::CreateButton(Vector2 pos, string key, int32 width, int32 height, wstring text)
+UIButton* UIWorkTool::CreateButton(Vector2 pos, string key, wstring text, int32 width, int32 height, int32 fontSize, uint64 textColor)
 {
-	UIButton* button = new UIButton(pos, key, width, height);
+	UIButton* button = new UIButton(pos, key, width, height, fontSize, textColor);
 	if (text != L"")
 	{
 		button->SetText(text);
