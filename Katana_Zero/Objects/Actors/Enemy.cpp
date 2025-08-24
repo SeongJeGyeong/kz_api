@@ -11,6 +11,12 @@
 #include "../../Game/Game.h"
 #include "../../Managers/CollisionManager.h"
 #include "../Camera.h"
+#include "../../Managers/TimeManager.h"
+
+Enemy::~Enemy()
+{
+	SAFE_DELETE(_stateMachine);
+}
 
 void Enemy::Init(Vector2 pos)
 {
@@ -57,9 +63,23 @@ void Enemy::Init(Vector2 pos)
 
 void Enemy::Update(float deltaTime)
 {
+	TimeManager* timeManager = TimeManager::GetInstance();
+	_components.GetComponent<EffectorComponent>()->UpdateConstantEffect(timeManager->GetConstDeltaTime());
+	if (timeManager->GetHitStop()) return;
 	_stateMachine->Update(deltaTime);
 
-	if (bWasHit) return;
+	if (bIsDead) return;
+	if (bWasHit)
+	{
+		fWaitDyingTime += timeManager->GetConstDeltaTime();
+		if (fWaitDyingTime >= 0.05f)
+		{
+			fWaitDyingTime = 0.f;
+			bWasHit = false;
+			Die();
+		}
+		return;
+	}
 
 	if (vFrontDir.x == 1)
 	{
@@ -358,15 +378,34 @@ void Enemy::ShotBullet()
 
 void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
-	if (bWasHit) return;
+	if (bWasHit || bIsDead) return;
 	bWasHit = true;
 
 	_stateMachine->ChangeState(EEnemyState::ENEMY_HURT_FLY);
 	EnemyMovementComponent* movementComp = _components.GetComponent<EnemyMovementComponent>();
 	movementComp->SetOnGround(false);
-	movementComp->SetVelocityX(attackDirection.x * 10000.f);
-	movementComp->SetVelocityY(attackDirection.y * 1000.f);
-	Die();
+	movementComp->SetVelocityX(attackDirection.x * 2000.f);
+	movementComp->SetVelocityY(attackDirection.y * 2000.f);
+	_components.GetComponent<EffectorComponent>()->PlayConstantEffect("spr_slashfx", false, 0, 1.5f, true);
+
+	float rad = atan2(attackDirection.y, attackDirection.x);
+
+	if (damageCauser != nullptr && damageCauser->GetCollider()->GetCollisionLayer() == ECollisionLayer::PLAYER)
+	{
+		if (attackDirection.x < 0)
+		{
+			vFrontDir = Vector2(1, 0);
+		}
+		else
+		{
+			rad -= PI;
+			vFrontDir = Vector2(-1, 0);
+		}
+
+		Vector2 offset = { vFrontDir.x * 30.f, 0 };
+
+		_components.GetComponent<EffectorComponent>()->PlayConstantEffect("spr_hit_impact", (attackDirection.x < 0), rad, 1.5f, true, offset);
+	}
 }
 
 Vector2 Enemy::GetNewPos()
@@ -377,5 +416,6 @@ Vector2 Enemy::GetNewPos()
 void Enemy::Die()
 {
 	bIsDead = true;
+	TimeManager::GetInstance()->SetHitStop();
 	Game::GetInstance()->GetCurrentSceneCamera()->SetCameraShake(true);
 }

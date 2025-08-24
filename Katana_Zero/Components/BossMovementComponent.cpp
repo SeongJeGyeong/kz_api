@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BossMovementComponent.h"
 #include "../Objects/Actors/Actor.h"
+#include "../Managers/TimeManager.h"
 
 void BossMovementComponent::InitComponent(Actor* owner)
 {
@@ -62,7 +63,8 @@ void BossMovementComponent::ApplyPhysics(float deltaTime)
     float friction = 0.8f;
     if ((GetOwner()->GetWasHit() && !bOnGround) || GetOwner()->GetCurrentState() == EBossState::BOSS_LUNGE) friction = 0.98f;
 
-    sideVec *= friction;
+    float fps = (float)TimeManager::GetInstance()->GetFps();
+    sideVec *= pow(friction, deltaTime / (1.0f / fps));;
     if (sideVec.Length() < 1.0f)
         sideVec = Vector2(0.f, 0.f);
 

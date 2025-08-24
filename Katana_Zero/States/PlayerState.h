@@ -8,6 +8,8 @@ class Animator;
 class PlayerState : public State<EPlayerState>
 {
 public:
+	function<void(float)> OnInputUpdate;
+
 	PlayerState(Player* player);
 	virtual ~PlayerState() {}
 
@@ -15,6 +17,9 @@ protected:
 	Player* _player = nullptr;
 	PlayerMovementComponent* _movementComponent = nullptr;
 	Animator* _animator = nullptr;
+
+private:
+	void BindInput(EPlayerState state);
 
 public:
 	virtual EPlayerState GetStateType() override { return EPlayerState::PLAYER_IDLE; };

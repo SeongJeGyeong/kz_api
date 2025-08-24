@@ -11,6 +11,8 @@ class Boss : public Actor
 {
 	using Super = Actor;
 public:
+	~Boss();
+
 	function<void(Vector2, Actor*, Vector2, bool)> OnSpawnAxe;
 private:
 	StateMachine<EBossState>* _stateMachine;

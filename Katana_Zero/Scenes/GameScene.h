@@ -3,21 +3,24 @@
 
 class Player;
 class Enemy;
-class Tile_FG;
 class TileRenderer;
 class Actor;
 class Camera;
 class Bullet;
 class Boss;
 class Axe;
+class Texture;
+class UIProgressBar;
+class UIBundle;
 
 class GameScene : public Scene
 {
 	using Super = Scene;
 
 public:
-	GameScene(string mapFileName);
-	function<void(bool)> OnPause;
+	GameScene(string mapFileName, string nextStage, string bgmName);
+	function<void(string)> OnRetryGame;
+	function<void()> OnExitToMainMenu;
 
 private:
 	Player* _player = nullptr;
@@ -27,12 +30,25 @@ private:
 	Boss* _boss = nullptr;
 	Axe* _axe = nullptr;
 
+	UIWorkTool _pauseUI;
+
+	Texture* _slowMotionMask = nullptr;
+
 	TileRenderer* _tileRenderer;
+
+	bool bIsPaused = false;
+
+	float fTimeLimit = 120.f;
+	float fCurrentElapsedTime = 120.f;
+	UIProgressBar* _timerProgressBar = nullptr;
+	UIBundle* _slowMotionBattery = nullptr;
+
+	string _nextStage;
+
+private:
 	void LoadTiles(json tileData);
 	void LoadColliders(json colliderData);
 	void LoadActors(json actorData);
-
-	bool bIsPaused = false;
 
 public:
 	virtual void Init() override;
@@ -40,6 +56,8 @@ public:
 	virtual void Update(float deltaTime) override;
 	virtual void PostUpdate(float deltaTime) override;
 	virtual void Render(HDC hdc) override;
+
+	void UIInit();
 
 	void CreateBullet(Vector2 pos, Vector2 dir, float length, float radian);
 	void SpawnAxe(Vector2 pos, Actor* owner, Vector2 dir, bool throwOrSwing);

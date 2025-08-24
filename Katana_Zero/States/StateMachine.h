@@ -7,7 +7,16 @@ class StateMachine
 {
 public:
 	StateMachine(Actor* owner) : _owner(owner) {}
-	~StateMachine(){}
+	~StateMachine()
+	{
+		for (auto& state : _stateMap)
+		{
+			SAFE_DELETE(state.second);
+		}
+		_stateMap.clear();
+		_currentState = nullptr;
+		_owner = nullptr;
+	}
 
 private:
 	Actor* _owner = nullptr;
@@ -51,4 +60,3 @@ public:
 		return _currentStateType;
 	}
 };
-

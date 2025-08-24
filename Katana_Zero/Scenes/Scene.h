@@ -10,6 +10,8 @@ protected:
 	int32 iSceneSizeX;
 	int32 iSceneSizeY;
 
+	string sMapName;
+
 	Camera* _sceneCamera = nullptr;
 	UIWorkTool _UI;
 	ESceneType _sceneType = ESceneType::NONE;
@@ -27,5 +29,6 @@ public:
 
 	Vector2 GetSceneSize() { return Vector2(iSceneSizeX, iSceneSizeY); }
 	Camera* GetSceneCamera() { return _sceneCamera; }
+	string GetMapName() { return sMapName; }
 };
 

@@ -408,7 +408,7 @@
                 "FrameX": 45,
                 "FrameY": 30,
                 "FrameCount": 6,
-                "Duration": 0.05,
+                "Duration": 0.04,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -432,10 +432,10 @@
             },
             {
                 "FileName": "spr_slashfx",
-                "FrameX": 250,
+                "FrameX": 50,
                 "FrameY": 50,
                 "FrameCount": 5,
-                "Duration": 0.05,
+                "Duration": 0.04,
                 "Loop": false,
                 "Alpha": 255
             },
@@ -539,6 +539,30 @@
         {
             "FileName": "spr_pausemenu_bg_2",
             "Alpha": 150
+        },
+        {
+            "FileName": "background_mask",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_hud",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_hud_timer",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_timer",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_hud_battery",
+            "Alpha": 255
+        },
+        {
+            "FileName": "spr_battery_part",
+            "Alpha": 255
         }
     ]
 }

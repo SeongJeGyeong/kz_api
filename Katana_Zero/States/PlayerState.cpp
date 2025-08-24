@@ -12,6 +12,48 @@ PlayerState::PlayerState(Player* player)
 {
 	_movementComponent = player->GetComponent<PlayerMovementComponent>();
 	_animator = player->GetComponent<Animator>();
+	//BindInput(GetStateType());
+}
+
+void PlayerState::BindInput(EPlayerState state)
+{
+	InputComponent* inpoutComp = _player->GetComponent<InputComponent>();
+	switch (state)
+	{
+	case PLAYER_IDLE:
+		OnInputUpdate = bind(&InputComponent::Input_In_Idle, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_IDLE_TO_RUN:
+		OnInputUpdate = bind(&InputComponent::Input_In_IdleToRun, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_RUN:
+		OnInputUpdate = bind(&InputComponent::Input_In_Run, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_RUN_TO_IDLE:
+		OnInputUpdate = bind(&InputComponent::Input_In_RunToIdle, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_JUMP:
+		OnInputUpdate = bind(&InputComponent::Input_In_Jump, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_FALL:
+		OnInputUpdate = bind(&InputComponent::Input_In_Fall, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_PRECROUCH:
+		OnInputUpdate = bind(&InputComponent::Input_In_PreCrouch, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_CROUCH:
+		OnInputUpdate = bind(&InputComponent::Input_In_Crouch, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_POSTCROUCH:
+		OnInputUpdate = bind(&InputComponent::Input_In_PostCrouch, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_ATTACK:
+		OnInputUpdate = bind(&InputComponent::Input_In_Attack, inpoutComp, std::placeholders::_1);
+		break;
+	case PLAYER_ROLL:
+		OnInputUpdate = bind(&InputComponent::Input_In_Roll, inpoutComp, std::placeholders::_1);
+		break;
+	}
 }
 
 void PlayerState::UpdateState(float deltaTime)
@@ -34,6 +76,8 @@ void PlayerState::UpdateState(float deltaTime)
 			_player->SetIsCrouch(false);
 		}
 	}
+
+	//OnInputUpdate(deltaTime);
 }
 
 ///////* Idle *///////////////////////////////

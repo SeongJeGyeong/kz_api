@@ -1,0 +1,17 @@
+{
+    "Stage1": {
+        "FileName": "Stage1_new.json",
+        "NextStage": "Stage2",
+        "BGM": "song_katanazero"
+    },
+    "Stage2": {
+        "FileName": "Stage2.json",
+        "NextStage": "Stage3",
+        "BGM": "song_katanazero"
+    },
+    "Stage3": {
+        "FileName": "BossRoom.json",
+        "NextStage": null,
+        "BGM": "song_bossbattle"
+    }
+}

@@ -15,6 +15,12 @@
 #include "../../Components/CameraComponent.h"
 #include "../../Components/PlayerMovementComponent.h"
 
+Player::~Player()
+{
+    SAFE_DELETE(_stateMachine);
+    _attackInfo._hitActors.clear();
+}
+
 void Player::Init(Vector2 pos)
 {
 	Super::Init(pos);
@@ -94,6 +100,7 @@ void Player::Init(Vector2 pos)
 
 void Player::Update(float deltaTime)
 {
+    if (TimeManager::GetInstance()->GetHitStop()) return;
     if (GetCurrentState() == EPlayerState::PLAYER_STRUGGLE || GetCurrentState() == EPlayerState::PLAYER_FINISH) return;
     AttackDelay(deltaTime);
     _stateMachine->Update(deltaTime);
@@ -183,7 +190,14 @@ void Player::Move(bool dir)
     {
         if (vHitNormal.x > -1.f)
         {
-            _movementComp->AddAcceleration({ fMoveForce, 0 });
+            if (GetCurrentState() == EPlayerState::PLAYER_IDLE_TO_RUN)
+            {
+                _movementComp->AddAcceleration({ fMoveForce * 0.2f, 0 });
+            }
+            else
+            {
+                _movementComp->AddAcceleration({ fMoveForce, 0 });
+            }
             _components.GetComponent<Animator>()->SetFlipped(false);
             vFrontDir = { 1, 0 };
         }
@@ -192,7 +206,14 @@ void Player::Move(bool dir)
     {
         if (vHitNormal.x < 1.f)
         {
-            _movementComp->AddAcceleration({ -fMoveForce, 0 });
+            if (GetCurrentState() == EPlayerState::PLAYER_IDLE_TO_RUN)
+            {
+                _movementComp->AddAcceleration({ -fMoveForce * 0.2f, 0 });
+            }
+            else
+            {
+                _movementComp->AddAcceleration({ -fMoveForce, 0 });
+            }
             _components.GetComponent<Animator>()->SetFlipped(true);
             vFrontDir = { -1, 0 };
         }
@@ -283,6 +304,7 @@ void Player::Attack()
     bFirstAttack = false;
 
     //_movementComp->AttackForce(dir);
+    _movementComp->SetIsPlatform(false);
     _components.GetComponent<Animator>()->SetFlipped((dir.x < 0));
     _stateMachine->ChangeState(EPlayerState::PLAYER_ATTACK);
     _attackInfo.vAttackDir = dir;

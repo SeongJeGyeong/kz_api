@@ -194,7 +194,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    UpdateWindow(gHwnd);
 
    RECT subWindowRect = { 0, 0, SubWinSizeX, SubWinSizeY };
-   ::AdjustWindowRect(&subWindowRect, WS_OVERLAPPEDWINDOW, true);
+   ::AdjustWindowRect(&subWindowRect, WS_OVERLAPPEDWINDOW, false);
 
    // 서브 창 생성
    gSubHwnd = CreateWindowW(

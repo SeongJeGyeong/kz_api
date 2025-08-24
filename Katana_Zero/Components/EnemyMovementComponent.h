@@ -27,6 +27,7 @@ public:
 	virtual void RenderComponent(HDC hdc) override;
 
 	void ApplyPhysics(float deltaTime);
+	void HitPhysics(float deltaTime);
 
 	Vector2 GetAcceleration() { return vAcceleration; }
 	void SetAcceleration(Vector2 accel) { vAcceleration = accel; }

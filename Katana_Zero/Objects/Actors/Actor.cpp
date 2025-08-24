@@ -6,6 +6,12 @@
 #include "../../Components/LineCollider.h"
 #include "../../Components/MovingLineCollider.h"
 
+Actor::~Actor()
+{
+	if (_collider) CollisionManager::GetInstance()->DeleteCollider(_collider);
+	_components.ClearComponents();
+}
+
 void Actor::Init(Vector2 pos)
 {
 	Super::Init();

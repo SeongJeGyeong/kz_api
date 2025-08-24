@@ -104,7 +104,7 @@ public:
 
 	bool GetYOnLineAtX(const Vector2& a, const Vector2& b, float x, float& outY);
 
-	void DeleteCollider(Actor* actor);
+	void DeleteCollider(Collider* collider);
 
 	bool MatchColliderId(Collider* collider, vector<Collider*> list);
 };

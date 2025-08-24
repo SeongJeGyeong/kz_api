@@ -2,6 +2,7 @@
 #include "PlayerMovementComponent.h"
 #include "../Objects/Actors/Player.h"
 #include "../Managers/InputManager.h"
+#include "../Managers/TimeManager.h"
 
 void PlayerMovementComponent::InitComponent(Actor* owner)
 {
@@ -88,6 +89,8 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     if (sideLength > sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
     else if (sideLength < -sideFactor) sideVec = sideVec.GetNormalize() * sideFactor;
 
+    float fps = (float)TimeManager::GetInstance()->GetFps();
+
     float friction = 0.85f;
     if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL || _player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
@@ -99,10 +102,10 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
     {
         friction = 0.98f;
-        gravityVector *= friction;
+        gravityVector *= pow(friction, deltaTime / (1.0f / fps));
     }
 
-    sideVec *= friction;
+    sideVec *= pow(friction, deltaTime / (1.0f / fps));
     if (sideVec.Length() < 1.0f)
         sideVec = Vector2(0.f, 0.f);
 

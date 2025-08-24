@@ -27,6 +27,18 @@ float RadianToDegree(float radian);
 float DegreeToRadian(float degree);
 bool IsInPoint(RECT rect, POINT pos);
 
+enum ESFXType
+{
+	BUTTON_HOVER
+};
+
+enum EBGMType
+{
+	MAIN_MENU,
+	STAGE,
+	BOSS_ROOM
+};
+
 enum EButtonTextAlign
 {
 	LEFT,

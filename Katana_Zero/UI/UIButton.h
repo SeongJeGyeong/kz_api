@@ -16,6 +16,7 @@ private:
 	wstring sButtonText = L"";
 	int32 iFontSize = 0;
 	uint64 ulTextColor = RGB(255, 255, 255);
+	int32 iButtonAlpha = -1;
 
 	EButtonTextAlign _textAlign = EButtonTextAlign::CENTER;
 	float fMargin = 0.f;
@@ -30,6 +31,5 @@ public:
 
 	void OnBtnHovered();
 	void OnBtnUnHovered();
-	//void OnBtnHovered();
 };
 

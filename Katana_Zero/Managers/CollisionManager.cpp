@@ -1422,9 +1422,8 @@ bool CollisionManager::GetYOnLineAtX(const Vector2& a, const Vector2& b, float x
 	return (t >= 0.0f && t <= 1.0f);;
 }
 
-void CollisionManager::DeleteCollider(Actor* actor)
+void CollisionManager::DeleteCollider(Collider* collider)
 {
-	Collider* collider = actor->GetCollider();
 	ECollisionLayer layer = collider->GetCollisionLayer();
 
 	auto iter = find(_colliderList[layer].begin(), _colliderList[layer].end(), collider);

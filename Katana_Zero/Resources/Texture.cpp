@@ -48,7 +48,7 @@ void Texture::Load(wstring filePath, int32 alpha)
 	DeleteObject(flippedBitmap);
 }
 
-void Texture::RenderTexture(HDC hdc, Vector2 pos, int32 width, int32 height)
+void Texture::RenderTexture(HDC hdc, Vector2 pos, int32 width, int32 height, int32 alpha)
 {
 	if (width == 0) width = iSizeX;
 	if (height == 0) height = iSizeY;
@@ -56,7 +56,7 @@ void Texture::RenderTexture(HDC hdc, Vector2 pos, int32 width, int32 height)
 	BLENDFUNCTION op;
 	op.BlendOp = AC_SRC_OVER;
 	op.BlendFlags = 0;
-	op.SourceConstantAlpha = iAlpha;
+	op.SourceConstantAlpha = (alpha == -1) ? iAlpha : alpha;
 	op.AlphaFormat = AC_SRC_ALPHA;
 
 	AlphaBlend(hdc,
@@ -98,7 +98,7 @@ void Texture::RenderTextureNoAlpha(HDC hdc, Vector2 pos, int32 width, int32 heig
 	if (width == 0) width = iSizeX;
 	if (height == 0) height = iSizeY;
 
-	BitBlt(
+	StretchBlt(
 		hdc,
 		(int32)pos.x - (width * 0.5f),
 		(int32)pos.y - (height * 0.5f),
@@ -107,13 +107,27 @@ void Texture::RenderTextureNoAlpha(HDC hdc, Vector2 pos, int32 width, int32 heig
 		_textureHdc,
 		0,
 		0,
+		iSizeX,
+		iSizeY,
 		SRCCOPY
 	);
+
+	//BitBlt(
+	//	hdc,
+	//	(int32)pos.x - (width * 0.5f),
+	//	(int32)pos.y - (height * 0.5f),
+	//	width,
+	//	height,
+	//	_textureHdc,
+	//	0,
+	//	0,
+	//	SRCCOPY
+	//);
 }
 
 void Texture::RenderProgress(HDC hdc, Vector2 pos, int32 width, int32 height)
 {
-	BitBlt(
+	StretchBlt(
 		hdc,
 		(int32)pos.x,
 		(int32)pos.y,
@@ -122,6 +136,20 @@ void Texture::RenderProgress(HDC hdc, Vector2 pos, int32 width, int32 height)
 		_textureHdc,
 		0,
 		0,
+		iSizeX,
+		iSizeY,
 		SRCCOPY
 	);
+
+	//BitBlt(
+	//	hdc,
+	//	(int32)pos.x,
+	//	(int32)pos.y,
+	//	width,
+	//	height,
+	//	_textureHdc,
+	//	0,
+	//	0,
+	//	SRCCOPY
+	//);
 }

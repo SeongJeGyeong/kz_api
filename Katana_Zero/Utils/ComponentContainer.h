@@ -31,5 +31,7 @@ public:
 
 	void UpdateComponents(float deltaTime);
 	void RenderComponents(HDC hdc);
+
+	void ClearComponents();
 };
 

@@ -633,27 +633,28 @@ void EditorScene::RednerLine(HDC hdc, POINT startPoint, EColliderMode mode)
 	int32 y = mousePos.y / TILE_SIZE;
 	POINT endPoint = startPoint;
 
-	HPEN mPen;
+	HPEN mPen = nullptr;
+	HPEN oldPen = nullptr;
 	switch (mode)
 	{
 	case COL_PLATFORM:
 		mPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 255));
-		(HPEN)SelectObject(hdc, mPen);
+		oldPen = (HPEN)SelectObject(hdc, mPen);
 		endPoint = { x * TILE_SIZE + TILE_SIZE, startPoint.y};
 		break;
 	case COL_WALL_V:
 		mPen = CreatePen(PS_SOLID, 3, RGB(0, 255, 255));
-		(HPEN)SelectObject(hdc, mPen);
+		oldPen = (HPEN)SelectObject(hdc, mPen);
 		endPoint = { startPoint.x, y * TILE_SIZE + TILE_SIZE };
 		break;
 	case COL_WALL_H:
 		mPen = CreatePen(PS_SOLID, 3, RGB(0, 255, 255));
-		(HPEN)SelectObject(hdc, mPen);
+		oldPen = (HPEN)SelectObject(hdc, mPen);
 		endPoint = { x * TILE_SIZE + TILE_SIZE, startPoint.y };
 		break;
 	case COL_STAIR:
 		mPen = CreatePen(PS_SOLID, 3, RGB(0, 0, 255));
-		(HPEN)SelectObject(hdc, mPen);
+		oldPen = (HPEN)SelectObject(hdc, mPen);
 		endPoint = { x * TILE_SIZE + TILE_SIZE, y * TILE_SIZE + TILE_SIZE };
 		break;
 	default:
@@ -661,4 +662,7 @@ void EditorScene::RednerLine(HDC hdc, POINT startPoint, EColliderMode mode)
 	}
 	::MoveToEx(hdc, startPoint.x, startPoint.y, nullptr);
 	::LineTo(hdc, endPoint.x, endPoint.y);
+
+	SelectObject(hdc, oldPen);
+	DeleteObject(mPen);
 }

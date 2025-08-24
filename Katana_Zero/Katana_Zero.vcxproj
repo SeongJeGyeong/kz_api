@@ -128,8 +128,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Resources\AudioSource.h" />
     <ClInclude Include="Components\BossMovementComponent.h" />
     <ClInclude Include="Objects\Actors\Axe.h" />
+    <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="States\BossState.h" />
     <ClInclude Include="Objects\Actors\Boss.h" />
     <ClInclude Include="Components\MovingLineCollider.h" />
@@ -144,6 +146,8 @@
     <ClInclude Include="States\PlayerState.h" />
     <ClInclude Include="States\State.h" />
     <ClInclude Include="States\StateMachine.h" />
+    <ClInclude Include="UI\UIProgressBar.h" />
+    <ClInclude Include="UI\UIBundle.h" />
     <ClInclude Include="Utils\ComponentContainer.h" />
     <ClInclude Include="Components\AABBCollider.h" />
     <ClInclude Include="Components\Collider.h" />
@@ -185,8 +189,10 @@
     <ClInclude Include="Managers\TimeManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resources\AudioSource.cpp" />
     <ClCompile Include="Components\BossMovementComponent.cpp" />
     <ClCompile Include="Objects\Actors\Axe.cpp" />
+    <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="States\BossState.cpp" />
     <ClCompile Include="Objects\Actors\Boss.cpp" />
     <ClCompile Include="Components\MovingLineCollider.cpp" />
@@ -201,6 +207,8 @@
     <ClCompile Include="States\PlayerState.cpp" />
     <ClCompile Include="States\State.cpp" />
     <ClCompile Include="States\StateMachine.cpp" />
+    <ClCompile Include="UI\UIProgressBar.cpp" />
+    <ClCompile Include="UI\UIBundle.cpp" />
     <ClCompile Include="Utils\ComponentContainer.cpp" />
     <ClCompile Include="Components\AABBCollider.cpp" />
     <ClCompile Include="Components\Collider.cpp" />

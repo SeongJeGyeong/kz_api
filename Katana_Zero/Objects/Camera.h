@@ -10,7 +10,7 @@ private:
 	int32 iWorldSizeX;
 	int32 iWorldSizeY;
 
-	Vector2 vShakePos{ 0, -10.f };
+	Vector2 vShakePos{ 0, -1.f };
 	float fShakeTime = 0.f;
 	float fShakeDuration = 0.f;
 	bool bCameraShake = false;

@@ -27,11 +27,13 @@ private:
 	HBITMAP	_bmpBack = {};	// bitmap
 	DWORD	_background = BLACKNESS;
 
-	Scene* _currScene = nullptr;	// 현재 활성화된 씬만 업데이트/그려준다.
+	Scene* _curScene = nullptr;	// 현재 활성화된 씬만 업데이트/그려준다.
 	Scene* _nextScene = nullptr;	// 현재 씬이 모두 끝나고 다음 틱에 변경
 	EditorSub* _subWindow = nullptr;
 
 	bool bDebugMode = false;
+
+	json _stageInfo;
 
 public:
 	void Init(HWND hwnd, HWND hsubwnd);
@@ -40,14 +42,14 @@ public:
 	void Update();
 	void Render();
 
-	void ChangeGameScene();
+	void ChangeGameScene(string mapName);
 	void ChangeLobbyScene();
 	void ChangeEditorScene();
 	void ExitGame();
 
 	HWND GetHwnd() { return _hwnd; }
 	HWND GetHwndSub() { return _hwndSub; }
-	Scene* GetCurrScene() { return _currScene; }
+	Scene* GetCurrScene() { return _curScene; }
 
 	bool GetDebugMode() { return bDebugMode; }
 	EditorSub* GetSubWindow() { return _subWindow; }
@@ -55,5 +57,7 @@ public:
 	Vector2 GetCurrentSceneSize();
 	Camera* GetCurrentSceneCamera();
 	Vector2 ConvertCurSceneScreenPos(Vector2 worldPos);
+
+	void Restart();
 };
 

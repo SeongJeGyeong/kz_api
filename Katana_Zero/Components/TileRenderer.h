@@ -13,6 +13,7 @@ class TileRenderer : public Component
 {
 public:
 	TileRenderer() { iHalfTileSize = TILE_SIZE / 2; }
+	~TileRenderer();
 
 	static size_t StaticClass()
 	{
@@ -21,8 +22,6 @@ public:
 	}
 
 private:
-	bool bBossRoom = false;
-
 	HDC _mapCacheDC = nullptr;
 	HBITMAP  _mapCacheBitmap = nullptr;
 

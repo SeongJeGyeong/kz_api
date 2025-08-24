@@ -27,10 +27,14 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 // »ç¿îµå
-#include <MMSystem.h>
-#include <dsound.h>
-#pragma comment (lib, "winmm.lib")
-#pragma comment (lib, "dsound.lib")
+//#include <MMSystem.h>
+//#include <dsound.h>
+//#pragma comment (lib, "winmm.lib")
+//#pragma comment (lib, "dsound.lib")
+
+#include <xaudio2.h>
+#include <mmreg.h>
+#pragma comment(lib, "xaudio2.lib")
 
 
 using namespace std;

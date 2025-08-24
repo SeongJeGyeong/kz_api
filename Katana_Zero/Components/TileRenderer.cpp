@@ -4,6 +4,12 @@
 #include "../Game/Game.h"
 #include "../Objects/Camera.h"
 
+TileRenderer::~TileRenderer()
+{
+    SAFE_DELETE(_mapCacheDC);
+    SAFE_DELETE(_mapCacheBitmap);
+}
+
 void TileRenderer::InitComponent(int32 mapSizeX, int32 mapSizeY)
 {
     iMapSizeX = mapSizeX;

@@ -22,3 +22,13 @@ void ComponentContainer::RenderComponents(HDC hdc)
 		it.second->RenderComponent(hdc);
 	}
 }
+
+void ComponentContainer::ClearComponents()
+{
+	for (auto& component : _componentMap)
+	{
+		SAFE_DELETE(component.second);
+	}
+	_componentMap.clear();
+	_priorityGroups.clear();
+}

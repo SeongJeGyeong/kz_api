@@ -9,7 +9,7 @@ class Actor : public Object
 {
 	using Super = Object;
 public:
-	virtual ~Actor() {}
+	virtual ~Actor();
 
 protected:
 	Collider* _collider = nullptr;

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Camera.h"
-#
+#include "../Managers/TimeManager.h"
 
 void Camera::Init()
 {
@@ -14,7 +14,9 @@ void Camera::Update(float deltaTime)
 {
 	if (bCameraShake)
 	{
-		fShakeDuration += deltaTime;
+		//OutputDebugString(L"shake\n");
+		TimeManager* timeManager = TimeManager::GetInstance();
+		fShakeDuration += timeManager->GetConstDeltaTime();
 		if (fShakeDuration >= 0.03f)
 		{
 			fShakeDuration = 0;
@@ -22,8 +24,8 @@ void Camera::Update(float deltaTime)
 			vPos.y += vShakePos.y * 2.f;
 			vShakePos = { -vShakePos.x, -vShakePos.y };
 		}
-		fShakeTime += deltaTime;
-		if (fShakeTime >= 1.f) bCameraShake = false;
+		fShakeTime += timeManager->GetConstDeltaTime();
+		if (fShakeTime >= timeManager->GetHitStopTime()) bCameraShake = false;
 	}
 	else
 	{

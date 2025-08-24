@@ -4,6 +4,7 @@
 #include "../Objects/Actors/Player.h"
 #include "../Components/Animator.h"
 #include "../Components/CameraComponent.h"
+#include "../Managers/TimeManager.h"
 
 void InputComponent::InitComponent(Actor* owner)
 {
@@ -21,6 +22,15 @@ void InputComponent::UpdateComponent(float deltaTime)
             bWaitForAttack = false;
             fAttackDelay = 0.f;
         }
+    }
+
+    if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftShift))
+    {
+        TimeManager::GetInstance()->StartSlowMotion(4.f);
+    }
+    if (InputManager::GetInstance()->GetButtonUp(KeyType::LeftShift))
+    {
+        TimeManager::GetInstance()->EndSlowMotion(3.f);
     }
 
     if (InputManager::GetInstance()->GetButtonPressed(KeyType::S))

@@ -14,12 +14,14 @@ class StateMachine;
 class Player : public Actor
 {
 	using Super = Actor;
+public:
+	~Player();
 
 private:
 	PlayerMovementComponent* _movementComp = nullptr;
 
 	Vector2 vFrontDir = {1, 0};
-	float fMoveForce = 10000;
+	float fMoveForce = 20000;
 
 	float fJumpPressedTime = 0.f;
 
@@ -41,6 +43,8 @@ private:
 	StateMachine<EPlayerState>* _stateMachine;
 
 	AttackInfo _attackInfo;
+
+	float framecount = 0;
 
 public:
 	virtual void Init(Vector2 pos) override;

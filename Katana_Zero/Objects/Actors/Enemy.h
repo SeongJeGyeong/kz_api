@@ -11,6 +11,8 @@ class Enemy : public Actor
 {
 	using Super = Actor;
 public:
+	~Enemy();
+
 	function<void(Vector2, Vector2, float, float)> OnCreateBullet;
 private:
 	Camera* _worldCamera = nullptr;
@@ -26,6 +28,7 @@ private:
 	float fShotRnage = 500.f;
 	bool bDetected = false;
 
+	float fWaitDyingTime = 0.f;
 	void Die();
 
 public:

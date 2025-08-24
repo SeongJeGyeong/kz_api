@@ -10,6 +10,7 @@
 #include "../Scenes/GameScene.h"
 #include "../Managers/CollisionManager.h"
 #include "../Objects/Camera.h"
+#include "../Managers/SoundManager.h"
 
 void Game::Init(HWND hwnd, HWND hsubwnd)
 {
@@ -38,10 +39,23 @@ void Game::Init(HWND hwnd, HWND hsubwnd)
 	// 게임과 관련된 초기화가 필요한 항목들은 여기서
 	InputManager::GetInstance()->Init(_hwnd, _hwndSub);	// 객체를 생성
 	ResourceManager::GetInstance()->Init(_hwnd, directory);
+	SoundManager::GetInstance()->Init(directory);
 	CollisionManager::GetInstance()->Init();
 	TimeManager::GetInstance()->Init();
-	_currScene = new LobbyScene();
-	_currScene->Init();
+
+	ChangeLobbyScene();
+	//_curScene = new LobbyScene();
+	//_curScene->Init();
+
+	fs::path path = directory / L"Json/StageInfo.json";
+	std::ifstream file(path.c_str());
+	if (!file.is_open())
+	{
+		MessageBox(nullptr, L"Failed to open JSON file", L"Error", MB_OK);
+		return;
+	}
+
+	_stageInfo = json::parse(file);
 }
 
 void Game::Destroy()
@@ -51,11 +65,11 @@ void Game::Destroy()
 	ResourceManager::DestroyInstance();
 	CollisionManager::DestroyInstance();
 
-	if (_currScene)
+	if (_curScene)
 	{
-		_currScene->Destroy();
+		_curScene->Destroy();
 	}
-	SAFE_DELETE(_currScene);
+	SAFE_DELETE(_curScene);
 }
 
 void Game::Update()
@@ -63,15 +77,15 @@ void Game::Update()
 	// CurScene 변경 요청이 있으면, 현재 씬을 변경먼저 하고, 해당 씬 업데이트를 수행한다.
 	if (_nextScene)
 	{
-		if (_currScene)
+		if (_curScene)
 		{
-			_currScene->Destroy();
-			delete _currScene;
-			_currScene = nullptr;
+			_curScene->Destroy();
+			delete _curScene;
+			_curScene = nullptr;
 		}
 
-		_currScene = _nextScene;
-		_currScene->Init();
+		_curScene = _nextScene;
+		_curScene->Init();
 
 		_nextScene = nullptr;
 	}
@@ -80,12 +94,12 @@ void Game::Update()
 	InputManager::GetInstance()->Update();
 
 	HWND hwnd = ::GetForegroundWindow();
-	if (_hwnd == hwnd && _currScene)
+	if (_hwnd == hwnd && _curScene)
 	{
 		// update 입력 처리 -> 충돌 체크 -> postupdate 위치 이동
-		_currScene->Update(TimeManager::GetInstance()->GetDeltaTime());
+		_curScene->Update(TimeManager::GetInstance()->GetDeltaTime());
 		CollisionManager::GetInstance()->Update();
-		_currScene->PostUpdate(TimeManager::GetInstance()->GetDeltaTime());
+		_curScene->PostUpdate(TimeManager::GetInstance()->GetDeltaTime());
 		CollisionManager::GetInstance()->PostUpdate();
 	}
 	else if (_hwndSub == hwnd && _subWindow)
@@ -101,9 +115,9 @@ void Game::Update()
 
 void Game::Render()
 {
-	if (_currScene)
+	if (_curScene)
 	{
-		_currScene->Render(_hdcBack);
+		_curScene->Render(_hdcBack);
 	}
 
 	if (_subWindow)
@@ -113,7 +127,7 @@ void Game::Render()
 
 	uint32 fps = TimeManager::GetInstance()->GetFps();
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-	SetTextColor(_hdcBack, RGB(0, 0, 0));
+	SetTextColor(_hdcBack, RGB(255, 255, 255));
 	{
 
 		POINT mousePos = InputManager::GetInstance()->GetMousePos();
@@ -123,7 +137,7 @@ void Game::Render()
 
 	{
 		wstring str = std::format(L"FPS({0}), DT({1})", fps, deltaTime);
-		::TextOut(_hdcBack, 100, 10, str.c_str(), static_cast<int32>(str.size()));
+		::TextOut(_hdcBack, 200, 30, str.c_str(), static_cast<int32>(str.size()));
 	}
 
 	CollisionManager::GetInstance()->Render(_hdcBack);
@@ -136,15 +150,20 @@ void Game::Render()
 	::PatBlt(_hdcBack, 0, 0, _rect.right, _rect.bottom, _background);
 }
 
-void Game::ChangeGameScene()
+void Game::ChangeGameScene(string mapName)
 {
+	if (_stageInfo[mapName].is_null()) return;
+
 	if (_nextScene)
 	{
 		delete _nextScene;
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene("Stage1_new.json");
+	_nextScene = new GameScene(_stageInfo[mapName]["FileName"], _stageInfo[mapName]["NextStage"], _stageInfo[mapName]["BGM"]);
+	GameScene* gameScene = static_cast<GameScene*>(_nextScene);
+	gameScene->OnRetryGame = [this](string mapName) { ChangeGameScene(mapName); };
+	gameScene->OnExitToMainMenu = [this](){ ChangeLobbyScene(); };
 	_background = BLACKNESS;
 
 	HCURSOR newCurosr = ResourceManager::GetInstance()->GetCursor();
@@ -160,6 +179,11 @@ void Game::ChangeLobbyScene()
 	}
 
 	_nextScene = new LobbyScene();
+	LobbyScene* lobbyScene = static_cast<LobbyScene*>(_nextScene);
+	lobbyScene->OnStartGame = [this](string mapName) { ChangeGameScene(mapName); };
+	lobbyScene->OnOpenEditor = [this]() { ChangeEditorScene(); };
+	lobbyScene->OnExitGame = [this]() { ExitGame(); };
+
 	_background = BLACKNESS;
 }
 
@@ -188,9 +212,9 @@ void Game::ExitGame()
 
 Vector2 Game::GetCurrentSceneSize()
 {
-	if (_currScene)
+	if (_curScene)
 	{
-		return _currScene->GetSceneSize();
+		return _curScene->GetSceneSize();
 	}
 
 	return Vector2();
@@ -198,9 +222,9 @@ Vector2 Game::GetCurrentSceneSize()
 
 Camera* Game::GetCurrentSceneCamera()
 {
-	if (_currScene)
+	if (_curScene)
 	{
-		return _currScene->GetSceneCamera();
+		return _curScene->GetSceneCamera();
 	}
 
 	return nullptr;
@@ -208,10 +232,21 @@ Camera* Game::GetCurrentSceneCamera()
 
 Vector2 Game::ConvertCurSceneScreenPos(Vector2 worldPos)
 {
-	if (_currScene == nullptr) return Vector2();
+	if (_curScene == nullptr) return Vector2();
 
-	Camera* camera = _currScene->GetSceneCamera();
+	Camera* camera = _curScene->GetSceneCamera();
 	if (camera == nullptr) return Vector2();
 
 	return camera->ConvertScreenPos(worldPos);
+}
+
+void Game::Restart()
+{
+	//if (_curScene)
+	//{
+	//	string mapFileName = _curScene->GetMapName();
+	//	_curScene->Destroy();
+	//	_curScene = new GameScene(mapFileName);
+	//	_curScene->Init();
+	//}
 }

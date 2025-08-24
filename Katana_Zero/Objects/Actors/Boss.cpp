@@ -12,6 +12,12 @@
 #include "../../Managers/InputManager.h"
 #include "../../Managers/CollisionManager.h"
 #include "../../Game/Game.h"
+#include "../../Managers/TimeManager.h"
+
+Boss::~Boss()
+{
+	SAFE_DELETE(_stateMachine);
+}
 
 void Boss::Init(Vector2 pos)
 {
@@ -94,6 +100,7 @@ void Boss::Init(Vector2 pos)
 
 void Boss::Update(float deltaTime)
 {
+	if (TimeManager::GetInstance()->GetHitStop()) return;
 	_stateMachine->Update(deltaTime);
 	if (GetCurrentState() == EBossState::BOSS_STRUGGLE && InputManager::GetInstance()->GetButtonPressed(KeyType::LeftMouse))
 	{
@@ -208,7 +215,7 @@ void Boss::EndFinishMotion()
 
 void Boss::Die()
 {
-	CollisionManager::GetInstance()->DeleteCollider(this);
+	CollisionManager::GetInstance()->DeleteCollider(GetCollider());
 	ChangeState(EBossState::BOSS_DIE);
 }
 

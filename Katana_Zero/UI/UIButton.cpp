@@ -27,22 +27,20 @@ UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height, int32 fon
 
 void UIButton::Update()
 {
-	if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
+	RECT rect;
+	rect.left = (int32)vPos.x - (int32)(iSizeX * 0.5f);
+	rect.right = (int32)vPos.x + (int32)(iSizeX * 0.5f);
+	rect.top = (int32)vPos.y - (int32)(iSizeY * 0.5f);
+	rect.bottom = (int32)vPos.y + (int32)(iSizeY * 0.5f);
+
+	POINT mousePos = InputManager::GetInstance()->GetMousePos();
+	if (IsInPoint(rect, mousePos))
 	{
-		wstring str = sButtonText;
-
-		RECT rect;
-		rect.left = (int32)vPos.x - (int32)(_texture->GetTextureSizeX() * 0.5f);
-		rect.right = (int32)vPos.x + (int32)(_texture->GetTextureSizeX() * 0.5f);
-		rect.top = (int32)vPos.y - (int32)(_texture->GetTextureSizeY() * 0.5f);
-		rect.bottom = (int32)vPos.y + (int32)(_texture->GetTextureSizeY() * 0.5f);
-
-		POINT mousePos = InputManager::GetInstance()->GetMousePos();
-		if (IsInPoint(rect, mousePos))
-		{
-			if (onClickedEvent)
-				onClickedEvent();
-		}
+		OnBtnHovered();
+	}
+	else
+	{
+		OnBtnUnHovered();
 	}
 }
 
@@ -50,7 +48,7 @@ void UIButton::Render(HDC hdc)
 {
 	if (_texture)
 	{
-		_texture->RenderTexture(hdc, vPos, iSizeX, iSizeY);
+		_texture->RenderTexture(hdc, vPos, iSizeX, iSizeY, iButtonAlpha);
 	}
 
 	if (sButtonText != L"")
@@ -92,8 +90,14 @@ void UIButton::Render(HDC hdc)
 
 void UIButton::OnBtnHovered()
 {
+	iButtonAlpha = -1;
+	if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
+	{
+		if (onClickedEvent) onClickedEvent();
+	}
 }
 
 void UIButton::OnBtnUnHovered()
 {
+	iButtonAlpha = 0;
 }

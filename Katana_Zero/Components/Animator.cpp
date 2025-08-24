@@ -4,6 +4,7 @@
 #include "../Resources/Sprite.h"
 #include "../Game/Game.h"
 #include "../Objects/Actors/Player.h"
+#include "../Managers/TimeManager.h"
 
 void Animator::InitComponent(int32 endIndex)
 {
