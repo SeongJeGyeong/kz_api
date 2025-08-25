@@ -14,6 +14,7 @@
 #include "../../Managers/TimeManager.h"
 #include "../../Components/CameraComponent.h"
 #include "../../Components/PlayerMovementComponent.h"
+#include "../../Managers/SoundManager.h"
 
 Player::~Player()
 {
@@ -53,7 +54,7 @@ void Player::Init(Vector2 pos)
         animator->AddAnimation(EPlayerState::PLAYER_ROLL, ResourceManager::GetInstance()->GetSprite("spr_roll"), { 0, -5 });
         animator->AddAnimation(EPlayerState::PLAYER_HURT_BEGIN, ResourceManager::GetInstance()->GetSprite("spr_hurtfly_begin"), { 0, -5 });
         animator->AddAnimation(EPlayerState::PLAYER_HURT_LOOP, ResourceManager::GetInstance()->GetSprite("spr_hurtfly_loop"));
-        animator->AddAnimation(EPlayerState::PLAYER_HURT_GROUND, ResourceManager::GetInstance()->GetSprite("spr_hurtground"));
+        animator->AddAnimation(EPlayerState::PLAYER_HURT_GROUND, ResourceManager::GetInstance()->GetSprite("spr_hurtground"), {0, 2});
         animator->AddAnimation(EPlayerState::PLAYER_HURT_RECOVER, ResourceManager::GetInstance()->GetSprite("spr_hurtrecover"), { 0, -15 });
     }
 
@@ -114,7 +115,12 @@ void Player::Update(float deltaTime)
     if (GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
         Vector2 pos = GetPos();
-        CollisionManager::GetInstance()->CheckOBBHitBox(this, _attackInfo);
+        if (CollisionManager::GetInstance()->CheckOBBHitBox(this, _attackInfo))
+        {
+            pos.x += _attackInfo.vAttackDir.x * 50.f;
+            pos.y += _attackInfo.vAttackDir.y * 50.f;
+            GetComponent<EffectorComponent>()->PlayEffect("spr_bulletreflect", false, 0.f, 1.f, false, pos);
+        }
     }
 }
 
@@ -153,6 +159,9 @@ void Player::Jump()
     bIsMaxJump = false;
     fJumpPressedTime = 0.f;
     _stateMachine->ChangeState(EPlayerState::PLAYER_JUMP);
+    Vector2 pos = GetPos();
+    pos.y -= 20.f;
+    _components.GetComponent<EffectorComponent>()->PlayEffect("spr_jumpcloud", false, 0.f, 2.f, false, pos);
 }
 
 void Player::IncreaseJump(float deltaTime)
@@ -192,7 +201,7 @@ void Player::Move(bool dir)
         {
             if (GetCurrentState() == EPlayerState::PLAYER_IDLE_TO_RUN)
             {
-                _movementComp->AddAcceleration({ fMoveForce * 0.2f, 0 });
+                _movementComp->AddAcceleration({ fMoveForce * 0.3f, 0 });
             }
             else
             {
@@ -261,6 +270,9 @@ void Player::Roll(bool dir)
         }
     }
     bIsCrouch = false;
+    Vector2 pos = GetPos();
+    pos.y += 9.f;
+    GetComponent<EffectorComponent>()->PlayEffect("spr_stompercloud", dir, 0.f, 2.f, false, pos);
     _stateMachine->ChangeState(EPlayerState::PLAYER_ROLL);
 }
 
@@ -738,9 +750,39 @@ void Player::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
     if (bInvincible || bIsDead) return;
 
+    Die(false);
+    AddForce({ attackDirection.x * 2000.f, -200.f });
+    if (damageCauser->GetCollider()->GetColliderType() == EColliderType::LINE)
+    {
+        damageCauser->SetIsDead(true);
+        SoundManager::GetInstance()->PlaySFX("sound_bulletdie");
+    }
+}
+
+void Player::Die(bool timeOver)
+{
     bIsDead = true;
     ChangeState(EPlayerState::PLAYER_HURT_BEGIN);
-    AddForce({ attackDirection.x * 2000.f, -200.f });
+
+    TimeManager* timeManager = TimeManager::GetInstance();
+    if (timeManager->GetSlowMotion())
+    {
+        timeManager->EndSlowMotion(3.f);
+    }
+
+    SoundManager::GetInstance()->PlaySFX("sound_playerdie");
+
+    if (timeOver)
+    {
+        wstring message = L"전부 기억할 수 없어.\n더 효율적으로 움직여야 해.\n\n(왼쪽 클릭으로 재시작)";
+        OnDyingMessage(message);
+    }
+    else
+    {
+        wstring message = L"아니...\n통하지 않을 거야.\n\n(왼쪽 클릭으로 재시작)";
+        OnDyingMessage(message);
+    }
+
 }
 
 Vector2 Player::GetNewPos()

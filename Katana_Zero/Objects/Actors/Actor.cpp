@@ -16,6 +16,7 @@ void Actor::Init(Vector2 pos)
 {
 	Super::Init();
 	Super::SetPos(pos);
+	bIsActive = true;
 }
 
 void Actor::Update(float deltaTime)

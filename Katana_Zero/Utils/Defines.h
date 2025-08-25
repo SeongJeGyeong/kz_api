@@ -29,7 +29,8 @@ bool IsInPoint(RECT rect, POINT pos);
 
 enum ESFXType
 {
-	BUTTON_HOVER
+	SFX_STRUGGLE,
+	SFX_DEFAULT
 };
 
 enum EBGMType

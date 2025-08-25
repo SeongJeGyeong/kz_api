@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TimeManager.h"
+#include "SoundManager.h"
 
 void TimeManager::Init()
 {
@@ -12,6 +13,8 @@ void TimeManager::Init()
 	fTargetTimeScale = 1.0f;
 	fTransitionSpeed = 2.0f;
 	bIsTransitioning = false;
+
+	srand(time(0));
 }
 
 void TimeManager::Update()
@@ -54,6 +57,7 @@ void TimeManager::Update()
 		}
 	}
 
+	if (_pause) return;
 	if (bSlowMotion)
 	{
 		fSlowMotionCountGauge += fConstantDeltaTime;
@@ -109,6 +113,8 @@ void TimeManager::StartSlowMotion(float transitionSpeed)
 	fTransitionSpeed = transitionSpeed;
 	bIsTransitioning = true;
 	bSlowMotion = true;
+	SoundManager::GetInstance()->SetGlobalSpeed(0.2f);
+	SoundManager::GetInstance()->PlaySlowMotion(true);
 }
 
 void TimeManager::EndSlowMotion(float transitionSpeed)
@@ -117,6 +123,13 @@ void TimeManager::EndSlowMotion(float transitionSpeed)
 	fTargetTimeScale = 1.0f;
 	fTransitionSpeed = transitionSpeed;
 	bIsTransitioning = true;
+	SoundManager::GetInstance()->SetGlobalSpeed(1.f);
+	SoundManager::GetInstance()->PlaySlowMotion(false);
+}
+void TimeManager::InitSlowMotionBattery()
+{
+	fSlowMotionCountGauge = 0.f;
+	iSlowMotionBatteryCount = 11;
 }
 //
 //void TimeManager::ToggleSlowMotion(float scale, float transitionSpeed)

@@ -12,6 +12,7 @@
 #include "../../Managers/CollisionManager.h"
 #include "../Camera.h"
 #include "../../Managers/TimeManager.h"
+#include "../../Managers/SoundManager.h"
 
 Enemy::~Enemy()
 {
@@ -374,10 +375,18 @@ void Enemy::ShotBullet()
 	float rad = atan2(dir.y, dir.x);
 
 	OnCreateBullet(ShotPoint, dir, 34.f, rad);
+	Vector2 pos = GetPos();
+	pos.x += vFrontDir.x * 80.f;
+	pos.y -= 10.f;
+	GetComponent<EffectorComponent>()->PlayEffect("spr_gunspark3", (vFrontDir.x < 1.f), 0.f, 1.f, false, pos);
+	GetComponent<EffectorComponent>()->PlayEffect("spr_gunsmoke3", (vFrontDir.x < 1.f), 0.f, 1.f, false, pos);
+	SoundManager::GetInstance()->PlaySFX("sound_gun_fire_1");
 }
 
 void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 {
+	if (damageCauser == nullptr) return;
+	if (damageCauser->GetCollider()->GetCollisionLayer() == ECollisionLayer::ENEMY_HITBOX && !damageCauser->GetWasHit()) return;
 	if (bWasHit || bIsDead) return;
 	bWasHit = true;
 
@@ -390,7 +399,12 @@ void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 
 	float rad = atan2(attackDirection.y, attackDirection.x);
 
-	if (damageCauser != nullptr && damageCauser->GetCollider()->GetCollisionLayer() == ECollisionLayer::PLAYER)
+	if (damageCauser->GetCollider()->GetColliderType() == EColliderType::LINE)
+	{
+		damageCauser->SetIsDead(true);
+		SoundManager::GetInstance()->PlaySFX("sound_enemy_death_bullet");
+	}
+	else if (damageCauser->GetCollider()->GetCollisionLayer() == ECollisionLayer::PLAYER)
 	{
 		if (attackDirection.x < 0)
 		{
@@ -405,6 +419,7 @@ void Enemy::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 		Vector2 offset = { vFrontDir.x * 30.f, 0 };
 
 		_components.GetComponent<EffectorComponent>()->PlayConstantEffect("spr_hit_impact", (attackDirection.x < 0), rad, 1.5f, true, offset);
+		SoundManager::GetInstance()->PlayEnemySlashKill();
 	}
 }
 

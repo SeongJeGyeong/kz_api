@@ -125,7 +125,7 @@ void Texture::RenderTextureNoAlpha(HDC hdc, Vector2 pos, int32 width, int32 heig
 	//);
 }
 
-void Texture::RenderProgress(HDC hdc, Vector2 pos, int32 width, int32 height)
+void Texture::RenderProgress(HDC hdc, Vector2 pos, float progress, int32 width, int32 height)
 {
 	StretchBlt(
 		hdc,
@@ -136,7 +136,7 @@ void Texture::RenderProgress(HDC hdc, Vector2 pos, int32 width, int32 height)
 		_textureHdc,
 		0,
 		0,
-		iSizeX,
+		iSizeX * progress,
 		iSizeY,
 		SRCCOPY
 	);

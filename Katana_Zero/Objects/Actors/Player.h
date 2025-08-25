@@ -15,6 +15,7 @@ class Player : public Actor
 {
 	using Super = Actor;
 public:
+	function<void(wstring)> OnDyingMessage;
 	~Player();
 
 private:
@@ -52,7 +53,6 @@ public:
 	virtual void PostUpdate(float deltaTime) override;
 	virtual void Render(HDC hdc) override;
 
-
 	bool GetPressedDown() { return bPressedDown; }
 	void SetPressedDown(bool pressedDown) { bPressedDown = pressedDown; }
 
@@ -62,6 +62,7 @@ public:
 	bool GetIsCrouch() { return bIsCrouch; }
 	void SetIsCrouch(bool isCrouch) { bIsCrouch = isCrouch; }
 
+	float GetFrontDir() { return vFrontDir.x; }
 
 	void ClearHitActors() { _attackInfo._hitActors.clear(); }
 
@@ -93,6 +94,8 @@ public:
 	virtual void OnCollisionBeginOverlap(const CollisionInfo& info) override;
 	virtual void OnCollisionStayOverlap(const CollisionInfo& info) override;
 	virtual void OnCollisionEndOverlap(const CollisionInfo& info) override;
+
+	void Die(bool timeOver);
 
 private:
 	void AttackDelay(float deltaTime);

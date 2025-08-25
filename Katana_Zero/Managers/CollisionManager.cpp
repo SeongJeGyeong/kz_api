@@ -60,6 +60,7 @@ void CollisionManager::Update()
 	{
 		for (auto receiveCollider : _colliderList[(ECollisionLayer)receiveLayer])
 		{
+			if (!receiveCollider->GetOwner()->GetIsActive()) continue;
 			for (int32 sendLayer = 0; sendLayer < ECollisionLayer::END; ++sendLayer)
 			{
 				if (!(COLLISION_BIT_MASK_BLOCK[receiveLayer] & (uint16)(1 << sendLayer))) continue;
@@ -679,7 +680,20 @@ bool CollisionManager::PlayerCollisionCheck(Collider* receive, Collider* send, C
 		info = CheckAABBtoLinePlatformCollision(player->GetPos(), movementComponent->GetNewPos(), halfWidth, halfHeight, send);
 		break;
 	case ECollisionLayer::ENEMY_HITBOX:
-		info.isColliding = CheckBetweenAABB(static_cast<AABBCollider*>(receive), static_cast<AABBCollider*>(send), info);
+		if (send->GetColliderType() == EColliderType::AABB)
+		{
+			info.isColliding = CheckBetweenAABB(static_cast<AABBCollider*>(receive), static_cast<AABBCollider*>(send), info);
+		}
+		else
+		{
+			Vector2 aabbMin = { (float)playerNewRect.left, (float)playerNewRect.top };
+			Vector2 aabbMax = { (float)playerNewRect.right, (float)playerNewRect.bottom };
+			info.isColliding = CheckLinetoAABB(send->GetEndPoint(), send->GetStartPoint(), aabbMin, aabbMax, info);
+			if (info.isColliding)
+			{
+				info.collisionActor = send->GetOwner();
+			}
+		}
 		break;
 	default:
 		break;
@@ -740,6 +754,10 @@ bool CollisionManager::EnemyCollisionCheck(Collider* receive, Collider* send, Co
 			Vector2 aabbMax = { (float)newRect.right, (float)newRect.bottom };
 			// 반사됐기 때문에 시작, 끝 지점 반대로 넣어줌
 			info.isColliding = CheckLinetoAABB(send->GetEndPoint(), send->GetStartPoint(), aabbMin, aabbMax, info);
+			if (info.isColliding)
+			{
+				info.collisionActor = send->GetOwner();
+			}
 		}
 		else
 		{
@@ -851,7 +869,7 @@ bool CollisionManager::CheckOBBHitBox(Actor* attackActor, AttackInfo& hitInfo)
 	Vector2 AABBmin = Vector2(-hitInfo.fWidth * 0.5f, -hitInfo.fHeight * 0.5f);
 	Vector2 AABBmax = Vector2(hitInfo.fWidth * 0.5f, hitInfo.fHeight * 0.5f);
 
-	bool flag = false;
+	bool isReflectBullet = false;
 
 	for (int32 receiveLayer = 0; receiveLayer < ECollisionLayer::END; ++receiveLayer)
 	{
@@ -878,7 +896,6 @@ bool CollisionManager::CheckOBBHitBox(Actor* attackActor, AttackInfo& hitInfo)
 
 				if (CheckOBBtoAABB(corners, colliderCorners))
 				{
-					flag = true;
 					hitInfo._hitActors.push_back(receiveCollider);
 					receiveCollider->GetOwner()->TakeDamage(attackActor, hitInfo.vAttackDir);
 				}
@@ -898,7 +915,7 @@ bool CollisionManager::CheckOBBHitBox(Actor* attackActor, AttackInfo& hitInfo)
 					CollisionInfo info;
 					if (CheckLinetoAABB(relative1, relative2, AABBmin, AABBmax, info))
 					{
-						flag = true;
+						isReflectBullet = true;
 						hitInfo._hitActors.push_back(receiveCollider);
 						receiveCollider->GetOwner()->TakeDamage(attackActor, hitInfo.vAttackDir);
 					}
@@ -907,7 +924,7 @@ bool CollisionManager::CheckOBBHitBox(Actor* attackActor, AttackInfo& hitInfo)
 		}
 	}
 
-	return flag;
+	return isReflectBullet;
 }
 
 bool CollisionManager::CheckAABBHitBox(Actor* attackActor, Vector2 center, float width, float height)
@@ -1430,6 +1447,14 @@ void CollisionManager::DeleteCollider(Collider* collider)
 	if (iter != _colliderList[layer].end())
 	{
 		iter = _colliderList[layer].erase(iter);
+	}
+}
+
+void CollisionManager::ClearColliderList()
+{
+	for (int32 i = 0; i < ECollisionLayer::END; ++i)
+	{
+		_colliderList[i].clear();
 	}
 }
 

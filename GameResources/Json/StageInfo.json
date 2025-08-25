@@ -11,7 +11,7 @@
     },
     "Stage3": {
         "FileName": "BossRoom.json",
-        "NextStage": null,
+        "NextStage": "Stage1",
         "BGM": "song_bossbattle"
     }
 }

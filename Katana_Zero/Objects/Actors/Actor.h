@@ -40,6 +40,7 @@ public:
 	virtual void TakeDamage(Actor* damageCauser, const Vector2& attackDirection) {}
 
 	virtual bool GetIsDead() { return bIsDead; }
+	virtual void SetIsDead(bool isDead) { bIsDead = isDead; }
 	virtual Vector2 GetNewPos() { return Vector2(0, 0); }
 
 	virtual void AddForce(Vector2 force) {};

@@ -56,6 +56,8 @@ public:
 class PlayerState_Run : public PlayerState
 {
 	using Super = PlayerState;
+private:
+	float fFootStepPlay = 0.f;
 public:
 	PlayerState_Run(Player* player) : Super(player) {}
 

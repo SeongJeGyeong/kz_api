@@ -19,9 +19,9 @@
 #include "../Resources/Texture.h"
 #include "../Managers/SoundManager.h"
 
-GameScene::GameScene(string mapFileName, string nextStage, string bgmName)
+GameScene::GameScene(string mapName, string mapFileName, string nextStage, string bgmName)
 {
-	sMapName = mapFileName;
+	sMapName = mapName;
 	_sceneCamera = new Camera();
 	_sceneCamera->Init();
 
@@ -72,14 +72,15 @@ GameScene::GameScene(string mapFileName, string nextStage, string bgmName)
 
 	if (bgmName == "song_katanazero")
 	{
-		SoundManager::GetInstance()->PlayBGM(EBGMType::STAGE, 1.f, 1.f, true);
+		SoundManager::GetInstance()->PlayBGM(EBGMType::STAGE, true);
 	}
 	else if (bgmName == "song_bossbattle")
 	{
-		SoundManager::GetInstance()->PlayBGM(EBGMType::BOSS_ROOM, 1.f, 1.f, true);
+		SoundManager::GetInstance()->PlayBGM(EBGMType::BOSS_ROOM, true);
 	}
 
 	UIInit();
+	TimeManager::GetInstance()->InitSlowMotionBattery();
 }
 
 void GameScene::LoadTiles(json tileData)
@@ -185,6 +186,7 @@ void GameScene::LoadActors(json actorData)
 			_player = new Player();
 			_player->Init({ screenPos.x, screenPos.y - 50.f });
 			_player->SetPlayerCamera(_sceneCamera);
+			_player->OnDyingMessage = [this](wstring message) { _gameOverText = message; _gameOverBox->SetOpen(true); };
 		}
 		else
 		{
@@ -331,6 +333,16 @@ void GameScene::PostUpdate(float deltaTime)
 	{
 		collider->PostUpdate(deltaTime);
 	}
+
+	if (_player != nullptr && _player->GetIsDead())
+	{
+		fGameOverWait += deltaTime;
+		if (fGameOverWait > 0.1f && InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
+		{
+			fGameOverWait = 0.f;
+			OnRetryGame(sMapName);
+		}
+	}
 }
 
 void GameScene::Render(HDC hdc)
@@ -377,6 +389,12 @@ void GameScene::Render(HDC hdc)
 
 	Super::Render(hdc);
 
+	if (_player->GetIsDead())
+	{
+		SetTextColor(hdc, RGB(0, 255, 255));
+		::DrawText(hdc, _gameOverText.c_str(), _gameOverText.size(), &_gameOverRect, DT_CENTER);
+	}
+
 	if (bIsPaused)
 	{
 		_pauseUI.Render(hdc);
@@ -395,24 +413,20 @@ void GameScene::Render(HDC hdc)
 
 void GameScene::UIInit()
 {
-	UIImage* HUD_Background = _UI.CreateImage(Vector2(GWinSizeX / 2, 27), "spr_hud", 1280, 46);
-	_timerProgressBar = _UI.CreateProgressBar(Vector2(GWinSizeX / 2 + 6, 19), "spr_timer", 188, 22);
-	UIImage* HUD_TimerHUD = _UI.CreateImage(Vector2(GWinSizeX / 2 - 10, 23), "spr_hud_timer", 224, 38);
+	UIImage* HUD_Background = _UI.CreateImage(Vector2(GWinSizeX * 0.5f, 27), "spr_hud", 1280, 46);
+	_timerProgressBar = _UI.CreateProgressBar(Vector2(GWinSizeX * 0.5f + 6, 19), "spr_timer", 188, 22);
+	UIImage* HUD_TimerHUD = _UI.CreateImage(Vector2(GWinSizeX * 0.5f - 10, 23), "spr_hud_timer", 224, 38);
 	UIImage* HUD_BatteryHUD = _UI.CreateImage(Vector2(79, 27), "spr_hud_battery", 154, 38);
 	_slowMotionBattery = _UI.CreateBundle(Vector2(28, 26), "spr_battery_part", 8, 20, TimeManager::GetInstance()->GetSlowMotionBatteryCount());
 	_slowMotionBattery->SetMargin(2.f);
 
-	UIImage* pauseBackground = _pauseUI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2), "spr_pausemenu_bg_0");
-	UIImage* pauseBackground2 = _pauseUI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 336), "spr_pausemenu_bg_2");
-	UIButton* resumeBtn = _pauseUI.CreateButton(Vector2(GWinSizeX / 2, 120), "lobby_select_mask", L"이어하기", 1280, 50, 4);
-	UIButton* retryBtn = _pauseUI.CreateButton(Vector2(GWinSizeX / 2, 180), "lobby_select_mask", L"재시작", 1280, 50, 4);
-	UIButton* mainMenuBtn = _pauseUI.CreateButton(Vector2(GWinSizeX / 2, 240), "lobby_select_mask", L"메인 메뉴", 1280, 50, 4);
+	_gameOverBox = _UI.CreateImage(Vector2(GWinSizeX * 0.5f, GWinSizeY * 0.5f - 15.f), "lobby_mask", 200, 100);
 
-	//UIImage* pauseBackground = _UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2), "spr_pausemenu_bg_0");
-	//UIImage* pauseBackground2 = _UI.CreateImage(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 336), "spr_pausemenu_bg_2");
-	//UIButton* resumeBtn = _UI.CreateButton(Vector2(GWinSizeX / 2, 120), "lobby_select_mask", L"이어하기", 1280, 50, 4);
-	//UIButton* retryBtn = _UI.CreateButton(Vector2(GWinSizeX / 2, 180), "lobby_select_mask", L"재시작", 1280, 50, 4);
-	//UIButton* mainMenuBtn = _UI.CreateButton(Vector2(GWinSizeX / 2, 240), "lobby_select_mask", L"메인 메뉴", 1280, 50, 4);
+	UIImage* pauseBackground = _pauseUI.CreateImage(Vector2(GWinSizeX * 0.5f, GWinSizeY * 0.5f), "spr_pausemenu_bg_0");
+	UIImage* pauseBackground2 = _pauseUI.CreateImage(Vector2(GWinSizeX * 0.5f, GWinSizeY * 0.5f + 336), "spr_pausemenu_bg_2");
+	UIButton* resumeBtn = _pauseUI.CreateButton(Vector2(GWinSizeX * 0.5f, 120), "lobby_select_mask", L"이어하기", 1280, 50, 4);
+	UIButton* retryBtn = _pauseUI.CreateButton(Vector2(GWinSizeX * 0.5f, 180), "lobby_select_mask", L"재시작", 1280, 50, 4);
+	UIButton* mainMenuBtn = _pauseUI.CreateButton(Vector2(GWinSizeX * 0.5f, 240), "lobby_select_mask", L"메인 메뉴", 1280, 50, 4);
 
 	resumeBtn->SetButtonTextAlign(EButtonTextAlign::LEFT);
 	resumeBtn->SetMargin(20.f);
@@ -425,19 +439,7 @@ void GameScene::UIInit()
 	retryBtn->SetClickEvent([this]() { OnRetryGame(sMapName); });
 	mainMenuBtn->SetClickEvent([this]() { OnExitToMainMenu(); });
 
-	//pauseBackground->SetOpen(false);
-	//pauseBackground2->SetOpen(false);
-	//resumeBtn->SetOpen(false);
-	//retryBtn->SetOpen(false);
-	//mainMenuBtn->SetOpen(false);
-	//OnPause = [pauseBackground, pauseBackground2, resumeBtn, retryBtn, mainMenuBtn](bool isOpen)
-	//	{
-	//		pauseBackground->SetOpen(isOpen);
-	//		pauseBackground2->SetOpen(isOpen);
-	//		resumeBtn->SetOpen(isOpen);
-	//		retryBtn->SetOpen(isOpen);
-	//		mainMenuBtn->SetOpen(isOpen);
-	//	};
+	_gameOverBox->SetOpen(false);
 
 	_slowMotionMask = ResourceManager::GetInstance()->GetTexture("background_mask");
 	_slowMotionMask->SetAlpha(0);

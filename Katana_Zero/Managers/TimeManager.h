@@ -36,6 +36,8 @@ private:
 	float fMaskAlpha = 0.f;
 	float fPrevTimeScale = 1.f;
 
+	bool _pause = false;
+
 public:
 	void Init();
 	void Update();
@@ -59,6 +61,9 @@ public:
 	float GetHitStopTime() { return hitStopTime; }
 
 	int32 GetSlowMotionBatteryCount() { return iSlowMotionBatteryCount; }
+	void InitSlowMotionBattery();
+
+	void SetPause(bool pause) { _pause = pause; }
 
 	int32 GetRandom()
 	{

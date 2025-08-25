@@ -18,7 +18,7 @@ class GameScene : public Scene
 	using Super = Scene;
 
 public:
-	GameScene(string mapFileName, string nextStage, string bgmName);
+	GameScene(string mapName, string mapFileName, string nextStage, string bgmName);
 	function<void(string)> OnRetryGame;
 	function<void()> OnExitToMainMenu;
 
@@ -42,8 +42,12 @@ private:
 	float fCurrentElapsedTime = 120.f;
 	UIProgressBar* _timerProgressBar = nullptr;
 	UIBundle* _slowMotionBattery = nullptr;
+	UIImage* _gameOverBox = nullptr;
+	float fGameOverWait = 0.f;
 
 	string _nextStage;
+	RECT _gameOverRect = { (LONG)(GWinSizeX * 0.5f - 100.f), (LONG)(GWinSizeY * 0.5f - 50.f), (LONG)(GWinSizeX * 0.5f + 100.f), (LONG)(GWinSizeY * 0.5f + 50.f) };
+	wstring _gameOverText;
 
 private:
 	void LoadTiles(json tileData);

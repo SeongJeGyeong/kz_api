@@ -91,6 +91,7 @@ void Game::Update()
 	}
 
 	TimeManager::GetInstance()->Update();
+	SoundManager::GetInstance()->Update();
 	InputManager::GetInstance()->Update();
 
 	HWND hwnd = ::GetForegroundWindow();
@@ -160,7 +161,9 @@ void Game::ChangeGameScene(string mapName)
 		_nextScene = nullptr;
 	}
 
-	_nextScene = new GameScene(_stageInfo[mapName]["FileName"], _stageInfo[mapName]["NextStage"], _stageInfo[mapName]["BGM"]);
+	CollisionManager::GetInstance()->ClearColliderList();
+
+	_nextScene = new GameScene(mapName, _stageInfo[mapName]["FileName"], _stageInfo[mapName]["NextStage"], _stageInfo[mapName]["BGM"]);
 	GameScene* gameScene = static_cast<GameScene*>(_nextScene);
 	gameScene->OnRetryGame = [this](string mapName) { ChangeGameScene(mapName); };
 	gameScene->OnExitToMainMenu = [this](){ ChangeLobbyScene(); };
@@ -183,7 +186,6 @@ void Game::ChangeLobbyScene()
 	lobbyScene->OnStartGame = [this](string mapName) { ChangeGameScene(mapName); };
 	lobbyScene->OnOpenEditor = [this]() { ChangeEditorScene(); };
 	lobbyScene->OnExitGame = [this]() { ExitGame(); };
-
 	_background = BLACKNESS;
 }
 
@@ -197,7 +199,7 @@ void Game::ChangeEditorScene()
 
 	_nextScene = new EditorScene();
 	_background = WHITENESS;
-
+	SoundManager::GetInstance()->StopBGM();
 	_subWindow = new EditorSub();
 	_subWindow->Init();
 	ShowWindow(_hwndSub, 10);

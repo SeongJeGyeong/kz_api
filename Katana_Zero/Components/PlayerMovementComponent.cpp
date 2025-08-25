@@ -69,10 +69,10 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     vVelocity += vAcceleration * deltaTime;
 
     float upFactor = 400.f;
-    float sideFactor = 400.f;
+    float sideFactor = 500.f;
     if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL || _player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
-        sideFactor = 1500.f;
+        sideFactor = 1000.f;
     }
     else if (_player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
              _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
@@ -92,12 +92,11 @@ void PlayerMovementComponent::ApplyPhysics(float deltaTime)
     float fps = (float)TimeManager::GetInstance()->GetFps();
 
     float friction = 0.85f;
-    if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL || _player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
+    if (_player->GetCurrentState() == EPlayerState::PLAYER_ATTACK)
     {
-        friction = 0.95f;
+        friction = 0.98f;
     }
-    if ( 
-        //_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
+    else if (_player->GetCurrentState() == EPlayerState::PLAYER_ROLL ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_BEGIN ||
         _player->GetCurrentState() == EPlayerState::PLAYER_HURT_LOOP)
     {

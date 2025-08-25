@@ -10,6 +10,7 @@
 #include <string>
 #include <functional>	// std::function
 #include <algorithm>	// std::find_if, std::sort
+#include <deque>
 
 // C++ 20
 #include <format>		// std::format("x:{0}, y:{1}"

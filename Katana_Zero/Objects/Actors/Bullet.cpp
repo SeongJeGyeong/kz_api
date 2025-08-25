@@ -4,6 +4,8 @@
 #include "../../Resources/Sprite.h"
 #include "../../Game/Game.h"
 #include "../../Components/Collider.h"
+#include "../../Components/EffectorComponent.h"
+#include "../../Managers/SoundManager.h"
 
 void Bullet::Init(Vector2 pos, Vector2 dir, float length, float radian)
 {
@@ -15,6 +17,7 @@ void Bullet::Init(Vector2 pos, Vector2 dir, float length, float radian)
 	CreateMovingLineCollider(length, radian, ECollisionLayer::ENEMY_HITBOX);
 
 	_sprite = ResourceManager::GetInstance()->GetSprite("spr_bullet");
+	SetIsActive(true);
 }
 
 void Bullet::Update(float deltaTime)
@@ -48,4 +51,5 @@ void Bullet::TakeDamage(Actor* damageCauser, const Vector2& attackDirection)
 	bWasHit = true;
 	fLifeTime = 0.f;
 	vDirection = { -vDirection.x, -vDirection.y };
+	SoundManager::GetInstance()->PlaySFX("sound_slash_bullet");
 }

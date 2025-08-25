@@ -6,6 +6,7 @@
 #include "../Components/InputComponent.h"
 #include "../Components/PlayerMovementComponent.h"
 #include "../Components/EffectorComponent.h"
+#include "../Managers/SoundManager.h"
 
 PlayerState::PlayerState(Player* player)
 	: _player(player) 
@@ -125,16 +126,27 @@ void PlayerState_Idle_to_Run::ExitState()
 void PlayerState_Run::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_RUN);
+	Vector2 pos = _player->GetPos();
+	pos.y += 9.f;
+	_player->GetComponent<EffectorComponent>()->PlayEffect("spr_stompercloud", (_player->GetFrontDir() > 0.f), 0.f, 2.f, false, pos);
+	SoundManager::GetInstance()->PlaySFX("sound_player_prerun");
 }
 
 void PlayerState_Run::UpdateState(float deltaTime)
 {
 	Super::UpdateState(deltaTime);
 	_player->GetComponent<InputComponent>()->Input_In_Run(deltaTime);
+	fFootStepPlay += deltaTime;
+	if (fFootStepPlay > 0.35f)
+	{
+		fFootStepPlay = 0.f;
+		SoundManager::GetInstance()->PlayPlayerRun();
+	}
 
 	Vector2 acceleration = _movementComponent->GetAcceleration();
 	if (acceleration.x == 0)
 	{
+		fFootStepPlay = 0.f;
 		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
 	}
 }
@@ -243,6 +255,7 @@ void PlayerState_Jump::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_JUMP);
 	_player->SetIsCrouch(false);
+	SoundManager::GetInstance()->PlaySFX("sound_player_jump");
 }
 
 void PlayerState_Jump::UpdateState(float deltaTime)
@@ -276,6 +289,10 @@ void PlayerState_Fall::UpdateState(float deltaTime)
 	if (!_movementComponent->GetIsJumped())
 	{
 		_player->ChangeState(EPlayerState::PLAYER_RUN_TO_IDLE);
+		Vector2 pos = _player->GetPos();
+		pos.y += 15.f;
+		_player->GetComponent<EffectorComponent>()->PlayEffect("spr_landcloud", false, 0.f, 2.f, false, pos);
+		SoundManager::GetInstance()->PlaySFX("sound_player_land");
 	}
 }
 
@@ -288,6 +305,7 @@ void PlayerState_Fall::ExitState()
 void PlayerState_Attack::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_ATTACK);
+	SoundManager::GetInstance()->PlayPlayerSlash();
 }
 
 void PlayerState_Attack::UpdateState(float deltaTime)
@@ -319,6 +337,8 @@ void PlayerState_Roll::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_ROLL);
 	_player->SetInvincible(true);
+	SoundManager::GetInstance()->PlaySFX("sound_player_roll");
+	SoundManager::GetInstance()->PlaySFX("sound_player_roll_real");
 }
 
 void PlayerState_Roll::UpdateState(float deltaTime)
@@ -381,6 +401,7 @@ void PlayerState_HurtFly::ExitState()
 void PlayerState_HurtGround::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_HURT_GROUND);
+	SoundManager::GetInstance()->PlaySFX("sound_bullethit1");
 }
 
 void PlayerState_HurtGround::UpdateState(float deltaTime)
@@ -404,6 +425,7 @@ void PlayerState_HurtGround::ExitState()
 void PlayerState_Recover::EnterState()
 {
 	_animator->SetAnimation(EPlayerState::PLAYER_HURT_RECOVER);
+	SoundManager::GetInstance()->PlaySFX("sound_player_knockdown_recover");
 }
 
 void PlayerState_Recover::UpdateState(float deltaTime)
@@ -439,7 +461,9 @@ void PlayerState_Struggle::ExitState()
 ///////* Finish *////////////////////////
 void PlayerState_Finish::EnterState()
 {
-	_movementComponent->SetNewPos(_player->GetPos());
+	Vector2 pos = _player->GetPos();
+	pos.y -= 5.f;
+	_movementComponent->SetNewPos(pos);
 	_animator->SetAnimation(EPlayerState::PLAYER_IDLE);
 }
 

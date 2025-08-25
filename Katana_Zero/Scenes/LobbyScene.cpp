@@ -18,11 +18,11 @@ void LobbyScene::Init()
 	UIButton* ExitButton = _UI.CreateButton(Vector2(GWinSizeX / 2, GWinSizeY / 2 + 200), "lobby_select_mask", L"게임 종료", 0, 0);
 
 	// 함수 포인터 연결
-	GameStartButton->SetClickEvent([this]() { OnStartGame("Stage1"); });
+	GameStartButton->SetClickEvent([this]() { OnStartGame("Stage2"); });
 	mapEditorButton->SetClickEvent([this]() { OnOpenEditor(); });
 	ExitButton->SetClickEvent([this]() { OnExitGame(); });
 
-	SoundManager::GetInstance()->PlayBGM(EBGMType::MAIN_MENU, 1.f, 1.f, true);
+	SoundManager::GetInstance()->PlayBGM(EBGMType::MAIN_MENU, true);
 }
 
 void LobbyScene::Destroy()

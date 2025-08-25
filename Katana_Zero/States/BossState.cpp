@@ -5,6 +5,7 @@
 #include "../Components/BossMovementComponent.h"
 #include "../Components/Collider.h"
 #include "../Managers/TimeManager.h"
+#include "../Managers/SoundManager.h"
 
 void BossState::UpdateState(float deltaTime)
 {
@@ -123,6 +124,9 @@ void BossState_Lunge::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_LUNGE);
 	_boss->Lunge();
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axelunge_01");
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_axelunge_01");
+
 }
 
 void BossState_Lunge::UpdateState(float deltaTime)
@@ -143,6 +147,7 @@ void BossState_Lunge::ExitState()
 void BossState_LungeAttack::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_LUNGEATTACK);
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axeimpact_01");
 }
 
 void BossState_LungeAttack::UpdateState(float deltaTime)
@@ -163,6 +168,7 @@ void BossState_LungeAttack::ExitState()
 void BossState_PreJump::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_PREJUMP);
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_crouch_01");
 }
 
 void BossState_PreJump::UpdateState(float deltaTime)
@@ -189,6 +195,8 @@ void BossState_Jump::EnterState()
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_JUMP);
 	_boss->GetComponent<BossMovementComponent>()->SetVelocityY(-700.f);
 	_boss->GetComponent<BossMovementComponent>()->SetOnGround(false);
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_jump_01");
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axewhirl_01");
 }
 
 void BossState_Jump::UpdateState(float deltaTime)
@@ -247,6 +255,7 @@ void BossState_Land::ExitState()
 void BossState_ThrowAxe::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_THROWAXE);
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_axeprep_01");
 }
 
 void BossState_ThrowAxe::UpdateState(float deltaTime)
@@ -258,6 +267,8 @@ void BossState_ThrowAxe::UpdateState(float deltaTime)
 	}
 	else if (!bDoOnce && _boss->GetComponent<Animator>()->GetCurrentFrame() == 7)
 	{
+		SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axethrow_01");
+		SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_axethrow_01");
 		_boss->ThrowAxe();
 		bDoOnce = true;
 	}
@@ -287,6 +298,7 @@ void BossState_TugAxe::ExitState()
 void BossState_ReturnAxe::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_RETURNAXE);
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axecatch_01");
 }
 
 void BossState_ReturnAxe::UpdateState(float deltaTime)
@@ -306,6 +318,7 @@ void BossState_ReturnAxe::ExitState()
 void BossState_Block::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_BLOCK);
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_clash_01");
 }
 
 void BossState_Block::UpdateState(float deltaTime)
@@ -327,6 +340,8 @@ void BossState_Hurt::EnterState()
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_HURT);
 	_boss->GetCollider()->InitAABB(150, 100);
 	fRecoverTime = 0.f;
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_hurt_01");
+	SoundManager::GetInstance()->PlayEnemySlashKill();
 }
 
 void BossState_Hurt::UpdateState(float deltaTime)
@@ -366,6 +381,8 @@ void BossState_Hurt::ExitState()
 void BossState_Recorver::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_RECOVER);
+	SoundManager::GetInstance()->PlaySFX("sound_voiceboss_kissyface_free_01");
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_free_01");
 }
 
 void BossState_Recorver::UpdateState(float deltaTime)
@@ -386,6 +403,7 @@ void BossState_Struggle::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_STRUGGLE);
 	fStruggleTime = 0.f;
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_struggle_01");
 }
 
 void BossState_Struggle::UpdateState(float deltaTime)
@@ -401,6 +419,7 @@ void BossState_Struggle::UpdateState(float deltaTime)
 
 void BossState_Struggle::ExitState()
 {
+	SoundManager::GetInstance()->StopSFX(ESFXType::SFX_STRUGGLE);
 	if (fStruggleTime == 0.f)
 	{
 		_boss->EndStruggle();
@@ -412,6 +431,8 @@ void BossState_Finished::EnterState()
 {
 	_boss->GetCollider()->InitAABB(150, 100);
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_FINISHED);
+	SoundManager::GetInstance()->StopBGM();
+	SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_death_01");
 }
 
 void BossState_Finished::UpdateState(float deltaTime)
@@ -447,6 +468,7 @@ void BossState_Defeat::ExitState()
 void BossState_Die::EnterState()
 {
 	_boss->GetComponent<Animator>()->SetAnimation(EBossState::BOSS_DIE);
+	SoundManager::GetInstance()->PlaySFX("sound_enemy_death_generic_02");
 }
 
 void BossState_Die::UpdateState(float deltaTime)

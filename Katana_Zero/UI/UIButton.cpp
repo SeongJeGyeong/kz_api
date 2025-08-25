@@ -4,6 +4,7 @@
 #include "../Managers/ResourceManager.h"
 #include "../Managers/InputManager.h"
 #include "../Resources/Texture.h"
+#include "../Managers/SoundManager.h"
 
 UIButton::UIButton(Vector2 pos, string key, int32 width, int32 height, int32 fontSize, uint64 textColor)
 	: Super(pos)
@@ -36,12 +37,18 @@ void UIButton::Update()
 	POINT mousePos = InputManager::GetInstance()->GetMousePos();
 	if (IsInPoint(rect, mousePos))
 	{
+		if (!IsInPoint(rect, _prevMousePoint))
+		{
+			SoundManager::GetInstance()->PlaySFX("sound_menubeep_1");
+		}
+
 		OnBtnHovered();
 	}
 	else
 	{
 		OnBtnUnHovered();
 	}
+	_prevMousePoint = mousePos;
 }
 
 void UIButton::Render(HDC hdc)
@@ -91,9 +98,14 @@ void UIButton::Render(HDC hdc)
 void UIButton::OnBtnHovered()
 {
 	iButtonAlpha = -1;
+
 	if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftMouse))
 	{
-		if (onClickedEvent) onClickedEvent();
+		if (onClickedEvent)
+		{
+			SoundManager::GetInstance()->PlaySFX("sound_menubeep_2");
+			onClickedEvent();
+		}
 	}
 }
 

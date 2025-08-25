@@ -4,6 +4,87 @@
         "song_katanazero",
         "song_bossbattle"
     ],
-    "SFX": [
-    ]
+    "SFX": {
+        "PlayerRunning": [
+            "sound_player_running_1",
+            "sound_player_running_2",
+            "sound_player_running_3",
+            "sound_player_running_4"
+        ],
+        "PlayerSlash": [
+            "sound_player_slash_1",
+            "sound_player_slash_2",
+            "sound_player_slash_3"
+        ],
+        "EnemyWalk": [
+            "sound_generic_enemy_walk_1",
+            "sound_generic_enemy_walk_2",
+            "sound_generic_enemy_walk_3",
+            "sound_generic_enemy_walk_4"
+        ],
+        "EnemyRun": [
+            "sound_generic_enemy_run_1",
+            "sound_generic_enemy_run_2",
+            "sound_generic_enemy_run_3",
+            "sound_generic_enemy_run_4"
+        ],
+        "BloodSquirt": [
+            "sound_enemy_blood_squirt_01",
+            "sound_enemy_blood_squirt_02",
+            "sound_enemy_blood_squirt_03"
+        ],
+        "Main": [
+            "sound_slomo_engage",
+            "sound_slomo_disengage",
+            "sound_player_jump",
+            "sound_player_land",
+            "sound_player_prerun",
+            "sound_player_roll",
+            "sound_player_roll_real",
+            "sound_player_knockdown_recover",
+            "sound_playerdie",
+            "sound_bulletdie",
+
+            "sound_gun_fire_1",
+            "sound_gun_fire_2",
+            "sound_enemy_death_bullet",
+            "sound_enemy_death_sword_01",
+            "sound_enemy_death_sword_02",
+
+            "sound_boss_kissyface_axethrow_01",
+            "sound_boss_kissyface_axereturn_01",
+            "sound_boss_kissyface_axecatch_01",
+            "sound_boss_kissyface_jump_01",
+            "sound_boss_kissyface_axewhirl_01",
+            "sound_boss_kissyface_axelunge_01",
+            "sound_boss_kissyface_axeimpact_01",
+            "sound_boss_kissyface_axeprep_01",
+            "sound_boss_kissyface_clash_01",
+            "sound_voiceboss_kissyface_axethrow_01",
+            "sound_voiceboss_kissyface_jump_01",
+            "sound_voiceboss_kissyface_axelunge_01",
+            "sound_voiceboss_kissyface_crouch_01",
+            "sound_voiceboss_kissyface_axeprep_01",
+            "sound_voiceboss_kissyface_hurt_01",
+            "sound_voiceboss_kissyface_free_01",
+            "sound_boss_kissyface_struggle_01",
+            "sound_boss_kissyface_free_01",
+            "sound_boss_kissyface_death_01",
+            "sound_enemy_death_generic_02",
+
+            "sound_bullethit1",
+            "sound_bullethit3",
+
+            "sound_rewind",
+            "sound_slash_bullet",
+
+            "sound_transition_begin",
+            "sound_transition_end",
+
+            "sound_menubeep_1",
+            "sound_menubeep_2",
+            "sound_ui_menu_skip_01",
+            "sound_ui_prompt_go_01"
+        ]
+    }
 }

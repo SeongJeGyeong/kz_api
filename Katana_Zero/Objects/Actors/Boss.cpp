@@ -141,9 +141,9 @@ void Boss::Render(HDC hdc)
 		Vector2 pos = GetPos();
 		pos.y -= 80.f;
 		pos.x -= 50.f;
-		_progressBackground->RenderProgress(hdc, pos, 100, 10);
-		_progressPrev->RenderProgress(hdc, pos, (int32)fPrevGauge, 10);
-		_progressCurrent->RenderProgress(hdc, pos, (int32)fStruggleGauge, 10);
+		_progressBackground->RenderProgress(hdc, pos, 1.f, 100, 10);
+		_progressPrev->RenderProgress(hdc, pos, fPrevGauge * 0.01f, (int32)fPrevGauge, 10);
+		_progressCurrent->RenderProgress(hdc, pos, fStruggleGauge * 0.01f,(int32)fStruggleGauge, 10);
 	}
 
 	if (GetCurrentState() == EBossState::BOSS_LUNGE || GetCurrentState() == EBossState::BOSS_LUNGEATTACK)

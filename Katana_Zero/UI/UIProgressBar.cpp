@@ -33,5 +33,5 @@ void UIProgressBar::Update()
 void UIProgressBar::Render(HDC hdc)
 {
 	Vector2 pos = { vPos.x - iSizeX * 0.5f, vPos.y - iSizeY * 0.5f };
-	_texture->RenderProgress(hdc, pos, iSizeX * fProgress, iSizeY);
+	_texture->RenderProgress(hdc, pos, fProgress, iSizeX * fProgress, iSizeY);
 }

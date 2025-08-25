@@ -3,7 +3,8 @@
 #include "../../Game/Game.h"
 #include "../../Managers/ResourceManager.h"
 #include "../../Resources/Sprite.h"
-#include"../../Components/Collider.h"
+#include "../../Components/Collider.h"
+#include "../../Managers/SoundManager.h"
 
 void Axe::Init(Vector2 pos, Actor* owner, Vector2 dir, bool throwOrSwing)
 {
@@ -71,6 +72,7 @@ void Axe::ThrowUpdate(float deltaTime)
 			bStuck = false;
 			fStuckTime = 0.f;
 			vDirection.x = -vDirection.x;
+			SoundManager::GetInstance()->PlaySFX("sound_boss_kissyface_axereturn_01");
 		}
 		else
 		{
@@ -113,11 +115,13 @@ void Axe::OnCollisionBeginOverlap(const CollisionInfo& info)
 	switch (info.collisionLayer)
 	{
 	case ECollisionLayer::GROUND:
-		if (!bThrowOrSwing) break;
+		if (!bThrowOrSwing || bStuck) break;
 		bStuck = true;
+		SoundManager::GetInstance()->PlaySFX("sound_bullethit3");
 		break;
 	case ECollisionLayer::WALL:
-		if (!bThrowOrSwing) break;
+		if (!bThrowOrSwing || bStuck) break;
+		SoundManager::GetInstance()->PlaySFX("sound_bullethit3");
 		bStuck = true;
 		break;
 	default:

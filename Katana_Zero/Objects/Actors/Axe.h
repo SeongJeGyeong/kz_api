@@ -7,6 +7,8 @@ class Axe : public Actor
 {
 	using Super = Actor;
 public:
+	~Axe(){}
+
 	function<void()> OnReturnAxe;
 private:
 	Actor* _owner;
@@ -14,7 +16,7 @@ private:
 	Vector2 vDirection;
 	float fRadian;
 	Sprite* _sprite = nullptr;
-	Vector2 vNewPos;
+	Vector2 vNewPos = {0.f, 0.f};
 
 	bool bThrowOrSwing = true;
 	bool bStuck = false;

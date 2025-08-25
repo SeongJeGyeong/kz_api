@@ -20,6 +20,7 @@ private:
 
 	EButtonTextAlign _textAlign = EButtonTextAlign::CENTER;
 	float fMargin = 0.f;
+	POINT _prevMousePoint;
 
 public:
 	virtual void Update() override;

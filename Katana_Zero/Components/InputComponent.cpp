@@ -24,11 +24,11 @@ void InputComponent::UpdateComponent(float deltaTime)
         }
     }
 
-    if (InputManager::GetInstance()->GetButtonDown(KeyType::LeftShift))
+    if (!_player->GetIsDead() && InputManager::GetInstance()->GetButtonDown(KeyType::LeftShift))
     {
         TimeManager::GetInstance()->StartSlowMotion(4.f);
     }
-    if (InputManager::GetInstance()->GetButtonUp(KeyType::LeftShift))
+    if (!_player->GetIsDead() && InputManager::GetInstance()->GetButtonUp(KeyType::LeftShift))
     {
         TimeManager::GetInstance()->EndSlowMotion(3.f);
     }
@@ -225,14 +225,14 @@ void InputComponent::Input_In_PreCrouch(float deltaTime)
         _player->Jump();
     }
 
-    if (InputManager::GetInstance()->GetButtonDown(KeyType::A))
-    {
-        _player->Roll(false);
-    }
-    else if (InputManager::GetInstance()->GetButtonDown(KeyType::D))
-    {
-        _player->Roll(true);
-    }
+    //if (InputManager::GetInstance()->GetButtonDown(KeyType::A))
+    //{
+    //    _player->Roll(false);
+    //}
+    //else if (InputManager::GetInstance()->GetButtonDown(KeyType::D))
+    //{
+    //    _player->Roll(true);
+    //}
 
     if (InputManager::GetInstance()->GetButtonUp(KeyType::S))
     {

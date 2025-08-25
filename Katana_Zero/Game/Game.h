@@ -34,6 +34,9 @@ private:
 	bool bDebugMode = false;
 
 	json _stageInfo;
+	deque<HDC> _rewindBuffer;
+	int32 _captureTargetFrame = 40;
+	int32 _curframe = 0;
 
 public:
 	void Init(HWND hwnd, HWND hsubwnd);
